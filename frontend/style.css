@@ -1,0 +1,27 @@
+* {
+    padding: 0;
+    margin: 0;
+}
+
+canvas {
+    position: absolute;
+    top: 66px;
+    right: 66px;
+    border: 1px solid black;
+}
+
+div#wrapper {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 1600px;
+    height: 900px;
+    background-color: blue;
+}
+
+section {
+    background-color: red;
+    width: 100%;
+    height: 100%;
+}
