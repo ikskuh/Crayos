@@ -1,6 +1,6 @@
 {
   description = "Crayos Global Game Jam 2024 Game";
-  inputs.nixpkgs.url = "nixpkgs/nixos-21.11";
+  inputs.nixpkgs.url = "nixpkgs/nixos-23.11";
 
   outputs = {
     self,
