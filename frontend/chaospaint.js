@@ -5,7 +5,16 @@ let ctx;
 const width = 1920;
 const height = 1080;
 
+const palette = [
+    "#FFF",
+    "#000",
+];
+
 function init() {
+    initPainter();
+}
+
+function initPainter() {
   canvas = document.getElementById("canvas");
   ctx = canvas.getContext("2d");
 
@@ -23,4 +32,12 @@ function init() {
   };
   resize();
   window.addEventListener("resize", resize);
+}
+
+function drawPalette() {
+    palCanvas = document.getElementById("canvas");
+    palCtx = canvas.getContext("2d");
+
+    const w = 122;
+    const h = 80;
 }

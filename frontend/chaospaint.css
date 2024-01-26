@@ -1,0 +1,46 @@
+
+
+section#painter {
+    background-image: url('mockup/painter 2.png');
+}
+
+#toolbox {
+    position: absolute;
+    left: 78px;
+    top: 233px;
+    width: 328px;
+    height: 737px;
+    background-color: rgba(255,255,0,0.5);
+}
+
+#toolbox button {
+    border: none;
+    width: 260px;
+    height: 104px;
+}
+
+#toolbox button#pencil {
+    position: absolute;
+    left: 32px;
+    top: 49px;
+    background-image: url('img/pencil.png');
+}
+
+#toolbox button#eraser {
+    position: absolute;
+    left: 32px;
+    top: 180px;
+    background-image: url('img/eraser.png');
+}
+
+#toolbox #palette {
+    left: 32px;
+    top: 328px;
+    background-color: pink;
+}
+
+canvas {
+    position: absolute;
+    left: 453px;
+    top: 233px;
+}
