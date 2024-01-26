@@ -10,10 +10,6 @@ const palette = [
     "#000",
 ];
 
-function init() {
-    initPainter();
-}
-
 function initPainter() {
   canvas = document.getElementById("canvas");
   ctx = canvas.getContext("2d");

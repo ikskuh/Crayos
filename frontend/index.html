@@ -3,7 +3,9 @@
   <head>
     <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="title.css" />
+    <link rel="stylesheet" href="lobby.css" />
     <script src="index.js"></script>
+    <script src="chaospaint.js"></script>
   </head>
 
   <body onload="init();">
@@ -13,13 +15,29 @@
             <button type="button" id="create">  </button>
             <input type="text" id="nickname">  </input>
         </section>
-        <section id="painter" style="display:none;">
+        <section id="lobby">
+            <input type="text" id="player1" value="Player 1"></input>
+            <input type="text" id="player2" value="Player 2"></input>
+            <input type="text" id="player3" value="Player 3"></input>
+            <input type="text" id="player4" value="Player 4"></input>
+            <button type="button" id="ready">  </button>
+        </section>
+        <section id="painter">
             <h1 style="font-size: 100px; font-family: Comic Sans MS;">Hallo Canvas</h1>
             <div id="toolbox">
                 <button id="pencil">Pencil</button>
                 <button id="eraser">Eraser</button>
             </div>
             <canvas id="canvas" width="1385" height="737"></canvas>
+        </section>
+        <section id="troll">
+
+        </section>
+        <section id="voting">
+            
+        </section>
+        <section id="winner">
+            
         </section>
     </div>
   </body>

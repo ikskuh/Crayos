@@ -1,0 +1,53 @@
+section#lobby {
+    background-image: url('mockup/lobby.png');
+}
+
+input#player1 {
+    position: absolute;
+    top: 314px;
+    left: 78px;
+    width: 553px;
+    height: 113px;
+
+    background-color: rgba(240,240,240,0)
+}
+
+input#player2 {
+    position: absolute;
+    top: 445px;
+    left: 78px;
+    width: 553px;
+    height: 113px;
+
+    background-color: rgba(240,240,240,0)
+}
+
+input#player3 {
+    position: absolute;
+    top: 576px;
+    left: 78px;
+    width: 553px;
+    height: 113px;
+
+    background-color: rgba(240,240,240,0)
+}
+
+input#player4 {
+    position: absolute;
+    top: 707px;
+    left: 78px;
+    width: 553px;
+    height: 113px;
+
+    background-color: rgba(240,240,240,0)
+}
+
+button#ready {
+    position: absolute;
+    top: 838px;
+    left: 78px;
+    width: 553px;
+    height: 113px;
+
+    background-color: rgba(240,240,240,0)
+}
