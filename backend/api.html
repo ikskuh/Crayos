@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>API</title>
+      <script type="text/javascript">
+        var conn;
+  
+        window.onload = function () {
+          if (window["WebSocket"]) {
+            conn = new WebSocket("ws://" + document.location.host + "/ws");
+            conn.onclose = function (evt) {
+              console.log("Connection closed.");
+            };
+            conn.onmessage = function (evt) {
+              console.log("Recieved: " + evt.data);
+            };
+          } else console.log("Your browser does not support WebSockets.");
+        };
+
+        function send(str) {
+          console.log("Sending:" + str);
+          conn.send(str);
+        }
+    </script>
+  </head>
+  <body>
+    <button onClick="send('asdf')">Button</button> 
+    <button onClick="send('asdf')">Button</button> 
+  </body>
+</html>

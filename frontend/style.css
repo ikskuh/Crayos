@@ -4,6 +4,7 @@
 }
 
 body {
+    background-color: #FFC567;
     user-select: none;
 }
 
@@ -14,7 +15,6 @@ div#wrapper {
     transform: translate(-50%, -50%);
     width: 1920px;
     height: 1080px;
-    background-color: blue;
 }
 
 section {
