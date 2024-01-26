@@ -174,7 +174,7 @@ type PlaceStickerCommand = struct {
 }
 
 type SetPaintingCommand struct {
-	Path interface{} // opaque frontend data
+	Path interface{} `json:"path"` // opaque frontend data
 }
 
 // Backend to Web:
@@ -210,7 +210,7 @@ type ChangeToolModifierEvent struct {
 }
 
 type PaintingChangedEvent struct {
-	Path interface{} // opaque frontend data
+	Path interface{} `json:"path"` // opaque frontend data
 }
 
 type PlayersChangedEvent struct {
