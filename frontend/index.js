@@ -1,5 +1,5 @@
 function init() {
-    initPainter();
+    //initPainter();
     document.getElementById("title").style.display = "flow";
 }
 
