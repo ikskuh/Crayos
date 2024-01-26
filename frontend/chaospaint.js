@@ -5,14 +5,7 @@ let ctx;
 const width = 1920;
 const height = 1080;
 
-const palette = [
-    "#FFF",
-    "#000",
-];
-
-function init() {
-    initPainter();
-}
+const palette = ["#FFF", "#000"];
 
 function initPainter() {
   canvas = document.getElementById("canvas");
@@ -21,7 +14,7 @@ function initPainter() {
   canvas.onmousemove = (e) => {
     ctx.beginPath();
     ctx.rect(e.offsetX, e.offsetY, 20, 20);
-    ctx.fillStyle = 'black;'
+    ctx.fillStyle = "black;";
     ctx.fill();
   };
 
@@ -35,9 +28,9 @@ function initPainter() {
 }
 
 function drawPalette() {
-    palCanvas = document.getElementById("canvas");
-    palCtx = canvas.getContext("2d");
+  palCanvas = document.getElementById("canvas");
+  palCtx = canvas.getContext("2d");
 
-    const w = 122;
-    const h = 80;
+  const w = 122;
+  const h = 80;
 }
