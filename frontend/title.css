@@ -1,0 +1,34 @@
+section#title {
+    background-image: url('mockup/title.png');
+}
+
+button#join {
+    position: absolute;
+    top: 666px;
+    left: 175px;
+    width: 395px;
+    height: 85px;
+
+    background-color: rgba(240,240,240,0)
+}
+
+button#create {
+    position: absolute;
+    top: 768px;
+    left: 175px;
+    width: 395px;
+    height: 85px;
+
+    background-color: rgba(240,240,240,0)
+}
+
+input#nickname {
+    position: absolute;
+    top: 666px;
+    left: 752px;
+    width: 993px;
+    height: 180px;
+    font-size: 150px;
+
+    background-color: rgba(240,240,240,0)
+}
