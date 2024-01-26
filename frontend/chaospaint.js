@@ -78,6 +78,9 @@ function drawCanvas() {
   const ctx = canvas.getContext("2d");
   // ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.drawImage(backgrounds[0], 0, 0, canvas.width, canvas.height);
+  ctx.lineWidth = lineWidth;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
   for (let i = 0; i < paths.length; i++) {
     const path = paths[i];
     ctx.beginPath();
@@ -86,7 +89,6 @@ function drawCanvas() {
       ctx.lineTo(path.points[j].x, path.points[j].y);
     }
     ctx.strokeStyle = path.color;
-    ctx.lineWidth = lineWidth;
     ctx.stroke();
   }
 }
