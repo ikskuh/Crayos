@@ -3,20 +3,13 @@
     margin: 0;
 }
 
-canvas {
-    position: absolute;
-    top: 66px;
-    right: 66px;
-    border: 1px solid black;
-}
-
 div#wrapper {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 1600px;
-    height: 900px;
+    width: 1920px;
+    height: 1080px;
     background-color: blue;
 }
 
@@ -24,4 +17,30 @@ section {
     background-color: red;
     width: 100%;
     height: 100%;
+}
+
+section#painter {
+    background-image: url('mockup/painter 2.png');
+}
+
+#toolbox {
+    position: absolute;
+    left: 78px;
+    top: 233px;
+    width: 328px;
+    height: 737px;
+    background-color: rgba(255,255,0,0.5);
+}
+
+#toolbox button {
+    width: 100px;
+    height: 50px;
+}
+
+canvas {
+    position: absolute;
+    left: 453px;
+    top: 233px;
+    /* background-color: rgba(255,255,200,0.5); */
+    /* border: 1px solid black; */
 }
