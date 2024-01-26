@@ -1,0 +1,219 @@
+package game
+
+import (
+	"encoding/json"
+	"errors"
+	"reflect"
+)
+
+const (
+	CREATE_SESSION_COMMAND_TAG     = "create-session-command"
+	JOIN_SESSION_COMMAND_TAG       = "join-session-command"
+	LEAVE_SESSION_COMMAND_TAG      = "leave-session-command"
+	USER_COMMAND_TAG               = "user-command"
+	VOTE_COMMAND_TAG               = "vote-command"
+	PLACE_STICKER_COMMAND_TAG      = "place-sticker-command"
+	SET_PAINTING_COMMAND_TAG       = "set-painting-command"
+	ENTER_SESSION_EVENT_TAG        = "enter-session-event"
+	KICKED_EVENT_TAG               = "kicked-event"
+	CHANGE_GAME_VIEW_EVENT_TAG     = "change-game-view-event"
+	CHANGE_TOOL_MODIFIER_EVENT_TAG = "change-tool-modifier-event"
+	PAINTING_CHANGED_EVENT_TAG     = "painting-changed-event"
+	JOIN_SESSION_FAILED_EVENT_TAG  = "join-session-failed-event"
+	PLAYERS_CHANGED_EVENT_TAG      = "players-changed-event"
+)
+
+var JSON_TYPE_ID = map[reflect.Type]string{
+
+	reflect.TypeOf(&CreateSessionCommand{}):    CREATE_SESSION_COMMAND_TAG,
+	reflect.TypeOf(&JoinSessionCommand{}):      JOIN_SESSION_COMMAND_TAG,
+	reflect.TypeOf(&LeaveSessionCommand{}):     LEAVE_SESSION_COMMAND_TAG,
+	reflect.TypeOf(&UserCommand{}):             USER_COMMAND_TAG,
+	reflect.TypeOf(&VoteCommand{}):             VOTE_COMMAND_TAG,
+	reflect.TypeOf(&PlaceStickerCommand{}):     PLACE_STICKER_COMMAND_TAG,
+	reflect.TypeOf(&SetPaintingCommand{}):      SET_PAINTING_COMMAND_TAG,
+	reflect.TypeOf(&EnterSessionEvent{}):       ENTER_SESSION_EVENT_TAG,
+	reflect.TypeOf(&KickedEvent{}):             KICKED_EVENT_TAG,
+	reflect.TypeOf(&ChangeGameViewEvent{}):     CHANGE_GAME_VIEW_EVENT_TAG,
+	reflect.TypeOf(&ChangeToolModifierEvent{}): CHANGE_TOOL_MODIFIER_EVENT_TAG,
+	reflect.TypeOf(&PaintingChangedEvent{}):    PAINTING_CHANGED_EVENT_TAG,
+	reflect.TypeOf(&JoinSessionFailedEvent{}):  JOIN_SESSION_FAILED_EVENT_TAG,
+	reflect.TypeOf(&PlayersChangedEvent{}):     PLAYERS_CHANGED_EVENT_TAG,
+}
+
+const (
+	GAMEVIEW_TITLE                 = "title"
+	GAMEVIEW_LOBBY                 = "lobby"
+	GAMEVIEW_PROMPTSELECTION       = "promptselection"
+	GAMEVIEW_ARTSTUDIO_EMPTY       = "artstudio-empty"
+	GAMEVIEW_ARTSTUDIO_ACTIVE      = "artstudio-active"
+	GAMEVIEW_EXHIBITION            = "exhibition"
+	GAMEVIEW_EXHIBITION_VOTING     = "exhibition-voting"
+	GAMEVIEW_EXHIBITION_STICKERING = "exhibition-stickering"
+	GAMEVIEW_SHOWCASE              = "showcase"
+	GAMEVIEW_GALLERY               = "gallery"
+)
+
+type Message interface {
+}
+
+func SerializeMessage(msg Message) ([]byte, error) {
+
+	temp, err := json.Marshal(msg)
+	if err != nil {
+		return nil, err
+	}
+
+	var dummy map[string]interface{}
+
+	err = json.Unmarshal(temp, &dummy)
+	if err != nil {
+		return nil, err
+	}
+
+	dummy["type"] = JSON_TYPE_ID[reflect.TypeOf(msg)]
+
+	return json.Marshal(dummy)
+}
+
+func DeserializeMessage(data []byte) (Message, error) {
+
+	var raw_map map[string]interface{} // must be an object
+
+	err := json.Unmarshal(data, &raw_map)
+	if err != nil {
+		return nil, err
+	}
+
+	type_tag, ok := raw_map["type"]
+	if !ok {
+		return nil, errors.New("Invalid json")
+	}
+
+	var out interface{}
+
+	switch type_tag {
+	case CREATE_SESSION_COMMAND_TAG:
+		out = &CreateSessionCommand{}
+	case JOIN_SESSION_COMMAND_TAG:
+		out = &JoinSessionCommand{}
+	case LEAVE_SESSION_COMMAND_TAG:
+		out = &LeaveSessionCommand{}
+	case USER_COMMAND_TAG:
+		out = &UserCommand{}
+	case VOTE_COMMAND_TAG:
+		out = &VoteCommand{}
+	case PLACE_STICKER_COMMAND_TAG:
+		out = &PlaceStickerCommand{}
+	case SET_PAINTING_COMMAND_TAG:
+		out = &SetPaintingCommand{}
+	case ENTER_SESSION_EVENT_TAG:
+		out = &EnterSessionEvent{}
+	case KICKED_EVENT_TAG:
+		out = &KickedEvent{}
+	case CHANGE_GAME_VIEW_EVENT_TAG:
+		out = &ChangeGameViewEvent{}
+	case CHANGE_TOOL_MODIFIER_EVENT_TAG:
+		out = &ChangeToolModifierEvent{}
+	case PAINTING_CHANGED_EVENT_TAG:
+		out = &PaintingChangedEvent{}
+	case JOIN_SESSION_FAILED_EVENT_TAG:
+		out = &JoinSessionFailedEvent{}
+	case PLAYERS_CHANGED_EVENT_TAG:
+		out = &PlayersChangedEvent{}
+	default:
+		return nil, errors.New("Invalid type")
+	}
+
+	err = json.Unmarshal(data, &out)
+	if err != nil {
+		return nil, err
+	}
+
+	return out, nil
+}
+
+// Data Types:
+
+type Sticker struct {
+	ID string  `json:"id"`
+	X  float32 `json:"x"`
+	Y  float32 `json:"y"`
+}
+
+// Web to Backend:
+
+type CreateSessionCommand struct {
+	NickName string `json:"nickname"`
+}
+
+type JoinSessionCommand struct {
+	NickName  string `json:"nickname"`
+	SessionId string `json:"session"`
+}
+
+type LeaveSessionCommand struct {
+}
+
+type UserCommand = struct {
+	//
+	// - start game (in lobby)
+	// - continue (in showcase)
+	//
+	Action string `json:"action"`
+}
+
+type VoteCommand = struct {
+	Option string `json:"vote"`
+}
+
+type PlaceStickerCommand = struct {
+	Sticker string  `json:"sticker"`
+	X       float32 `json:"x"`
+	Y       float32 `json:"y"`
+}
+
+type SetPaintingCommand struct {
+	Path interface{} // opaque frontend data
+}
+
+// Backend to Web:
+
+type EnterSessionEvent struct {
+	SessionId string `json:"session"`
+}
+
+type JoinSessionFailedEvent struct {
+	Reason string `json:"reason"`
+}
+
+type KickedEvent struct {
+	Reason string `json:"reason"`
+}
+
+type ChangeGameViewEvent struct {
+	ViewID string `json:"view"` // GAMEVIEW_
+
+	Painting         interface{} `json:"painting"`
+	PaintingPrompt   *string     `json:"painting-prompt"`
+	PaintingBackdrop *string     `json:"painting-backdrop"`
+	PaintingStickers []Sticker   `json:"painting-stickers"`
+
+	AvailableStickers []string `json:"available-stickers"`
+
+	VotePrompt  *string  `json:"vote-prompt"`
+	VoteOptions []string `json:"vote-options"`
+}
+
+type ChangeToolModifierEvent struct {
+	Modifier string `json:"modifier"`
+}
+
+type PaintingChangedEvent struct {
+	Path interface{} // opaque frontend data
+}
+
+type PlayersChangedEvent struct {
+	Players []string `json:"players"`
+	Joined  *string  `json:"new-player"`
+}
