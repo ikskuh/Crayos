@@ -34,9 +34,8 @@ section#painter {
 }
 
 #toolbox #palette {
-    left: 32px;
-    top: 328px;
-    background-color: pink;
+    left: 30px;
+    top: 326px;
 }
 
 canvas {
