@@ -13,6 +13,10 @@ import (
 
 var addr = flag.String("addr", ":8080", "http service address")
 
+func serveApi(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "api.html")
+}
+
 func serveHome(w http.ResponseWriter, r *http.Request) {
 	log.Println(r.URL)
 	if r.URL.Path != "/" {
@@ -45,6 +49,7 @@ func acceptPlayerWebsocket(w http.ResponseWriter, r *http.Request) {
 func main() {
 
 	http.HandleFunc("/", serveHome)
+ 	http.HandleFunc("/api", serveApi)
 	http.HandleFunc("/ws", acceptPlayerWebsocket)
 
 	server := &http.Server{
