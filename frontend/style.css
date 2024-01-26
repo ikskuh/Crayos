@@ -3,6 +3,10 @@
     margin: 0;
 }
 
+body {
+    user-select: none;
+}
+
 div#wrapper {
     position: absolute;
     top: 50%;
