@@ -87,20 +87,7 @@ func (session *Session) AddPlayer(new *Player) {
 		SessionId: session.Id,
 	}
 
-	{
-		nicknames := make([]string, len(session.Players))
-
-		i := 0
-		for k := range session.Players {
-			nicknames[i] = k.NickName
-			i++
-		}
-
-		session.Broadcast(&PlayersChangedEvent{
-			Players:      nicknames,
-			JoinedPlayer: &new.NickName,
-		})
-	}
+	session.BroadcastPlayers(new, nil)
 
 	new.SendChan <- &ChangeGameViewEvent{
 		View: GAME_VIEW_LOBBY,
@@ -114,6 +101,31 @@ func (session *Session) Broadcast(msg Message) {
 	}
 }
 
+func (session *Session) BroadcastPlayers(added_player *Player, removed_player *Player) {
+	nicknames := make([]string, len(session.Players))
+
+	i := 0
+	for k := range session.Players {
+		nicknames[i] = k.NickName
+		i++
+	}
+
+	evt := PlayersChangedEvent{
+		Players:       nicknames,
+		AddedPlayer:   nil,
+		RemovedPlayer: nil,
+	}
+
+	if added_player != nil {
+		evt.AddedPlayer = &added_player.NickName
+	}
+	if removed_player != nil {
+		evt.RemovedPlayer = &removed_player.NickName
+	}
+
+	session.Broadcast(&evt)
+}
+
 func (session *Session) PumpEvents() *PlayerMessage {
 	for len(session.Players) > 0 {
 		select {
@@ -125,11 +137,13 @@ func (session *Session) PumpEvents() *PlayerMessage {
 
 		case old := <-session.LeaveChan:
 
-			// TODO(fqu): Check if player is active player in the session,
-			// so we can skip
+			// TODO(fqu): Handle dropping players out of active session!
+			// In the Lobby, it's totally fine to join/leave all the time
 
 			log.Println("Player leaves", old)
 			delete(session.Players, old)
+
+			session.BroadcastPlayers(nil, old)
 
 			// case <- ticker.C:
 			// 	player.ws.SetWriteDeadline(time.Now().Add(writeWait))
@@ -147,6 +161,108 @@ func (session *Session) Run() {
 
 	for len(session.Players) > 0 {
 
+		// show lobby
+		var startGame = false
+		for startGame {
+			pmsg := session.PumpEvents()
+			if pmsg == nil {
+				return
+			}
+
+			switch msg := pmsg.Message.(type) {
+			case *UserCommand:
+				startGame = (msg.Action == USER_ACTION_START_GAME) && len(session.Players) >= 2
+			}
+		}
+
+		for current_player := range session.Players {
+
+			// determine painter
+			_ = current_player
+
+			// change view for all, clear current painting
+			var painting_time_not_up = false
+			for painting_time_not_up {
+				pmsg := session.PumpEvents()
+				if pmsg == nil {
+					return
+				}
+
+				switch msg := pmsg.Message.(type) {
+				// case *Timeout:
+				// 	break
+				default:
+					_ = msg
+				}
+
+			}
+
+			// enter sticker stage
+			var stickers_not_placed = false
+			for stickers_not_placed {
+				pmsg := session.PumpEvents()
+				if pmsg == nil {
+					return
+				}
+
+				switch msg := pmsg.Message.(type) {
+				//case Timeout:
+				//	break
+				default:
+					_ = msg
+				}
+
+			}
+
+			// show picture/showcase
+			for painting_time_not_up {
+				pmsg := session.PumpEvents()
+				if pmsg == nil {
+					return
+				}
+
+				switch msg := pmsg.Message.(type) {
+				// case Timeout:
+				// 	break
+				default:
+					_ = msg
+				}
+
+			}
+		}
+
+		// show art gallery with voting
+		var gallery_time_not_up_and_players_not_finished = false
+		for gallery_time_not_up_and_players_not_finished {
+			pmsg := session.PumpEvents()
+			if pmsg == nil {
+				return
+			}
+
+			switch msg := pmsg.Message.(type) {
+			// case Timeout:
+			//	break
+			default:
+				_ = msg
+			}
+		}
+
+		// higjlight winner
+
+		// show art gallery with winner
+		for gallery_time_not_up_and_players_not_finished {
+			pmsg := session.PumpEvents()
+			if pmsg == nil {
+				return
+			}
+
+			switch msg := pmsg.Message.(type) {
+			// case Timeout:
+			//	break
+			default:
+				_ = msg
+			}
+		}
 		pmsg := session.PumpEvents()
 		if pmsg == nil {
 			return

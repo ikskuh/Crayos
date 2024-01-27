@@ -73,4 +73,32 @@
     left: 453px;
     top: 233px;
     cursor: none;
+    transform-origin: center;
+    transition: all 1s;
+}
+
+#canvas.flip {
+    transform: perspective(2000px) rotateY(180deg);
+}
+
+#canvas.drunk {
+    animation: drunk 4s ease-in-out infinite;
+}
+
+@keyframes drunk {
+    0% {
+        transform: translate(0px, 0px);
+    }
+    25% {
+        transform: translate(-50px, -25px) rotate(5deg);
+    }
+    50% {
+        transform: translate(0px, 0px);
+    }
+    75% {
+        transform: translate(50px, -25px) rotate(-5deg);
+    }
+    100% {
+        transform: translate(0px, 0px);
+    }
 }

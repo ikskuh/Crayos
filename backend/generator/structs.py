@@ -96,12 +96,17 @@ class GameView(Enum):
     showcase = "showcase"
     gallery = "gallery"
 
+@api_enum
+class Effect(Enum):
+    flashlight = "flashlight"
+    drunk = "drunk"
+    flip = "flip"
+    swap_tool = "swap_tool"
+    lock_pencil = "lock_pencil"
 
 @api_enum
 class UserAction(Enum):
     startGame = "startGame"
-    readyToStartGame = "readyToStartGame"
-    notReadyToStartGame = "notReadyToStartGame"
 
 
 @api_command
@@ -122,7 +127,7 @@ class LeaveSessionCommand:
 
 @api_command
 class UserCommand:
-    action: str 
+    action: UserAction
 
 @api_command
 class VoteCommand:
@@ -154,34 +159,34 @@ class KickedEvent:
 
 @api_event
 class ChangeGameViewEvent:
-    view: GameView
+    view: GameView # what view the frontend should show
 
-    painting: Any 
-    paintingPrompt: None | str
-    paintingBackdrop: None | str
-    paintingStickers: None | list[Sticker]
+    painting: Any # any view with the painting: the current painting data
+    paintingPrompt: None | str # any view with the painting: shows the current drawing prompt
+    paintingBackdrop: None | str # any view with the painting: the ID of the backdrop 
+    paintingStickers: None | list[Sticker] # any view with the painting: the current list of stickers that should be shown
 
-    availableStickers: None | list[str]
+    availableStickers: None | list[str] # exhibitionStickering: list of all available 
 
-    # VotePrompt  *string  `json:"vote-prompt"`
-    # VoteOptions []string `json:"vote-options"`
+    votePrompt: None | str # exhibitionVoting: the prompt that is shown when 
+    voteOptions: None | list[str] # exhibitionVoting: list of options that the player can vote for.
     pass 
 
 @api_event
 class ChangeToolModifierEvent:
-    modifier: str # TODO(fqu): Add enum here
+    modifier: Effect
 
 @api_event
 class PaintingChangedEvent:
-    path: Any
+    path: Any # the new painting
 
 @api_event
 class PlayersChangedEvent:
-    players: list[str] 
-    joinedPlayer: None | str
-    pass 
+    players: list[str] # new list of present player
+    addedPlayer: None | str # player that joined
+    removedPlayer: None | str # player that left
 
-
+###############################################################################
 
 def generate_go_file(file: io.IOBase):
 
@@ -526,6 +531,8 @@ table#status tr:nth-child(2) td {
                     pass
                 elif hint == Any:
                     pass 
+                elif issubclass(hint, Enum):
+                    pass  # enums are strings
                 else:
                     print("Unsupported command type:", hint)
                     exit(1)
@@ -618,11 +625,20 @@ table#status tr:nth-child(2) td {
             )
 
             for field, hint in typing.get_type_hints(atype.pytype).items():
+                lineout("<span>", field, ":</span>")
+
                 js_type = "text"
                 if hint == float:
                     js_type = "number"
 
-                lineout("<span>", field, ":</span>")
+                elif issubclass(hint, Enum):
+                    lineout('<select id="', f"{atype.name}-arg-{field}" ,'">')
+                    for item in hint:
+                        lineout('<option value="',item.value,'">',item.name,"</option>")
+
+                    lineout("</select>")
+                    continue
+
                 lineout('<input id="', f"{atype.name}-arg-{field}" ,'" type="',js_type,'">')
 
             lineout("</div>")
