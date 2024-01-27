@@ -57,7 +57,7 @@
           <p>Time left:<br /><span id="painter-timer-number"></span></p>
         </div>
         <div class="prompt">
-          <p id="painter-prompt-text">T-Rex trying to paint its toenails</p>
+          <p id="painter-prompt-text"></p>
         </div>
         <div class="toolbox">
           <div id="painting-tools">
@@ -65,22 +65,20 @@
             <button id="eraser" onclick="selectTool('eraser')" />
             <canvas id="palette" width="264" height="360"></canvas>
           </div>
-          <div id="chaos-effects">
-            <button id="drunk" onclick="activateChaosEffect('drunk')" />
-            <button id="flashlight" onclick="activateChaosEffect('flashlight')" />
-            <button id="flip" onclick="activateChaosEffect('flip')" />
-            <button id="lock_pencil" onclick="activateChaosEffect('lock_pencil')" />
-            <button id="swap_tool" onclick="activateChaosEffect('swap_tool')" />
-          </div>
           <div id="voting-buttons">
-            <button id="vote0" onclick="vote(0)" />
-            <button id="vote1" onclick="vote(1)" />
-            <button id="vote2" onclick="vote(2)" />
-            <button id="vote3" onclick="vote(3)" />
-            <button id="vote4" onclick="vote(4)" />
+            <button id="vote0" />
+            <button id="vote1" />
+            <button id="vote2" />
+            <button id="vote3" />
+            <button id="vote4" />
           </div>
         </div>
         <canvas id="painter-canvas" class="drawing-canvas" width="1385" height="737"></canvas>
+        <div id="prompt-selection">
+          <button id="prompt0" onclick="selectPrompt(0)" /><br />
+          <button id="prompt1" onclick="selectPrompt(1)" /><br />
+          <button id="prompt2" onclick="selectPrompt(2)" />
+        </div>
       </section>
       <section id="gallery">
             <canvas id="gallery1" width="1385" height="737"></canvas>
