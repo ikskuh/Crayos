@@ -118,6 +118,7 @@ const GameView = {
 
 // Enum:
 const Effect = {
+    none : 'none',
     flashlight : 'flashlight',
     drunk : 'drunk',
     flip : 'flip',
@@ -457,6 +458,7 @@ function deserialize(msg)
         }
         log('event: ChangeToolModifierEvent');
         log('  modifier: ', JSON.stringify(obj.modifier))
+        log('  duration: ', JSON.stringify(obj.duration))
           log();
         break;
     case 'painting-changed-event':

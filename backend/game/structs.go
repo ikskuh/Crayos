@@ -120,6 +120,7 @@ var ALL_GAME_VIEW_ITEMS = []GameView{
 
 type Effect string
 const (
+	EFFECT_NONE Effect = "none"
 	EFFECT_FLASHLIGHT Effect = "flashlight"
 	EFFECT_DRUNK Effect = "drunk"
 	EFFECT_FLIP Effect = "flip"
@@ -127,6 +128,7 @@ const (
 	EFFECT_LOCK_PENCIL Effect = "lock_pencil"
 )
 var ALL_EFFECT_ITEMS = []Effect{
+	"none",
 	"flashlight",
 	"drunk",
 	"flip",
@@ -225,6 +227,7 @@ type TimerChangedEvent struct {
 
 type ChangeToolModifierEvent struct {
 	Modifier Effect `json:"modifier"`
+	Duration int `json:"duration"`
 }
 
 type PaintingChangedEvent struct {

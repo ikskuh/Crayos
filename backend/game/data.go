@@ -14,6 +14,9 @@ const (
 
 	/// Time of a "trolling" time slice
 	GAME_TROLL_EFFECT_COOLDOWN_S = 10
+
+	/// Time how long a "trol
+	GAME_TROLL_EFFECT_DURATION_MS = 5000
 )
 
 const (

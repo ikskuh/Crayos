@@ -236,6 +236,16 @@ type gameRoundResult struct {
 	totalPoints int
 }
 
+func (evt *ChangeGameViewEvent) RemoveVote() {
+	evt.VotePrompt = ""
+	evt.VoteOptions = []string{}
+}
+
+func (evt *ChangeGameViewEvent) SetVote(prompt string, options []string) {
+	evt.VotePrompt = prompt
+	evt.VoteOptions = options
+}
+
 func (session *Session) Run() {
 	random_source := rand.New(rand.NewSource(time.Now().UnixNano()))
 
@@ -334,9 +344,6 @@ func (session *Session) Run() {
 					Prompt:   "",
 					Stickers: []Sticker{},
 				},
-
-				VotePrompt:  VOTE_PROMPT_PROMPT,
-				VoteOptions: prompts,
 			}
 			painter_view := &ChangeGameViewEvent{
 				View: GAME_VIEW_ARTSTUDIO_GENERIC,
@@ -347,9 +354,6 @@ func (session *Session) Run() {
 					Prompt:   "",
 					Stickers: []Sticker{},
 				},
-
-				VotePrompt:  "",
-				VoteOptions: []string{},
 			}
 
 			// local function to update the roles:
@@ -371,12 +375,15 @@ func (session *Session) Run() {
 				handler(painter_view)
 			}
 
+			troll_view.SetVote(VOTE_PROMPT_PROMPT, prompts)
+			painter_view.RemoveVote()
+
 			// Now update the views for the players
 			updateViews()
 
 			// Prepare message for trolls to go into "wait for others" state
 			troll_view.View = GAME_VIEW_ARTSTUDIO_GENERIC
-			troll_view.VoteOptions = []string{}
+			troll_view.RemoveVote()
 
 			// Phase 1: Trolls vote for a prompt
 			log.Println(session.Id, "Prompt voting for trolls starts")
@@ -386,7 +393,7 @@ func (session *Session) Run() {
 
 				votes := make([]float32, len(prompts))
 
-				for !prompt_voted.allTrolls() {
+				for !prompt_voted.allTrollsSet() {
 					pmsg := session.PumpEvents(no_timeout)
 					if pmsg == nil {
 						return
@@ -440,7 +447,7 @@ func (session *Session) Run() {
 			}
 
 			changeBoth(func(view *ChangeGameViewEvent) {
-				view.VotePrompt = ""
+				view.RemoveVote()
 				view.Painting.Prompt = selected_painting_prompt
 			})
 
@@ -492,8 +499,7 @@ func (session *Session) Run() {
 
 						vote_effect_view := *troll_view
 
-						vote_effect_view.VotePrompt = VOTE_PROMPT_EFFECT
-						vote_effect_view.VoteOptions = *(*[]string)(unsafe.Pointer(&ALL_EFFECT_ITEMS))
+						vote_effect_view.SetVote(VOTE_PROMPT_EFFECT, *(*[]string)(unsafe.Pointer(&ALL_EFFECT_ITEMS)))
 
 						trolls[0].Send(&vote_effect_view) // troll view is "generic empty" here
 						troll_did_effect = false
@@ -518,8 +524,9 @@ func (session *Session) Run() {
 					case *VoteCommand:
 						if pmsg.Player == trolls[0] && !troll_did_effect {
 							// TODO(fqu): validate that msg.Option is actually a legal vote!
-							active_painter.Send(&ChangeToolModifierEvent{
+							session.Broadcast(&ChangeToolModifierEvent{
 								Modifier: Effect(msg.Option),
+								Duration: GAME_TROLL_EFFECT_DURATION_MS,
 							})
 							trolls[0].Send(troll_view) // reset troll to regular view, hide the vote options
 							troll_did_effect = true
@@ -546,9 +553,22 @@ func (session *Session) Run() {
 				}
 			}
 
+			updateViews()
+
+			// Disable all active effects
+			session.Broadcast(&ChangeToolModifierEvent{
+				Modifier: EFFECT_NONE,
+				Duration: 0,
+			})
+
 			// Phase 3:
 			{
 				log.Println(session.Id, "Trolls now select stickers")
+
+				// TODO(fqu): Set stickering mode here
+
+				updateViews()
+
 				for false {
 					//
 				}
@@ -569,11 +589,12 @@ func (session *Session) Run() {
 
 				changeBoth(func(view *ChangeGameViewEvent) {
 					view.View = GAME_VIEW_ARTSTUDIO_GENERIC
-					view.VotePrompt = VOTE_PROMPT_SHOWCASE
-					view.VoteOptions = []string{}
+					view.SetVote(VOTE_PROMPT_SHOWCASE, []string{"eraser"})
 				})
 
-				for timeLeft && players_ready.any(false) {
+				updateViews()
+
+				for timeLeft && !players_ready.allSet() {
 					pmsg := session.PumpEvents(round_end_timer.C)
 					if pmsg == nil {
 						return
@@ -586,10 +607,12 @@ func (session *Session) Run() {
 							players_ready.add(pmsg.Player)
 						}
 
+					case *VoteCommand:
+						players_ready.add(pmsg.Player)
+
 					case *NotifyTimeout:
 						timeLeft = false
 					}
-					broadcastPlayerReadyState(session, players_ready)
 				}
 			}
 		} // end of inner loop over players
@@ -735,15 +758,15 @@ func (set *playerSet) any(predicate bool) bool {
 	return false
 }
 
-func (set *playerSet) all() bool {
+func (set *playerSet) allSet() bool {
 	return !set.any(false)
 }
 
-func (set *playerSet) none() bool {
+func (set *playerSet) noneSet() bool {
 	return !set.any(true)
 }
 
-func (set *playerSet) allTrolls() bool {
+func (set *playerSet) allTrollsSet() bool {
 	for _, item := range set.items {
 		if item.role == ROLE_TROLL && !item.value {
 			return false
@@ -752,7 +775,7 @@ func (set *playerSet) allTrolls() bool {
 	return true
 }
 
-func (set *playerSet) painter() bool {
+func (set *playerSet) painterSet() bool {
 	for _, item := range set.items {
 		if item.role == ROLE_PAINTER {
 			return item.value

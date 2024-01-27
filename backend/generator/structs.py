@@ -102,6 +102,7 @@ class GameView(Enum):
 
 @api_enum
 class Effect(Enum):
+    none = "none"
     flashlight = "flashlight"
     drunk = "drunk"
     flip = "flip"
@@ -195,6 +196,7 @@ class TimerChangedEvent:
 @api_event
 class ChangeToolModifierEvent:
     modifier: Effect
+    duration: int # milliseconds
 
 @api_event
 class PaintingChangedEvent:

@@ -35,6 +35,7 @@ const GameView = {
 
 // Enum:
 const Effect = {
+    none : 'none',
     flashlight : 'flashlight',
     drunk : 'drunk',
     flip : 'flip',
