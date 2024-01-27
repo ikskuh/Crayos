@@ -207,11 +207,9 @@ func (session *Session) Run() {
 	for len(session.Players) > 0 {
 
 		// show lobby
-		// startGame := false
-		// playersReady := false
+		playersReady := false
 		playersReadyMap := make(map[*Player]bool)
-		// len(session.Players) < 2 && !playersReady && !startGame
-		for true {
+		for len(session.Players) < 2 && !playersReady {
 			pmsg := session.PumpEvents(no_timeout)
 			if pmsg == nil {
 				return
@@ -225,8 +223,21 @@ func (session *Session) Run() {
 				case USER_ACTION_SET_NOT_READY:
 					playersReadyMap[pmsg.Player] = false
 				}
-				broadcastPlayerReadyState(session, playersReadyMap)
+			case *CreateSessionCommand:
+				playersReadyMap[pmsg.Player] = false
+			case *NotifyPlayerJoined:
+				playersReadyMap[pmsg.Player] = false
+			case *NotifyPlayerLeft:
+				delete(playersReadyMap, pmsg.Player)
 			}
+			broadcastPlayerReadyState(session, playersReadyMap)
+
+			acc := true
+			for _, b := range playersReadyMap {
+				acc = acc && b
+			}
+			playersReady = acc
+
 		}
 
 		for current_player := range session.Players {
