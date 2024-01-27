@@ -445,6 +445,7 @@ func (session *Session) Run() {
 		{
 			log.Println(session.Id, "Showcase the winner")
 
+			// TODO(philippwendel) Setup NotifyTimeout
 			timeLeft := true
 			players_ready := createPlayerSetFromMap(session.Players, nil)
 			for timeLeft && players_ready.any(false) {
