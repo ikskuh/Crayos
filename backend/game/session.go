@@ -187,6 +187,17 @@ func (session *Session) PumpEvents(timeout chan time.Time) *PlayerMessage {
 	return nil
 }
 
+func broadcastPlayerReadyState(s *Session, m map[*Player]bool) {
+	log.Println("Sending PlayerReadyState")
+	readyMap := make(map[string]bool)
+	for p, b := range m {
+		readyMap[p.NickName] = b
+	}
+	s.Broadcast(&PlayerReadyChangedEvent{
+		Players: readyMap,
+	})
+}
+
 func (session *Session) Run() {
 	log.Println("Starting ", session.Id, " opened")
 	defer log.Println("Session ", session.Id, " closed")
@@ -196,8 +207,9 @@ func (session *Session) Run() {
 	for len(session.Players) > 0 {
 
 		// show lobby
-		var startGame = false
-		for startGame {
+		playersReady := false
+		playersReadyMap := make(map[*Player]bool)
+		for len(session.Players) < 2 || !playersReady {
 			pmsg := session.PumpEvents(no_timeout)
 			if pmsg == nil {
 				return
@@ -205,8 +217,27 @@ func (session *Session) Run() {
 
 			switch msg := pmsg.Message.(type) {
 			case *UserCommand:
-				startGame = (msg.Action == USER_ACTION_SET_READY) && len(session.Players) >= 2
+				switch msg.Action {
+				case USER_ACTION_SET_READY:
+					playersReadyMap[pmsg.Player] = true
+				case USER_ACTION_SET_NOT_READY:
+					playersReadyMap[pmsg.Player] = false
+				}
+			case *CreateSessionCommand:
+				playersReadyMap[pmsg.Player] = false
+			case *NotifyPlayerJoined:
+				playersReadyMap[pmsg.Player] = false
+			case *NotifyPlayerLeft:
+				delete(playersReadyMap, pmsg.Player)
 			}
+			broadcastPlayerReadyState(session, playersReadyMap)
+
+			acc := true
+			for _, b := range playersReadyMap {
+				acc = acc && b
+			}
+			playersReady = acc
+
 		}
 
 		for current_player := range session.Players {

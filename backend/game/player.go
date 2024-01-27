@@ -101,7 +101,6 @@ func (player *Player) readPump() {
 			log.Println("failed to read message from client: ", err)
 			return
 		}
-
 		if player.Session != nil {
 			log.Println("Forward message to session ", msg)
 			player.Session.InboundDataChan <- PlayerMessage{
