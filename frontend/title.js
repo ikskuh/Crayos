@@ -1,11 +1,6 @@
 function createGame() {
     localPlayer = document.getElementById("nicknameInput").value;
-    socket.send(JSON.stringify({
-        type: "create-session-command",
-        nickname: localPlayer
-    }));
-
-    
+    sendCreateSessionCommand(localPlayer);
 }
 
 function joinGame() {
@@ -13,11 +8,7 @@ function joinGame() {
     let urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has("session")) {
         sessionID = urlParams.get("session");
-        socket.send(JSON.stringify({
-            type: "join-session-command",
-            nickname: localPlayer,
-            sessionid: sessionID
-        }));
+        sendJoinSessionCommand(localPlayer, sessionID);
     }
     else {
         setView("link_required");

@@ -4,7 +4,7 @@ const Open = 1;
 let socket;
 let sessionID = NoSession;
 
-let serverSideDisconnect = false;   // If this is true the client won't try to reconnect
+let serverSideDisconnect = false;   
 
 let players = ["", "", "", ""];
 let localPlayer = "nickname";

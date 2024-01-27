@@ -1,0 +1,23 @@
+canvas#winner_canvas1 {
+    position: absolute;
+    top: 104px;
+    left: 222px;
+}
+
+canvas#winner_canvas2 {
+    position: absolute;
+    top: 104px;
+    left: 1006px;
+}
+
+canvas#winner_canvas3 {
+    position: absolute;
+    top: 519px;
+    left: 222px;
+}
+
+canvas#winner_canvas4 {
+    position: absolute;
+    top: 519px;
+    left: 1006px;
+}
