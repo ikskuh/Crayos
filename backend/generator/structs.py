@@ -92,7 +92,8 @@ class GameView(Enum):
     artstudioGeneric = "artstudio-generic" # (A) (generic voting or empty)
     artstudioActive = "artstudio-active" # (C)
     artstudioSticker = "artstudio-sticker" # (A) + Sticker Mode
-    gallery = "gallery" 
+    gallery = "gallery"
+    podium = "podium" # Show winner 
 
 @api_enum
 class Effect(Enum):
