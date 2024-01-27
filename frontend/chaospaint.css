@@ -90,7 +90,7 @@
     transform: perspective(2000px) rotateY(0deg);
     transition: all 1s;
 }
-.drawing-canvas#painter-canvas {
+.drawing-canvas.input-enabled {
     cursor: none;
 }
 .drawing-canvas.flip {

@@ -35,11 +35,54 @@ let selectedBackground = 0;
 
 let chaosEffect = null;
 
-function initPainter() {
-  painterCanvas = document.getElementById("painter-canvas");
-  painterTimerNumberElem = document.getElementById("painter-timer-number");
+function setPaintingToolsEnabled(enabled) {
+  document.getElementById('painting-tools').style.display = enabled ? "block" : "none";
+  setInputEnabled(enabled);
+}
 
-  painterCanvas.onmousedown = (e) => {
+function setChaosEffectsEnabled(enabled) {
+  document.getElementById('chaos-effects').style.display = enabled ? "block" : "none";
+}
+
+function setRatingButtonsEnabled(enabled) {
+  document.getElementById('rating-buttons').style.display = enabled ? "block" : "none";
+}
+
+function onMouseDown(e) {
+  mx = e.offsetX;
+  my = e.offsetY;
+  const point = { x: mx, y: my };
+  if (selectedTool == TOOL_PENCIL) {
+    pencilBeginPath(point);
+  } else if (selectedTool == TOOL_ERASER) {
+    eraserDeleteAt(point);
+  }
+  drawPainterCanvas();
+}
+
+function onMouseMove(e) {
+  mx = e.offsetX;
+  my = e.offsetY;
+  if (e.buttons & 1 || chaosEffect == Effect.lock_pencil) {
+    const point = { x: mx, y: my };
+    if (selectedTool == TOOL_PENCIL) {
+      pencilContinuePath(point);
+    } else if (selectedTool == TOOL_ERASER) {
+      eraserDeleteAt(point);
+    }
+  }
+  drawPainterCanvas();
+}
+
+function onMouseUp(e) {
+  mx = -1000;
+  my = -1000;
+  drawPainterCanvas();
+  console.log(JSON.stringify(painterPaths));
+}
+
+function onMouseEnter(e) {
+  if (e.buttons & 1) {
     mx = e.offsetX;
     my = e.offsetY;
     const point = { x: mx, y: my };
@@ -48,42 +91,40 @@ function initPainter() {
     } else if (selectedTool == TOOL_ERASER) {
       eraserDeleteAt(point);
     }
-    drawPainterCanvas();
-  };
-  painterCanvas.onmousemove = (e) => {
-    mx = e.offsetX;
-    my = e.offsetY;
-    if (e.buttons & 1 || chaosEffect == Effect.lock_pencil) {
-      const point = { x: mx, y: my };
-      if (selectedTool == TOOL_PENCIL) {
-        pencilContinuePath(point);
-      } else if (selectedTool == TOOL_ERASER) {
-        eraserDeleteAt(point);
-      }
-    }
-    drawPainterCanvas();
-  };
-  painterCanvas.onmouseup = (e) => {
-    // TODO: send paths to server
-    console.log(JSON.stringify(paths));
-  };
-  painterCanvas.onmouseenter = (e) => {
-    if (e.buttons & 1) {
-      mx = e.offsetX;
-      my = e.offsetY;
-      const point = { x: mx, y: my };
-      if (selectedTool == TOOL_PENCIL) {
-        pencilBeginPath(point);
-      } else if (selectedTool == TOOL_ERASER) {
-        eraserDeleteAt(point);
-      }
-    }
-  };
-  painterCanvas.onmouseleave = (e) => {
-    mx = -1000;
-    my = -1000;
-    drawPainterCanvas();
-  };
+  }
+}
+
+function onMouseLeave(e) {
+  mx = -1000;
+  my = -1000;
+  drawPainterCanvas();
+}
+
+function setInputEnabled(enabled) {
+  if (enabled) {
+    painterCanvas.classList.add("input-enabled");
+    painterCanvas.addEventListener("mousedown", onMouseDown);
+    painterCanvas.addEventListener("mousemove", onMouseMove);
+    painterCanvas.addEventListener("mouseup", onMouseUp);
+    painterCanvas.addEventListener("mouseenter", onMouseEnter);
+    painterCanvas.addEventListener("mouseleave", onMouseLeave);
+  } else {
+    painterCanvas.classList.remove("input-enabled");
+    painterCanvas.removeEventListener("mousedown", onMouseDown);
+    painterCanvas.removeEventListener("mousemove", onMouseMove);
+    painterCanvas.removeEventListener("mouseup", onMouseUp);
+    painterCanvas.removeEventListener("mouseenter", onMouseEnter);
+    painterCanvas.removeEventListener("mouseleave", onMouseLeave);
+  }
+}
+
+function initPainter() {
+  painterCanvas = document.getElementById("painter-canvas");
+  painterTimerNumberElem = document.getElementById("painter-timer-number");
+
+  setPaintingToolsEnabled(true);
+  setChaosEffectsEnabled(false);
+  setRatingButtonsEnabled(false);
 
   initPalette();
   selectTool(TOOL_PENCIL);

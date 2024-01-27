@@ -29,12 +29,6 @@ function init() {
 }
 
 function initSocket() {
-    // TODO: remove this hack
-    if (!document.getElementById("connecting")) {
-        // We're in chaospaint.html, not index.html
-        initPainter();
-        return;
-    }
     document.getElementById("connecting").style.display = "flow";
     socket = new WebSocket("ws://192.168.37.247:8090/ws");
 

@@ -10,3 +10,10 @@ function initViewer() {
 
   drawPainting(viewerCanvas, []);
 }
+
+function setChaosEffectsEnabled(enabled) {
+    const display = enabled ? "block" : "none";
+}
+
+function showPromptVoting(prompts) {
+}
