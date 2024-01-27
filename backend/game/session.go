@@ -195,11 +195,11 @@ func (session *Session) PumpEvents(timeout chan time.Time) *PlayerMessage {
 	return nil
 }
 
-func broadcastPlayerReadyState(s *Session, m map[*Player]bool) {
+func broadcastPlayerReadyState(s *Session, m playerSet) {
 	log.Println("Sending PlayerReadyState", m)
 	readyMap := make(map[string]bool)
-	for p, b := range m {
-		readyMap[p.NickName] = b
+	for p, b := range m.items {
+		readyMap[p.NickName] = b.value
 	}
 	s.Broadcast(&PlayerReadyChangedEvent{
 		Players: readyMap,
@@ -217,36 +217,34 @@ func (session *Session) Run() {
 	for len(session.Players) > 0 {
 
 		// show lobby
-		notAllPlayersReady := true
-		playersReadyMap := make(map[*Player]bool)
-		for len(session.Players) < 2 || notAllPlayersReady {
-			pmsg := session.PumpEvents(no_timeout)
-			if pmsg == nil {
-				return
-			}
 
-			switch msg := pmsg.Message.(type) {
-			case *UserCommand:
-				switch msg.Action {
-				case USER_ACTION_SET_READY:
-					playersReadyMap[pmsg.Player] = true
-				case USER_ACTION_SET_NOT_READY:
-					playersReadyMap[pmsg.Player] = false
+		{
+			players_ready := createPlayerSetFromMap(session.Players, nil)
+
+			for len(session.Players) < 2 || !players_ready.all() {
+				pmsg := session.PumpEvents(no_timeout)
+				if pmsg == nil {
+					return
 				}
-			case *NotifyPlayerJoined:
-				playersReadyMap[pmsg.Player] = false
-			case *NotifyPlayerLeft:
-				delete(playersReadyMap, pmsg.Player)
-			case *NotifyTimeout:
-				delete(playersReadyMap, pmsg.Player)
-			}
-			broadcastPlayerReadyState(session, playersReadyMap)
 
-			acc := true
-			for _, b := range playersReadyMap {
-				acc = acc && b
+				switch msg := pmsg.Message.(type) {
+				case *UserCommand:
+					switch msg.Action {
+					case USER_ACTION_SET_READY:
+						players_ready.add(pmsg.Player)
+					case USER_ACTION_SET_NOT_READY:
+						players_ready.remove(pmsg.Player)
+					}
+				case *NotifyPlayerJoined:
+					players_ready.insertNewPlayer(pmsg.Player, false)
+
+				case *NotifyPlayerLeft:
+					players_ready.removePlayer(pmsg.Player)
+
+				}
+				broadcastPlayerReadyState(session, players_ready)
+
 			}
-			notAllPlayersReady = !acc
 		}
 
 		log.Println(session.Id, "Start game")
@@ -341,7 +339,7 @@ func (session *Session) Run() {
 				// Phase 1: Trolls vote for a prompt
 				log.Println(session.Id, "Voting for trolls starts")
 				{
-					prompt_voted := createPlayerSet(players, active_painter)
+					prompt_voted := createPlayerSetFromList(players, active_painter)
 					for !prompt_voted.allTrolls() {
 						pmsg := session.PumpEvents(no_timeout)
 						if pmsg == nil {
@@ -427,7 +425,27 @@ type playerSet struct {
 	items map[*Player]*playerSetItem
 }
 
-func createPlayerSet(players []*Player, painter *Player) playerSet {
+func createPlayerSetFromMap(players map[*Player]bool, painter *Player) playerSet {
+
+	items := make(map[*Player]*playerSetItem)
+
+	for p := range players {
+		item := playerSetItem{
+			value: false,
+			role:  ROLE_TROLL,
+		}
+		if p == painter {
+			item.role = ROLE_PAINTER
+		}
+		items[p] = &item
+	}
+
+	return playerSet{
+		items: items,
+	}
+}
+
+func createPlayerSetFromList(players []*Player, painter *Player) playerSet {
 
 	items := make(map[*Player]*playerSetItem)
 
@@ -489,4 +507,14 @@ func (set *playerSet) painter() bool {
 		}
 	}
 	return false
+}
+
+func (set *playerSet) insertNewPlayer(p *Player, inital bool) {
+	set.items[p] = &playerSetItem{
+		value: inital,
+	}
+}
+
+func (set *playerSet) removePlayer(p *Player) {
+	delete(set.items, p)
 }
