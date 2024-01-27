@@ -82,7 +82,7 @@
     top: 326px;
 }
 
-#painter-canvas {
+.drawing-canvas {
     position: absolute;
     left: 453px;
     top: 233px;
@@ -92,11 +92,11 @@
     transition: all 1s;
 }
 
-#painter-canvas.flip {
+.drawing-canvas.flip {
     transform: perspective(2000px) rotateY(180deg);
 }
 
-#painter-canvas.drunk {
+.drawing-canvas.drunk {
     animation: drunk 4s ease-in-out infinite;
 }
 
