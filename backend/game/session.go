@@ -3,10 +3,7 @@ package game
 import (
 	"fmt"
 	"log"
-)
-
-const (
-	SESSION_JOINABLE = (1 << 0)
+	"time"
 )
 
 type PlayerMessage struct {
@@ -14,10 +11,14 @@ type PlayerMessage struct {
 	Message Message
 }
 
+type SessionFlags struct {
+	Joinable bool
+}
+
 type Session struct {
 	Id string
 
-	Flags int
+	Flags SessionFlags
 
 	HostPlayer *Player
 
@@ -25,8 +26,8 @@ type Session struct {
 
 	// Channels:
 	InboundDataChan chan PlayerMessage
-	JoinChan        chan *Player
-	LeaveChan       chan *Player
+	JoinChan        chan *Player // receives players that have joined the session
+	LeaveChan       chan *Player // receives players that have left  the session
 }
 
 var sessions = map[string]*Session{}
@@ -40,7 +41,9 @@ func CreateSession(player *Player) *Session {
 		JoinChan:        make(chan *Player),            // synchronous channels
 		LeaveChan:       make(chan *Player),            // synchronous channels
 
-		Flags: SESSION_JOINABLE,
+		Flags: SessionFlags{
+			Joinable: true,
+		},
 	}
 	session.Id = fmt.Sprintf("%p", session)
 
@@ -51,6 +54,7 @@ func CreateSession(player *Player) *Session {
 	go session.Run()
 
 	// Register session
+	log.Println("Created session...", session.Id)
 	sessions[session.Id] = session
 
 	return session
@@ -72,13 +76,14 @@ func (session *Session) Destroy() {
 
 func (session *Session) AddPlayer(new *Player) {
 
-	log.Println("Player joins", new)
-	if session.Flags&SESSION_JOINABLE == 0 {
+	if !session.Flags.Joinable {
 		new.SendChan <- &JoinSessionFailedEvent{
 			Reason: "Session is already running.",
 		}
 		return
 	}
+
+	log.Println("Player", new.NickName, "joined session", session.Id)
 
 	new.Session = session
 	session.Players[new] = true
@@ -98,6 +103,14 @@ func (session *Session) AddPlayer(new *Player) {
 func (session *Session) Broadcast(msg Message) {
 	for player := range session.Players {
 		player.SendChan <- msg
+	}
+}
+
+func (session *Session) BroadcastExcept(msg Message, except *Player) {
+	for player := range session.Players {
+		if player != except {
+			player.SendChan <- msg
+		}
 	}
 }
 
@@ -126,7 +139,19 @@ func (session *Session) BroadcastPlayers(added_player *Player, removed_player *P
 	session.Broadcast(&evt)
 }
 
-func (session *Session) PumpEvents() *PlayerMessage {
+type NotifyTimeout struct {
+	timestamp time.Time
+}
+
+type NotifyPlayerJoined struct {
+}
+
+type NotifyPlayerLeft struct {
+	// PlayerMessage.Player is not in the session anymore!
+}
+
+func (session *Session) PumpEvents(timeout chan time.Time) *PlayerMessage {
+
 	for len(session.Players) > 0 {
 		select {
 		case pmsg := <-session.InboundDataChan:
@@ -135,21 +160,28 @@ func (session *Session) PumpEvents() *PlayerMessage {
 		case new := <-session.JoinChan:
 			session.AddPlayer(new)
 
+			return &PlayerMessage{
+				Message: &NotifyPlayerJoined{},
+				Player:  new,
+			}
+
 		case old := <-session.LeaveChan:
 
-			// TODO(fqu): Handle dropping players out of active session!
-			// In the Lobby, it's totally fine to join/leave all the time
-
-			log.Println("Player leaves", old)
+			log.Println("Player", old.NickName, "left session", session.Id)
 			delete(session.Players, old)
 
 			session.BroadcastPlayers(nil, old)
 
-			// case <- ticker.C:
-			// 	player.ws.SetWriteDeadline(time.Now().Add(writeWait))
-			// 	if err := player.ws.WriteMessage(websocket.PingMessage, nil); err != nil {
-			// 		return
-			// 	}
+			return &PlayerMessage{
+				Message: &NotifyPlayerLeft{},
+				Player:  old,
+			}
+
+		case t := <-timeout:
+			return &PlayerMessage{
+				Player:  nil,
+				Message: &NotifyTimeout{timestamp: t},
+			}
 		}
 	}
 	return nil
@@ -159,12 +191,14 @@ func (session *Session) Run() {
 	log.Println("Starting ", session.Id, " opened")
 	defer log.Println("Session ", session.Id, " closed")
 
+	no_timeout := make(chan time.Time) // pass when no timeout is required
+
 	for len(session.Players) > 0 {
 
 		// show lobby
 		var startGame = false
 		for startGame {
-			pmsg := session.PumpEvents()
+			pmsg := session.PumpEvents(no_timeout)
 			if pmsg == nil {
 				return
 			}
@@ -183,7 +217,7 @@ func (session *Session) Run() {
 			// change view for all, clear current painting
 			var painting_time_not_up = false
 			for painting_time_not_up {
-				pmsg := session.PumpEvents()
+				pmsg := session.PumpEvents(no_timeout)
 				if pmsg == nil {
 					return
 				}
@@ -191,6 +225,17 @@ func (session *Session) Run() {
 				switch msg := pmsg.Message.(type) {
 				// case *Timeout:
 				// 	break
+
+				case *NotifyTimeout:
+
+					log.Println("message timeout received")
+
+				// Forward painting actions
+				case *SetPaintingCommand:
+					session.BroadcastExcept(&PaintingChangedEvent{
+						Path: msg.Path,
+					}, pmsg.Player)
+
 				default:
 					_ = msg
 				}
@@ -200,7 +245,7 @@ func (session *Session) Run() {
 			// enter sticker stage
 			var stickers_not_placed = false
 			for stickers_not_placed {
-				pmsg := session.PumpEvents()
+				pmsg := session.PumpEvents(no_timeout)
 				if pmsg == nil {
 					return
 				}
@@ -216,7 +261,7 @@ func (session *Session) Run() {
 
 			// show picture/showcase
 			for painting_time_not_up {
-				pmsg := session.PumpEvents()
+				pmsg := session.PumpEvents(no_timeout)
 				if pmsg == nil {
 					return
 				}
@@ -234,7 +279,7 @@ func (session *Session) Run() {
 		// show art gallery with voting
 		var gallery_time_not_up_and_players_not_finished = false
 		for gallery_time_not_up_and_players_not_finished {
-			pmsg := session.PumpEvents()
+			pmsg := session.PumpEvents(no_timeout)
 			if pmsg == nil {
 				return
 			}
@@ -251,7 +296,7 @@ func (session *Session) Run() {
 
 		// show art gallery with winner
 		for gallery_time_not_up_and_players_not_finished {
-			pmsg := session.PumpEvents()
+			pmsg := session.PumpEvents(no_timeout)
 			if pmsg == nil {
 				return
 			}
@@ -263,12 +308,7 @@ func (session *Session) Run() {
 				_ = msg
 			}
 		}
-		pmsg := session.PumpEvents()
-		if pmsg == nil {
-			return
-		}
-
-		log.Println("Handle message from [", pmsg.Player.NickName, "]: ", pmsg.Message)
-
+		// pmsg := session.PumpEvents(no_timeout)
+		// log.Println("Handle message from [", pmsg.Player.NickName, "]: ", pmsg.Message)
 	}
 }

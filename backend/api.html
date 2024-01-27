@@ -270,6 +270,16 @@ function deserialize(msg)
             STATUS_FIELDS['players'] = document.getElementById('status-players');
             STATUS_FIELDS['view'] = document.getElementById('status-view');
 
+            const nick_names = [
+                "xq", "manello", "captainhorst","philippwendel", "dionymoth", "Alm4nditte" 
+            ];
+
+            const nick = nick_names[Math.floor(Math.random()*nick_names.length)];
+
+            document.getElementById("CreateSessionCommand-arg-nickName").value = nick;
+            document.getElementById("JoinSessionCommand-arg-nickName").value = nick;
+
+
             reconnect();
         });
 
@@ -311,8 +321,6 @@ function deserialize(msg)
 <span>action:</span>
 <select id="UserCommand-arg-action">
 <option value="startGame">startGame</option>
-<option value="readyToStartGame">readyToStartGame</option>
-<option value="notReadyToStartGame">notReadyToStartGame</option>
 </select>
 </div>
 <div class="command">
