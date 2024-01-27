@@ -3,6 +3,7 @@ package game
 import (
 	"fmt"
 	"log"
+	"time"
 )
 
 const (
@@ -25,8 +26,8 @@ type Session struct {
 
 	// Channels:
 	InboundDataChan chan PlayerMessage
-	JoinChan        chan *Player
-	LeaveChan       chan *Player
+	JoinChan        chan *Player // receives players that have joined the session
+	LeaveChan       chan *Player // receives players that have left  the session
 }
 
 var sessions = map[string]*Session{}
@@ -51,6 +52,7 @@ func CreateSession(player *Player) *Session {
 	go session.Run()
 
 	// Register session
+	log.Println("Created session...", session.Id)
 	sessions[session.Id] = session
 
 	return session
@@ -126,7 +128,12 @@ func (session *Session) BroadcastPlayers(added_player *Player, removed_player *P
 	session.Broadcast(&evt)
 }
 
-func (session *Session) PumpEvents() *PlayerMessage {
+type NotifyTimeout struct {
+	timestamp time.Time
+}
+
+func (session *Session) PumpEvents(timeout chan time.Time) *PlayerMessage {
+
 	for len(session.Players) > 0 {
 		select {
 		case pmsg := <-session.InboundDataChan:
@@ -150,6 +157,11 @@ func (session *Session) PumpEvents() *PlayerMessage {
 			// 	if err := player.ws.WriteMessage(websocket.PingMessage, nil); err != nil {
 			// 		return
 			// 	}
+		case t := <-timeout:
+			return &PlayerMessage{
+				Player:  nil,
+				Message: &NotifyTimeout{timestamp: t},
+			}
 		}
 	}
 	return nil
@@ -159,12 +171,14 @@ func (session *Session) Run() {
 	log.Println("Starting ", session.Id, " opened")
 	defer log.Println("Session ", session.Id, " closed")
 
+	no_timeout := make(chan time.Time) // pass when no timeout is required
+
 	for len(session.Players) > 0 {
 
 		// show lobby
 		var startGame = false
 		for startGame {
-			pmsg := session.PumpEvents()
+			pmsg := session.PumpEvents(no_timeout)
 			if pmsg == nil {
 				return
 			}
@@ -183,7 +197,7 @@ func (session *Session) Run() {
 			// change view for all, clear current painting
 			var painting_time_not_up = false
 			for painting_time_not_up {
-				pmsg := session.PumpEvents()
+				pmsg := session.PumpEvents(no_timeout)
 				if pmsg == nil {
 					return
 				}
@@ -200,7 +214,7 @@ func (session *Session) Run() {
 			// enter sticker stage
 			var stickers_not_placed = false
 			for stickers_not_placed {
-				pmsg := session.PumpEvents()
+				pmsg := session.PumpEvents(no_timeout)
 				if pmsg == nil {
 					return
 				}
@@ -216,7 +230,7 @@ func (session *Session) Run() {
 
 			// show picture/showcase
 			for painting_time_not_up {
-				pmsg := session.PumpEvents()
+				pmsg := session.PumpEvents(no_timeout)
 				if pmsg == nil {
 					return
 				}
@@ -234,7 +248,7 @@ func (session *Session) Run() {
 		// show art gallery with voting
 		var gallery_time_not_up_and_players_not_finished = false
 		for gallery_time_not_up_and_players_not_finished {
-			pmsg := session.PumpEvents()
+			pmsg := session.PumpEvents(no_timeout)
 			if pmsg == nil {
 				return
 			}
@@ -251,7 +265,7 @@ func (session *Session) Run() {
 
 		// show art gallery with winner
 		for gallery_time_not_up_and_players_not_finished {
-			pmsg := session.PumpEvents()
+			pmsg := session.PumpEvents(no_timeout)
 			if pmsg == nil {
 				return
 			}
@@ -263,12 +277,7 @@ func (session *Session) Run() {
 				_ = msg
 			}
 		}
-		pmsg := session.PumpEvents()
-		if pmsg == nil {
-			return
-		}
-
-		log.Println("Handle message from [", pmsg.Player.NickName, "]: ", pmsg.Message)
-
+		// pmsg := session.PumpEvents(no_timeout)
+		// log.Println("Handle message from [", pmsg.Player.NickName, "]: ", pmsg.Message)
 	}
 }

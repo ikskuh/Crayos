@@ -35,7 +35,6 @@ type Player struct {
 }
 
 func CreatePlayer(ws *websocket.Conn) *Player {
-
 	player := &Player{
 		ws:       ws,
 		Session:  nil,
@@ -53,14 +52,18 @@ func CreatePlayer(ws *websocket.Conn) *Player {
 	return player
 }
 
+func (player *Player) Close() {
+	if player.Session != nil {
+		player.Session.LeaveChan <- player
+		player.Session = nil
+	}
+	player.ws.Close()
+	close(player.SendChan)
+}
+
 // Pumps messages from websocket to the session or creates/joins a new session.
 func (player *Player) readPump() {
-	defer func() {
-		if player.Session != nil {
-			player.Session.LeaveChan <- player
-		}
-		player.ws.Close()
-	}()
+	defer player.Close()
 	player.ws.SetReadLimit(maxMessageSize)
 	player.ws.SetReadDeadline(time.Now().Add(pongWait))
 	player.ws.SetPongHandler(func(string) error {
@@ -94,28 +97,39 @@ func (player *Player) readPump() {
 		} else {
 			switch v := msg.(type) {
 			case *CreateSessionCommand:
-				log.Println("new session?")
-				player.NickName = v.NickName
+				if v.NickName != "" {
+					player.NickName = v.NickName
 
-				log.Println("nick set:", v.NickName, player.NickName)
+					log.Println("nick set:", v.NickName, player.NickName)
 
-				session := CreateSession(player)
+					session := CreateSession(player)
 
-				log.Println("Create new session...", session.Id)
+					_ = session
+
+				} else {
+					player.SendChan <- &JoinSessionFailedEvent{
+						Reason: "Empty nick not allowed",
+					}
+				}
 
 			case *JoinSessionCommand:
-				log.Println("join session?")
-				player.NickName = v.NickName
+				if v.NickName != "" {
+					player.NickName = v.NickName
 
-				session := FindSession(v.SessionId)
+					session := FindSession(v.SessionId)
 
-				if session != nil {
-					log.Println("found session: ", session.Id)
-					session.JoinChan <- player
+					if session != nil {
+						log.Println("found session: ", session.Id)
+						session.JoinChan <- player
+					} else {
+						log.Println("didn't find session", v.SessionId)
+						player.SendChan <- &JoinSessionFailedEvent{
+							Reason: "Session does not exist",
+						}
+					}
 				} else {
-					log.Println("didn't find session", v.SessionId)
 					player.SendChan <- &JoinSessionFailedEvent{
-						Reason: "Session does not exist",
+						Reason: "Empty nick not allowed",
 					}
 				}
 
@@ -129,11 +143,11 @@ func (player *Player) readPump() {
 
 // Pumps messages from Player.SendChan to the websocket.
 func (player *Player) writePump() {
+	defer player.Close()
+
 	ticker := time.NewTicker(pingPeriod)
-	defer func() {
-		ticker.Stop()
-		player.ws.Close()
-	}()
+	defer ticker.Stop()
+
 	for {
 		select {
 		case message, ok := <-player.SendChan:
