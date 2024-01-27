@@ -14,69 +14,73 @@
 
   <body onload="init();">
     <div id="wrapper">
-        <section id="title">
-            <button type="button" id="join" onclick="joinGame()">  </button>
-            <button type="button" id="create" onclick="createGame()">  </button>
-            <input type="text" id="nicknameInput" value="nickname">  </input>
-        </section>
-        <section id="connecting">
-            <div class="info_box">
-                <div>Connecting...</div>
-            </div>
-        </section>
-        <section id="connection_failed">
-            <div class="info_box">
-                <div>Connection to the server failed. Please try again.</div>
-                <button type="button" class="infoBoxBtn" onclick="btnReconnect()">Retry</button>
-            </div>
-        </section>
-        <section id="link_required">
-            <div class="info_box">
-                <div>If you want to join a lobby you need the join-link from your friends!</div>
-                <button type="button" class="infoBoxBtn" onclick="btnBackToLobby()">To Menu</button>
-            </div>
-        </section>
-        <section id="link_invalid">
-            <div class="info_box">
-                <div>Your invite link is invalid!</div>
-                <button type="button" class="infoBoxBtn" onclick="btnBackToLobby()">To Menu</button>
-            </div>
-        </section>
-        <section id="lobby">
-            <input type="text" id="player1" value="Player 1" disabled></input>
-            <input type="text" id="player2" value="Player 2" disabled></input>
-            <input type="text" id="player3" value="Player 3" disabled></input>
-            <input type="text" id="player4" value="Player 4" disabled></input>
-            <button type="button" id="ready" onclick="readyClicked()">Ready</button>
-            <button type="button" id="joinLink" onclick="btnCopyInvite()">Copy Invite Link</input>
-        </section>
-        <section id="painter">
-            <<h1 style="font-size: 100px; font-family: Comic Sans MS;">Hallo Canvas</h1>
-            <div id="toolbox">
-                <button id="pencil"></button>
-                <button id="eraser"></button>
-                <canvas id="palette" width="264" height="360"></canvas>
-            </div>
-            <canvas id="canvas" width="1385" height="737"></canvas>
-        </section>
-        <section id="viewer">
-            
-        </section>
-        <section id="sticker">
-            
-        </section>
-        <section id="rating">
-            <canvas id="voting_canvas" width="691" height="367"></canvas>
-            <div style="">
-                <img class="ratingStar"
-            </div>
-        </section>
-        <section id="winner">
-            <canvas id="winner_canvas1" width="691" height="367"></canvas>
-            <canvas id="winner_canvas2" width="691" height="367"></canvas>
-            <canvas id="winner_canvas3" width="691" height="367"></canvas>
-            <canvas id="winner_canvas4" width="691" height="367"></canvas>
-        </section>
+      <section id="title">
+        <button type="button" id="join" onclick="joinGame()"></button>
+        <button type="button" id="create" onclick="createGame()"></button>
+        <input type="text" id="nicknameInput" value="nickname" />
+      </section>
+      <section id="connecting">
+        <div class="info_box">
+          <div>Connecting...</div>
+        </div>
+      </section>
+      <section id="connection_failed">
+        <div class="info_box">
+          <div>Connection to the server failed. Please try again.</div>
+          <button type="button" class="infoBoxBtn" onclick="btnReconnect()">Retry</button>
+        </div>
+      </section>
+      <section id="link_required">
+        <div class="info_box">
+          <div>If you want to join a lobby you need the join-link from your friends!</div>
+          <button type="button" class="infoBoxBtn" onclick="btnBackToLobby()">To Menu</button>
+        </div>
+      </section>
+      <section id="link_invalid">
+        <div class="info_box">
+          <div>Your invite link is invalid!</div>
+          <button type="button" class="infoBoxBtn" onclick="btnBackToLobby()">To Menu</button>
+        </div>
+      </section>
+      <section id="lobby">
+        <input type="text" id="player1" value="Player 1" disabled />
+        <input type="text" id="player2" value="Player 2" disabled />
+        <input type="text" id="player3" value="Player 3" disabled />
+        <input type="text" id="player4" value="Player 4" disabled />
+        <button type="button" id="ready" onclick="readyClicked()">Ready</button>
+        <button type="button" id="joinLink" onclick="btnCopyInvite()">Copy Invite Link</button>
+      </section>
+      <section id="painter">
+        <div class="timer">
+          <p>Time left:<br /><span id="painter-timer-number"></span></p>
+        </div>
+        <div class="prompt">
+          <p id="painter-prompt-text">T-Rex trying to paint its toenails</p>
+        </div>
+        <div class="toolbox">
+          <button id="pencil" onclick="selectTool('pencil')" style="display: none" />
+          <button id="eraser" onclick="selectTool('eraser')" style="display: none" />
+          <button id="drunk" onclick="activateChaosEffect('drunk')" />
+          <button id="flashlight" onclick="activateChaosEffect('flashlight')" />
+          <button id="flip" onclick="activateChaosEffect('flip')" />
+          <button id="lock_pencil" onclick="activateChaosEffect('lock_pencil')" />
+          <button id="swap_tool" onclick="activateChaosEffect('swap_tool')" />
+          <canvas id="palette" width="264" height="360" style="display: none"></canvas>
+        </div>
+        <canvas id="painter-canvas" width="1385" height="737"></canvas>
+      </section>
+      <section id="viewer"></section>
+      <section id="sticker"></section>
+      <section id="rating">
+        <canvas id="voting_canvas" width="691" height="367"></canvas>
+        <div style=""><img class="ratingStar"</div>
+      </section>
+      <section id="winner">
+        <canvas id="winner_canvas1" width="691" height="367"></canvas>
+        <canvas id="winner_canvas2" width="691" height="367"></canvas>
+        <canvas id="winner_canvas3" width="691" height="367"></canvas>
+        <canvas id="winner_canvas4" width="691" height="367"></canvas>
+      </section>
     </div>
   </body>
 </html>
