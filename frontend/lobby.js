@@ -1,9 +1,18 @@
 let inviteLink;
 
-function updateLobby() {
+function updateLobby(readyMap = undefined) {
     // Update Nicknames and ready status
     for (let i = 0; i < players.length; i++) {
-        document.getElementById("player" + (i+1)).value = players[i];
+        let playerInfo = document.getElementById("player" + (i+1));
+        playerInfo.value = players[i];
+        if (readyMap != undefined) {
+            if (readyMap[players[i]] == true) {
+                playerInfo.style.backgroundColor = "green";
+            }
+            else {
+                playerInfo.style.backgroundColor = "transparent";
+            }
+        }
     }
 
     // Local ready button
@@ -20,7 +29,14 @@ function updateLobby() {
 }
 
 function readyClicked() {
-    localIsReady = !localIsReady;
+    if (localIsReady) {
+        sendUserCommand(UserAction.setNotReady)
+        localIsReady = false;
+    }
+    else {
+        sendUserCommand(UserAction.setReady)
+        localIsReady = true;
+    }
     updateLobby();
 }
 

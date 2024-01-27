@@ -1,0 +1,9 @@
+.ratingStarWrap {
+    text-align: center;
+}
+
+.ratingStar {
+    display: inline-block;
+    padding: 30px;
+    vertical-align: middle;
+}

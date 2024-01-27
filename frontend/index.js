@@ -91,5 +91,8 @@ function onSocketReceive(event) {
             break;
         case "painting-changed-event":
             break;
+        case "player-ready-changed-event":
+            updateLobby(data.players);
+            break;
     }
 }
