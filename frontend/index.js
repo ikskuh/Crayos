@@ -98,8 +98,8 @@ function onSocketReceive(event) {
 
     switch (data.type) {
         case EventId.ChangeGameView:
-            setView("gallery");
-            //setView(data.view);
+            //setView("gallery");
+            setView(data.view);
             break;
         case EventId.PlayersChanged:
             for (let i = 0; i < data.players.length; i++) {

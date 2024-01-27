@@ -1,23 +1,27 @@
-canvas#gallery1 {
-    position: absolute;
+#gallery1 { 
     top: 104px;
     left: 222px;
 }
 
-canvas#gallery2 {
-    position: absolute;
+#gallery2 {
     top: 104px;
     left: 1006px;
 }
 
-canvas#gallery3 {
-    position: absolute;
+#gallery3 {
     top: 519px;
     left: 222px;
 }
 
-canvas#gallery4 {
-    position: absolute;
+#gallery4 {
     top: 519px;
     left: 1006px;
+}
+
+#gallery {
+    position: absolute;
+}
+
+#gallery canvas {
+    position: absolute;
 }

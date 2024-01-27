@@ -10,7 +10,10 @@ function updateLobby(readyMap = undefined) {
                 playerInfo.style.backgroundColor = "green";
             }
             else {
-                playerInfo.style.backgroundColor = "transparent";
+                if (players[i] == "")
+                    playerInfo.style.backgroundColor = "transparent";
+                else
+                    playerInfo.style.backgroundColor = "#FD5A46";
             }
         }
     }
@@ -20,7 +23,7 @@ function updateLobby(readyMap = undefined) {
         document.getElementById("ready").style.backgroundColor = "green";
     }
     else {
-        document.getElementById("ready").style.backgroundColor = "transparent";
+        document.getElementById("ready").style.backgroundColor = "#FD5A46";
     }
 
     // Show invite link

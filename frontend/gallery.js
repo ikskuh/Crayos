@@ -4,5 +4,6 @@ function initGallery() {
         let ctx = galCanvas.getContext("2d")
         ctx.rect(0, 0, 1284, 736);
         ctx.fill();
+        galCanvas.style.width = "692px";
     }
 }

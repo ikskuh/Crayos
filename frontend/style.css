@@ -29,7 +29,6 @@ section {
     height: 100%;
 }
 
-
 div.info_box {
     position: absolute;
     top: 50%;
@@ -37,7 +36,7 @@ div.info_box {
     transform: translate(-50%, -50%);
     padding: 60px;
 
-    background-color: rgba(240,240,240,0);
+    background-color: #FFC567;
 
     border-color: black;
     border-style: solid;
@@ -46,4 +45,11 @@ div.info_box {
     text-align: center;
     padding: 40px;
     font-size: 30px;
+}
+
+.genericUi {
+    color: black;
+    text-align: center;
+    border: none;
+    border-radius: 25px;
 }

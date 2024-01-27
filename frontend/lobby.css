@@ -9,14 +9,8 @@ input#player1 {
     width: 553px;
     height: 113px;
 
-    background-color: rgba(240,240,240,0);
-    color: black;
-    text-align: center;
     font-size: 50px;
-
-    border-color: green;
-    border-width: 10px;
-    border-style: none;
+    background-color: #FD5A46;
 }
 
 input#player2 {
@@ -26,10 +20,8 @@ input#player2 {
     width: 553px;
     height: 113px;
 
-    background-color: rgba(240,240,240,0);
-    color: black;
-    text-align: center;
     font-size: 50px;
+    background-color: transparent;
 }
 
 input#player3 {
@@ -39,10 +31,8 @@ input#player3 {
     width: 553px;
     height: 113px;
 
-    background-color: rgba(240,240,240,0);
-    color: black;
-    text-align: center;
     font-size: 50px;
+    background-color: transparent;
 }
 
 input#player4 {
@@ -52,10 +42,8 @@ input#player4 {
     width: 553px;
     height: 113px;
 
-    background-color: rgba(240,240,240,0);
-    color: black;
-    text-align: center;
     font-size: 50px;
+    background-color: transparent;
 }
 
 button#ready {
@@ -65,10 +53,12 @@ button#ready {
     width: 553px;
     height: 113px;
 
-    background-color: rgba(240,240,240,0);
-    color: black;
-    text-align: center;
     font-size: 50px;
+    background-color: #FD5A46;
+}
+
+button#ready:hover {
+    color: white;
 }
 
 button#joinLink {
@@ -79,7 +69,9 @@ button#joinLink {
     height: 113px;
 
     background-color: #FD5A46;
-    color: black;
-    text-align: center;
     font-size: 30px;
+}
+
+button#joinLink:hover {
+    color: white;
 }

@@ -5,18 +5,20 @@
     <link rel="stylesheet" href="title.css" />
     <link rel="stylesheet" href="lobby.css" />
     <link rel="stylesheet" href="chaospaint.css" />
+    <link rel="stylesheet" href="gallery.css" />
     <script src="structs.js"></script>
     <script src="index.js"></script>
     <script src="title.js"></script>
     <script src="lobby.js"></script>
     <script src="artstudio.js"></script>
+    <script src="gallery.js"></script>
   </head>
 
   <body onload="init();">
     <div id="wrapper">
       <section id="title">
-        <button type="button" id="join" onclick="joinGame()">Join</button>
-        <button type="button" id="create" onclick="createGame()">Create</button>
+        <button type="button" id="join" class="genericUi" onclick="joinGame()">Join</button>
+        <button type="button" id="create" class="genericUi" onclick="createGame()">Create</button>
         <input type="text" id="nicknameInput" value="nickname" />
       </section>
       <section id="connecting">
@@ -27,28 +29,28 @@
       <section id="connection_failed">
         <div class="info_box">
           <div>Connection to the server failed. Please try again.</div>
-          <button type="button" class="infoBoxBtn" onclick="btnReconnect()">Retry</button>
+          <button type="button" class="infoBoxBtn genericUi" onclick="btnReconnect()">Retry</button>
         </div>
       </section>
       <section id="link_required">
         <div class="info_box">
           <div>If you want to join a lobby you need the join-link from your friends!</div>
-          <button type="button" class="infoBoxBtn" onclick="btnBackToLobby()">To Menu</button>
+          <button type="button" class="infoBoxBtn genericUi" onclick="btnBackToLobby()">To Menu</button>
         </div>
       </section>
       <section id="link_invalid">
         <div class="info_box">
           <div>Your invite link is invalid!</div>
-          <button type="button" class="infoBoxBtn" onclick="btnBackToLobby()">To Menu</button>
+          <button type="button" class="infoBoxBtn genericUi" onclick="btnBackToLobby()">To Menu</button>
         </div>
       </section>
       <section id="lobby">
-        <input type="text" id="player1" value="Player 1" disabled />
-        <input type="text" id="player2" value="Player 2" disabled />
-        <input type="text" id="player3" value="Player 3" disabled />
-        <input type="text" id="player4" value="Player 4" disabled />
-        <button type="button" id="ready" onclick="readyClicked()">Ready</button>
-        <button type="button" id="joinLink" onclick="btnCopyInvite()">Copy Invite Link</button>
+        <input type="text" id="player1" class="genericUi" value="Player 1" disabled />
+        <input type="text" id="player2" class="genericUi" value="Player 2" disabled />
+        <input type="text" id="player3" class="genericUi" value="Player 3" disabled />
+        <input type="text" id="player4" class="genericUi" value="Player 4" disabled />
+        <button type="button" id="ready" class="genericUi" onclick="readyClicked()">Ready</button>
+        <button type="button" id="joinLink" class="genericUi" onclick="btnCopyInvite()">Copy Invite Link</button>
       </section>
       <section id="artstudio">
         <div class="timer">
@@ -81,11 +83,10 @@
         <canvas id="painter-canvas" class="drawing-canvas" width="1385" height="737"></canvas>
       </section>
       <section id="gallery">
-        
-        <canvas id="gallery1" width="1385" height="737"></canvas>
-        <canvas id="gallery2" width="1385" height="737"></canvas>
-        <canvas id="gallery3" width="1385" height="737"></canvas>
-        <canvas id="gallery4" width="1385" height="737"></canvas>
+            <canvas id="gallery1" width="1385" height="737"></canvas>
+            <canvas id="gallery2" width="1385" height="737"></canvas>
+            <canvas id="gallery3" width="1385" height="737"></canvas>
+            <canvas id="gallery4" width="1385" height="737"></canvas>
       </section>
     </div>
 

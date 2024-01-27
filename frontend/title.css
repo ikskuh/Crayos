@@ -2,7 +2,7 @@ section#title {
     background-image: url('img/title.png');
 }
 
-button#join {
+#join {
     position: absolute;
     top: 739px;
     left: 176px;
@@ -10,14 +10,14 @@ button#join {
     height: 85px;
 
     background-color: #FD5A46;
-    text-align: center;
     font-size: 50px;
-
-    border: none;
-    border-radius: 25px;
 }
 
-button#create {
+#join:hover {
+    color: white;
+}
+
+#create {
     position: absolute;
     top: 842px;
     left: 176px;
@@ -25,14 +25,14 @@ button#create {
     height: 85px;
 
     background-color: #FD5A46;
-    text-align: center;
     font-size: 50px;
-
-    border: none;
-    border-radius: 25px;
 }
 
-input#nicknameInput {
+#create:hover {
+    color: white;
+}
+
+#nicknameInput {
     position: absolute;
     top: 739px;
     left: 752px;
@@ -41,8 +41,9 @@ input#nicknameInput {
 
     font-size: 140px;
     background-color: white;
-    text-align: center;
 
+    color: black;
+    text-align: center;
     border: none;
     border-radius: 25px;
 }
@@ -52,7 +53,11 @@ button.infoBoxBtn {
     height: 90px;
     width: 300px;
 
-    background-color: rgba(240,240,240,0.1);
+    background-color: #FD5A46;
 
     font-size: 30px;
+}
+
+button.infoBoxBtn:hover {
+    color: white;
 }
