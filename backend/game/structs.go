@@ -21,6 +21,7 @@ const (
 	CHANGE_TOOL_MODIFIER_EVENT_TAG = "change-tool-modifier-event"
 	PAINTING_CHANGED_EVENT_TAG = "painting-changed-event"
 	PLAYERS_CHANGED_EVENT_TAG = "players-changed-event"
+	PLAYER_READY_CHANGED_EVENT_TAG = "player-ready-changed-event"
 )
 
 var JSON_TYPE_ID = map[reflect.Type]string{
@@ -38,6 +39,7 @@ var JSON_TYPE_ID = map[reflect.Type]string{
 	reflect.TypeOf(&ChangeToolModifierEvent{}): CHANGE_TOOL_MODIFIER_EVENT_TAG,
 	reflect.TypeOf(&PaintingChangedEvent{}): PAINTING_CHANGED_EVENT_TAG,
 	reflect.TypeOf(&PlayersChangedEvent{}): PLAYERS_CHANGED_EVENT_TAG,
+	reflect.TypeOf(&PlayerReadyChangedEvent{}): PLAYER_READY_CHANGED_EVENT_TAG,
 }
 
 
@@ -109,6 +111,8 @@ func DeserializeMessage(data []byte) (Message, error) {
 		out = &PaintingChangedEvent{}
 	case PLAYERS_CHANGED_EVENT_TAG:
 		out = &PlayersChangedEvent{}
+	case PLAYER_READY_CHANGED_EVENT_TAG:
+		out = &PlayerReadyChangedEvent{}
 
 	default:
 		return nil, errors.New("Invalid type")
@@ -150,7 +154,9 @@ const (
 )
 
 const (
-	USER_ACTION_START_GAME = "startGame"
+	USER_ACTION_SET_READY = "set-ready"
+	USER_ACTION_SET_NOT_READY = "set-not-ready"
+	USER_ACTION_CONTINUE_GAME = "continue"
 )
 
 type CreateSessionCommand struct {
@@ -218,5 +224,9 @@ type PlayersChangedEvent struct {
 	Players []string `json:"players"`
 	AddedPlayer *string `json:"addedPlayer"`
 	RemovedPlayer *string `json:"removedPlayer"`
+}
+
+type PlayerReadyChangedEvent struct {
+	Players map[string]bool `json:"players"`
 }
 

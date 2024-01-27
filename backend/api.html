@@ -242,6 +242,12 @@ function deserialize(msg)
           log();
           handlePlayersChanged(obj);
         break;
+    case 'player-ready-changed-event':
+        log('event: PlayerReadyChangedEvent');
+        log('  players: ', JSON.stringify(obj.players))
+          log();
+          handlePlayerReadyChanged(obj);
+        break;
     default:
         log('received unknown object of type ', obj.type);
         break;
@@ -320,7 +326,9 @@ function deserialize(msg)
 <button onClick="sendUserCommand()">UserCommand</button>
 <span>action:</span>
 <select id="UserCommand-arg-action">
-<option value="startGame">startGame</option>
+<option value="set-ready">setReady</option>
+<option value="set-not-ready">setNotReady</option>
+<option value="continue">continueGame</option>
 </select>
 </div>
 <div class="command">

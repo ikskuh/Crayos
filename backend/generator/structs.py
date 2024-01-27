@@ -20,6 +20,7 @@ GO_TYPES: dict[type,str] = {
     None | str : "*string",
     list[str]: "[]string",
     None | list[str]: "[]string",
+    dict[str, bool]: "map[string]bool"
 }
 
 assert Optional[str] == None | str 
@@ -106,7 +107,9 @@ class Effect(Enum):
 
 @api_enum
 class UserAction(Enum):
-    startGame = "startGame"
+    setReady = "set-ready"
+    setNotReady = "set-not-ready"
+    continueGame = "continue"
 
 
 @api_command
@@ -185,6 +188,10 @@ class PlayersChangedEvent:
     players: list[str] # new list of present player
     addedPlayer: None | str # player that joined
     removedPlayer: None | str # player that left
+
+@api_event
+class PlayerReadyChangedEvent:
+    players: dict[str,bool] # contains a map from nick to "is ready"
 
 ###############################################################################
 
