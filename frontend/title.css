@@ -1,36 +1,44 @@
 section#title {
-    background-image: url('mockup/title.png');
+    background-image: url('img/title.png');
 }
 
 button#join {
     position: absolute;
-    top: 666px;
-    left: 175px;
-    width: 395px;
+    top: 739px;
+    left: 176px;
+    width: 392px;
     height: 85px;
 
-    background-color: rgba(240,240,240,0)
+    background-color: #FD5A46;
+    text-align: center;
+    font-size: 50px;
+
+    border: none;
+    border-radius: 25px;
 }
 
 button#create {
     position: absolute;
-    top: 768px;
-    left: 175px;
-    width: 395px;
+    top: 842px;
+    left: 176px;
+    width: 392px;
     height: 85px;
 
-    background-color: rgba(240,240,240,0)
+    background-color: #FD5A46;
+    text-align: center;
+    font-size: 50px;
 }
 
 input#nicknameInput {
     position: absolute;
-    top: 666px;
+    top: 739px;
     left: 752px;
     width: 993px;
-    height: 180px;
-    font-size: 150px;
+    height: 181px;
 
-    background-color: rgba(240,240,240,0)
+    font-size: 140px;
+    background-color: white;
+    text-align: center;
 }
 
 button.infoBoxBtn {

@@ -27,6 +27,7 @@ const GameView = {
     artstudioGeneric : 'artstudio-empty',
     artstudioActive : 'artstudio-active',
     artstudioSticker : 'artstudio-sticker',
+    gallery : 'gallery',
 };
 
 // Enum:

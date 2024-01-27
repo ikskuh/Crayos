@@ -10,7 +10,7 @@ let players = ["", "", "", ""];
 let localPlayer = "nickname";
 let localIsReady = false;
 
-let currentGamestate = "connecting";
+let currentView = "connecting";
 
 const backgrounds = [];
 
@@ -63,10 +63,34 @@ function showSection(id) {
     document.getElementById(id).style.display = "flow";
 }
 
-function setView(newState) {
-    hideSection(currentGamestate);
-    currentGamestate = newState;
-    showSection(newState);
+function setView(newView) {
+    if (newView == GameView.title || newView == GameView.lobby
+        || newView == GameView.gallery || newView == "connecting"
+        || newView == "connection_failed" || newView == "link_required"
+        || newView == "link_invalid") {
+            hideSection(currentView);
+            currentView = newView;
+            showSection(newView);
+        }
+    else {
+        switch(newView) {
+            case GameView.promptselection:
+                hideSection(currentView);
+                showSection(newView);
+                
+                break;
+            case GameView.artstudioGeneric:
+
+                break;
+            case GameView.artstudioActive:
+
+                break;
+            case GameView.artstudioSticker:
+
+                break;
+        }
+        currentView = newView;
+    }
 }
 
 function onSocketReceive(event) {
@@ -75,6 +99,7 @@ function onSocketReceive(event) {
 
     switch (data.type) {
         case EventId.ChangeGameView:
+            
             setView(data.view);
             break;
         case EventId.PlayersChanged:

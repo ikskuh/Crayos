@@ -16,8 +16,8 @@
   <body onload="init();">
     <div id="wrapper">
       <section id="title">
-        <button type="button" id="join" onclick="joinGame()"></button>
-        <button type="button" id="create" onclick="createGame()"></button>
+        <button type="button" id="join" onclick="joinGame()">Join</button>
+        <button type="button" id="create" onclick="createGame()">Create</button>
         <input type="text" id="nicknameInput" value="nickname" />
       </section>
       <section id="connecting">
@@ -81,16 +81,11 @@
           </div>
           <canvas id="viewer-canvas" class="drawing-canvas" width="1385" height="737"></canvas>
       </section>
-      <section id="sticker"></section>
-      <section id="rating">
-        <canvas id="voting_canvas" width="691" height="367"></canvas>
-        <div style=""><img class="ratingStar"</div>
-      </section>
-      <section id="winner">
-        <canvas id="winner_canvas1" width="691" height="367"></canvas>
-        <canvas id="winner_canvas2" width="691" height="367"></canvas>
-        <canvas id="winner_canvas3" width="691" height="367"></canvas>
-        <canvas id="winner_canvas4" width="691" height="367"></canvas>
+      <section id="gallery">
+        <canvas id="gallery1" width="1385" height="737"></canvas>
+        <canvas id="gallery2" width="1385" height="737"></canvas>
+        <canvas id="gallery3" width="1385" height="737"></canvas>
+        <canvas id="gallery4" width="1385" height="737"></canvas>
       </section>
     </div>
 
