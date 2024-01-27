@@ -33,6 +33,9 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
 var websocketUpgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
+	CheckOrigin: func(*http.Request) bool {
+		return true
+	},
 }
 
 func acceptPlayerWebsocket(w http.ResponseWriter, r *http.Request) {
@@ -58,6 +61,9 @@ func main() {
 		Addr:              *addr,
 		ReadHeaderTimeout: 3 * time.Second,
 	}
+
+	log.Println("Ready.")
+
 	err := server.ListenAndServe()
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)

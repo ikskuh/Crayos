@@ -96,13 +96,13 @@ func (session *Session) AddPlayer(new *Player) {
 		}
 
 		session.Broadcast(&PlayersChangedEvent{
-			Players: nicknames,
-			Joined:  &new.NickName,
+			Players:      nicknames,
+			JoinedPlayer: &new.NickName,
 		})
 	}
 
 	new.SendChan <- &ChangeGameViewEvent{
-		ViewID: GAMEVIEW_LOBBY,
+		View: GAME_VIEW_LOBBY,
 	}
 
 }

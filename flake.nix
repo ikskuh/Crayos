@@ -34,12 +34,30 @@
     # Add dependencies that are only needed for development
     devShells = forAllSystems (system: let
       pkgs = nixpkgsFor.${system};
+
+      crayos-python-packages = python-packages:
+        with python-packages; [
+          (
+            buildPythonPackage rec {
+              pname = "case-converter";
+              version = "1.1.0";
+              src = fetchPypi {
+                inherit pname version;
+                sha256 = "sha256-LtP8bj/6jWAfmjH/y8j70Z6utIZxp5qO8WOUZygkUQ4=";
+              };
+              doCheck = false;
+              propagatedBuildInputs = [
+              ];
+            }
+          )
+        ];
+      crayos-python = pkgs.python311.withPackages crayos-python-packages;
     in {
       default = pkgs.mkShell {
-        buildInputs = with pkgs; [go gopls gotools go-tools];
+        buildInputs = with pkgs; [go gopls gotools go-tools python311 crayos-python];
       };
     });
 
-    defaultPackage = forAllSystems (system: self.packages.${system}.go-hello);
+    defaultPackage = forAllSystems (system: self.packages.${system}.crayos-backend);
   };
 }

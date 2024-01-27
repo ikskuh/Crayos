@@ -44,7 +44,7 @@ func CreatePlayer(ws *websocket.Conn) *Player {
 	}
 
 	player.SendChan <- &ChangeGameViewEvent{
-		ViewID: GAMEVIEW_TITLE,
+		View: GAME_VIEW_TITLE,
 	}
 
 	go player.writePump()
