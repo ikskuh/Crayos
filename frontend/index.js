@@ -70,15 +70,20 @@ function setView(newView) {
     else {
         hideSection(currentView);
         showSection("artstudio", newView);
+        initArtstudio();
+        setChaosEffectsEnabled(false);
         switch(newView) {
             case GameView.promptselection:
-                
+                setPaintingToolsEnabled(false);
+                setVotingButtonsEnabled(true);
                 break;
             case GameView.artstudioGeneric:
-                initViewer();
+                setPaintingToolsEnabled(false);
+                setVotingButtonsEnabled(true);
                 break;
-                case GameView.artstudioActive:
-                initPainter();
+            case GameView.artstudioActive:
+                setPaintingToolsEnabled(true);
+                setVotingButtonsEnabled(false);
                 break;
             case GameView.artstudioSticker:
 
@@ -94,6 +99,10 @@ function onSocketReceive(event) {
 
     switch (data.type) {
         case EventId.ChangeGameView:
+            if (data.paintingBackdrop) {
+                console.log("ChangeGameView", data.paintingBackdrop);
+                setBackground(data.paintingBackdrop);
+            }
             console.log("ChangeGameView", data.view);
             setView(data.view);
             break;
@@ -122,15 +131,20 @@ function onSocketReceive(event) {
 }
 
 function loadBackgrounds() {
-    backgrounds.push(document.getElementById("background0"));
-    backgrounds.push(document.getElementById("background1"));
-    backgrounds.push(document.getElementById("background2"));
-    backgrounds.push(document.getElementById("background3"));
+    backgrounds['arctic'] = document.getElementById("background-arctic");
+    backgrounds['graveyard'] = document.getElementById("background-graveyard");
+    backgrounds['pirate_ship'] = document.getElementById("background-pirate_ship");
+    backgrounds['theater_stage1'] = document.getElementById("background-theater_stage1");
 }
+
+function setBackground(name) {
+    selectedBackground = backgrounds[name];
+    drawPainterCanvas();
+  }
 
 function drawPainting(canvas, paths) {
     const ctx = canvas.getContext("2d");
-    ctx.drawImage(backgrounds[selectedBackground], 0, 0, canvas.width, canvas.height);
+    ctx.drawImage(selectedBackground, 0, 0, canvas.width, canvas.height);
   
     ctx.lineWidth = lineWidth;
     ctx.lineCap = "round";
