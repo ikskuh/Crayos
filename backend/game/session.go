@@ -143,11 +143,17 @@ func (session *Session) PumpEvents() *PlayerMessage {
 func (session *Session) Run() {
 	log.Println("Starting ", session.Id, " opened")
 	defer log.Println("Session ", session.Id, " closed")
+
+	// sm := NewStateMachine(&Lobby{})
+
 	for len(session.Players) > 0 {
 
 		pmsg := session.PumpEvents()
 		if pmsg == nil {
 			return
 		}
+
+		// sm.Transition()
+
 	}
 }
