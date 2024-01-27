@@ -48,8 +48,10 @@ func acceptPlayerWebsocket(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 
+	flag.Parse()
+
 	http.HandleFunc("/", serveHome)
- 	http.HandleFunc("/api", serveApi)
+	http.HandleFunc("/api", serveApi)
 	http.HandleFunc("/ws", acceptPlayerWebsocket)
 
 	server := &http.Server{
@@ -84,8 +86,3 @@ func main() {
 // 		}
 // 	}
 // }
-
-// var (
-// 	newline = []byte{'\n'}
-// 	space   = []byte{' '}
-// )
