@@ -2,37 +2,334 @@
 <html lang="en">
   <head>
     <title>API</title>
-      <script type="text/javascript">
-        var conn;
-        var session = "0xc00005a540";
-  
-        window.onload = function () {
-          if (window["WebSocket"]) {
-            conn = new WebSocket("ws://" + document.location.host + "/ws");
-            conn.onclose = function (evt) {
-              console.log("Connection closed.");
-            };
-            conn.onmessage = function (evt) {
-              console.log("Recieved: " + evt.data);
-              // TODO(philippwendel) retrieve session after createSession call, currently session needs to be set over console
-            };
-          } else console.log("Your browser does not support WebSockets.");
-        };
+    <style>
+        * {
+    box-sizing: border-box;
+}
 
-        function createSession() {
-          conn.send(JSON.stringify({  "type": "create-session-command" }))
+body {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    position: absolute;
+    margin: 0;
+    padding: 1rem;
+    
+    width: 100%;
+    height: 100%;
+}
+
+body > textarea {
+    flex: 1;
+    resize: none;
+}
+
+table#status {
+    border-collapse: collapse;
+    border: 1px solid black;
+}
+
+table#status tr {
+    border: 1px solid black;    
+}
+
+table#status tr td {
+    border: 1px solid black;
+    padding: 5px;
+}
+
+table#status tr:nth-child(1) {
+    background-color: #DDD;
+}
+
+table#status tr:nth-child(2) td {
+    font-family: monospace;
+}
+
+.commands {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.commands .command {
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+}
+
+.commands .command button {
+    width: 12rem;
+}
+
+    </style>
+    <script type="text/javascript">
+        var socket;
+        var log_area;
+        var sessionId = null;
+
+        const STATUS_FIELDS = {};
+
+        function setStatus(field, value) {
+            STATUS_FIELDS[field].innerText = String(value);
         }
-        function joinSession() {
-          conn.send(JSON.stringify({  "type": "join-session-command", "session": session, "nickname": "xq" }))
+
+        function log(...text)
+        {
+            if(!log_area) return;
+            log_area.append(text.join(""), "\n");
         }
+
+        function handleEnterSession(evt) {
+            sessionId = evt.sessionId;
+            setStatus("sessionId", sessionId);
+        }
+
+        function handleJoinSessionFailed(evt) {
+
+        }
+
+        function handleKicked(evt) {
+            sessionId = null;
+            setStatus("sessionId", "-");
+        }
+
+        function handleChangeGameView(evt) {
+            setStatus("view", evt.view);
+        }
+
+        function handleChangeToolModifier(evt) {
+
+        }
+
+        function handlePaintingChanged(evt) {
+
+        }
+
+        function handlePlayersChanged(evt) {
+            setStatus("players", evt.players.join(", "));
+        }
+
+
+function sendCreateSessionCommand()
+{
+    let nickName = document.getElementById("CreateSessionCommand-arg-nickName").value;
+    let cmd_struct = JSON.stringify({
+        type : 'create-session-command',
+        nickName : nickName, // str
+    });
+    console.log('Sending', cmd_struct);
+    socket.send(cmd_struct);
+}
+function sendJoinSessionCommand()
+{
+    let nickName = document.getElementById("JoinSessionCommand-arg-nickName").value;
+    let sessionId = document.getElementById("JoinSessionCommand-arg-sessionId").value;
+    let cmd_struct = JSON.stringify({
+        type : 'join-session-command',
+        nickName : nickName, // str
+        sessionId : sessionId, // str
+    });
+    console.log('Sending', cmd_struct);
+    socket.send(cmd_struct);
+}
+function sendLeaveSessionCommand()
+{
+    let cmd_struct = JSON.stringify({
+        type : 'leave-session-command',
+    });
+    console.log('Sending', cmd_struct);
+    socket.send(cmd_struct);
+}
+function sendUserCommand()
+{
+    let action = document.getElementById("UserCommand-arg-action").value;
+    let cmd_struct = JSON.stringify({
+        type : 'user-command',
+        action : action, // str
+    });
+    console.log('Sending', cmd_struct);
+    socket.send(cmd_struct);
+}
+function sendVoteCommand()
+{
+    let option = document.getElementById("VoteCommand-arg-option").value;
+    let cmd_struct = JSON.stringify({
+        type : 'vote-command',
+        option : option, // str
+    });
+    console.log('Sending', cmd_struct);
+    socket.send(cmd_struct);
+}
+function sendPlaceStickerCommand()
+{
+    let sticker = document.getElementById("PlaceStickerCommand-arg-sticker").value;
+    let x = document.getElementById("PlaceStickerCommand-arg-x").value;
+    x = Number(x);
+    let y = document.getElementById("PlaceStickerCommand-arg-y").value;
+    y = Number(y);
+    let cmd_struct = JSON.stringify({
+        type : 'place-sticker-command',
+        sticker : sticker, // str
+        x : x, // float
+        y : y, // float
+    });
+    console.log('Sending', cmd_struct);
+    socket.send(cmd_struct);
+}
+function sendSetPaintingCommand()
+{
+    let path = document.getElementById("SetPaintingCommand-arg-path").value;
+    let cmd_struct = JSON.stringify({
+        type : 'set-painting-command',
+        path : path, // Any
+    });
+    console.log('Sending', cmd_struct);
+    socket.send(cmd_struct);
+}
+function deserialize(msg)
+{
+    const obj = JSON.parse(msg);
+    switch(obj.type) {
+    case 'enter-session-event':
+        log('event: EnterSessionEvent');
+        log('  sessionId: ', JSON.stringify(obj.sessionId))
+          log();
+          handleEnterSession(obj);
+        break;
+    case 'join-session-failed-event':
+        log('event: JoinSessionFailedEvent');
+        log('  reason: ', JSON.stringify(obj.reason))
+          log();
+          handleJoinSessionFailed(obj);
+        break;
+    case 'kicked-event':
+        log('event: KickedEvent');
+        log('  reason: ', JSON.stringify(obj.reason))
+          log();
+          handleKicked(obj);
+        break;
+    case 'change-game-view-event':
+        log('event: ChangeGameViewEvent');
+        log('  view: ', JSON.stringify(obj.view))
+        log('  painting: ', JSON.stringify(obj.painting))
+        log('  paintingPrompt: ', JSON.stringify(obj.paintingPrompt))
+        log('  paintingBackdrop: ', JSON.stringify(obj.paintingBackdrop))
+        log('  paintingStickers: ', JSON.stringify(obj.paintingStickers))
+        log('  availableStickers: ', JSON.stringify(obj.availableStickers))
+          log();
+          handleChangeGameView(obj);
+        break;
+    case 'change-tool-modifier-event':
+        log('event: ChangeToolModifierEvent');
+        log('  modifier: ', JSON.stringify(obj.modifier))
+          log();
+          handleChangeToolModifier(obj);
+        break;
+    case 'painting-changed-event':
+        log('event: PaintingChangedEvent');
+        log('  path: ', JSON.stringify(obj.path))
+          log();
+          handlePaintingChanged(obj);
+        break;
+    case 'players-changed-event':
+        log('event: PlayersChangedEvent');
+        log('  players: ', JSON.stringify(obj.players))
+        log('  joinedPlayer: ', JSON.stringify(obj.joinedPlayer))
+          log();
+          handlePlayersChanged(obj);
+        break;
+    default:
+        log('received unknown object of type ', obj.type);
+        break;
+    }
+}
+
+
         function reconnect() {
-          conn = new WebSocket("ws://" + document.location.host + "/ws");
+            if(socket) {
+                socket.close();
+            }
+            socket = new WebSocket("ws://" + document.location.host + "/ws");
+            socket.onclose = function (evt) {
+              log("Connection closed.");
+            };
+            socket.onmessage = function (evt) {
+                console.log("Recieved: " + evt.data);
+                deserialize(evt.data)
+            };
         }
+    
+        window.addEventListener("DOMContentLoaded", () => {
+            log_area = document.getElementById("log");
+            
+            STATUS_FIELDS['sessionId'] = document.getElementById('status-sessionId');
+            STATUS_FIELDS['players'] = document.getElementById('status-players');
+            STATUS_FIELDS['view'] = document.getElementById('status-view');
+
+            reconnect();
+        });
+
     </script>
   </head>
   <body>
-    <button onClick="reconnect()">Reconnect ws</button> 
-    <button onClick="createSession()">Create session</button> 
-    <button onClick="joinSession()">Join session</button> 
+    <table id="status">
+<tr>
+<td>Session ID</td>
+<td>Players</td>
+<td>Current View</td>
+</tr>
+<td id="status-sessionId">-</td>
+<td id="status-players">-</td>
+<td id="status-view">-</td>
+</table>
+    <div class="commands">
+    <div class="command">
+        <button onClick="reconnect()">Reconnect ws</button>
+    </div>
+    
+<div class="command">
+<button onClick="sendCreateSessionCommand()">CreateSessionCommand</button>
+<span>nickName:</span>
+<input id="CreateSessionCommand-arg-nickName" type="text">
+</div>
+<div class="command">
+<button onClick="sendJoinSessionCommand()">JoinSessionCommand</button>
+<span>nickName:</span>
+<input id="JoinSessionCommand-arg-nickName" type="text">
+<span>sessionId:</span>
+<input id="JoinSessionCommand-arg-sessionId" type="text">
+</div>
+<div class="command">
+<button onClick="sendLeaveSessionCommand()">LeaveSessionCommand</button>
+</div>
+<div class="command">
+<button onClick="sendUserCommand()">UserCommand</button>
+<span>action:</span>
+<input id="UserCommand-arg-action" type="text">
+</div>
+<div class="command">
+<button onClick="sendVoteCommand()">VoteCommand</button>
+<span>option:</span>
+<input id="VoteCommand-arg-option" type="text">
+</div>
+<div class="command">
+<button onClick="sendPlaceStickerCommand()">PlaceStickerCommand</button>
+<span>sticker:</span>
+<input id="PlaceStickerCommand-arg-sticker" type="text">
+<span>x:</span>
+<input id="PlaceStickerCommand-arg-x" type="number">
+<span>y:</span>
+<input id="PlaceStickerCommand-arg-y" type="number">
+</div>
+<div class="command">
+<button onClick="sendSetPaintingCommand()">SetPaintingCommand</button>
+<span>path:</span>
+<input id="SetPaintingCommand-arg-path" type="text">
+</div>
+
+    </div>
+    <textarea id="log"></textarea>
   </body>
 </html>
+

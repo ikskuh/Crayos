@@ -32,68 +32,75 @@ const GameView = {
     gallery : 'gallery',
 };
 
+// Enum:
+const UserAction = {
+    startGame : 'startGame',
+    readyToStartGame : 'readyToStartGame',
+    notReadyToStartGame : 'notReadyToStartGame',
+};
+
 // Command:
-function createCreateSessionCommand(nickName)
+function sendCreateSessionCommand(nickName)
 {
-    return {
+    socket.send(JSON.stringify({
         type : CommandId.CreateSession,
         nickName : nickName, // str
-    };
+    }));
 }
 
 // Command:
-function createJoinSessionCommand(nickName, sessionId)
+function sendJoinSessionCommand(nickName, sessionId)
 {
-    return {
+    socket.send(JSON.stringify({
         type : CommandId.JoinSession,
         nickName : nickName, // str
         sessionId : sessionId, // str
-    };
+    }));
 }
 
 // Command:
-function createLeaveSessionCommand()
+function sendLeaveSessionCommand()
 {
-    return {
+    socket.send(JSON.stringify({
         type : CommandId.LeaveSession,
-    };
+    }));
 }
 
 // Command:
-function createUserCommand(action)
+function sendUserCommand(action)
 {
-    return {
+    socket.send(JSON.stringify({
         type : CommandId.User,
         action : action, // str
-    };
+    }));
 }
 
 // Command:
-function createVoteCommand(option)
+function sendVoteCommand(option)
 {
-    return {
+    socket.send(JSON.stringify({
         type : CommandId.Vote,
         option : option, // str
-    };
+    }));
 }
 
 // Command:
-function createPlaceStickerCommand(sticker, x, y)
+function sendPlaceStickerCommand(sticker, x, y)
 {
-    return {
+    socket.send(JSON.stringify({
         type : CommandId.PlaceSticker,
         sticker : sticker, // str
         x : x, // float
         y : y, // float
-    };
+    }));
 }
 
 // Command:
-function createSetPaintingCommand(path)
+function sendSetPaintingCommand(path)
 {
-    return {
+    socket.send(JSON.stringify({
         type : CommandId.SetPainting,
         path : path, // Any
-    };
+    }));
 }
 

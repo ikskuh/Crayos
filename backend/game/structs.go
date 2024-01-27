@@ -141,6 +141,12 @@ const (
 	GAME_VIEW_GALLERY = "gallery"
 )
 
+const (
+	USER_ACTION_START_GAME = "startGame"
+	USER_ACTION_READY_TO_START_GAME = "readyToStartGame"
+	USER_ACTION_NOT_READY_TO_START_GAME = "notReadyToStartGame"
+)
+
 type CreateSessionCommand struct {
 	NickName string `json:"nickName"`
 }

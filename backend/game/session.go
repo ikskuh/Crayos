@@ -80,6 +80,7 @@ func (session *Session) AddPlayer(new *Player) {
 		return
 	}
 
+	new.Session = session
 	session.Players[new] = true
 
 	new.SendChan <- &EnterSessionEvent{
@@ -144,8 +145,6 @@ func (session *Session) Run() {
 	log.Println("Starting ", session.Id, " opened")
 	defer log.Println("Session ", session.Id, " closed")
 
-	// sm := NewStateMachine(&Lobby{})
-
 	for len(session.Players) > 0 {
 
 		pmsg := session.PumpEvents()
@@ -153,7 +152,7 @@ func (session *Session) Run() {
 			return
 		}
 
-		// sm.Transition()
+		log.Println("Handle message from [", pmsg.Player.NickName, "]: ", pmsg.Message)
 
 	}
 }

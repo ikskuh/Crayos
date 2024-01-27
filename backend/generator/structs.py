@@ -10,6 +10,7 @@ SCRIPT_ROOT = Path(__file__).parent
 
 GO_MODULE = SCRIPT_ROOT / ".." / "game" / "structs.go"
 JS_MODULE = SCRIPT_ROOT / ".." / ".." / "frontend" / "structs.js"
+API_MODULE = SCRIPT_ROOT / ".." / "api.html"
 
 GO_TYPES: dict[type,str] = {
     int: "int",
@@ -94,6 +95,14 @@ class GameView(Enum):
     exhibitionStickering = "exhibition-stickering"
     showcase = "showcase"
     gallery = "gallery"
+
+
+@api_enum
+class UserAction(Enum):
+    startGame = "startGame"
+    readyToStartGame = "readyToStartGame"
+    notReadyToStartGame = "notReadyToStartGame"
+
 
 @api_command
 class CreateSessionCommand:
@@ -341,15 +350,15 @@ def generate_js_file(file: io.IOBase):
         elif atype.dir == ApiDirection.command:
            
             lineout("// Command:")
-            lineout("function create", atype.name, "(", ", ".join(typing.get_type_hints(atype.pytype).keys()), ")")
+            lineout("function send", atype.name, "(", ", ".join(typing.get_type_hints(atype.pytype).keys()), ")")
             lineout("{")
-            lineout("    return {")
+            lineout("    socket.send(JSON.stringify({")
             lineout("        type : CommandId.", atype.name.removesuffix("Command"), ",")
             
             for field, hint in typing.get_type_hints(atype.pytype).items():
                 lineout("        ", field, " : ", field, ", // ", hint.__name__)
 
-            lineout("    };")
+            lineout("    }));")
             lineout("}")
 
             # lineout("type ", atype.name, " struct {")
@@ -377,6 +386,256 @@ def generate_js_file(file: io.IOBase):
         lineout()
 
 
+def generate_debug_file(file):
+    def lineout(*args):
+        file.write("".join(str(a) for a in args)+"\n")
+
+
+    STATUS_FIELDS = {
+        "sessionId": "Session ID",
+        "players": "Players",
+        "view": "Current View",
+    }
+
+    lineout("""<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>API</title>
+    <style>
+        * {
+    box-sizing: border-box;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    position: absolute;
+    margin: 0;
+    padding: 1rem;
+    
+    width: 100%;
+    height: 100%;
+}
+
+body > textarea {
+    flex: 1;
+    resize: none;
+}
+
+table#status {
+    border-collapse: collapse;
+    border: 1px solid black;
+}
+
+table#status tr {
+    border: 1px solid black;    
+}
+
+table#status tr td {
+    border: 1px solid black;
+    padding: 5px;
+}
+
+table#status tr:nth-child(1) {
+    background-color: #DDD;
+}
+
+table#status tr:nth-child(2) td {
+    font-family: monospace;
+}
+
+.commands {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.commands .command {
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+}
+
+.commands .command button {
+    width: 12rem;
+}
+
+    </style>
+    <script type="text/javascript">
+        var socket;
+        var log_area;
+        var sessionId = null;
+
+        const STATUS_FIELDS = {};
+
+        function setStatus(field, value) {
+            STATUS_FIELDS[field].innerText = String(value);
+        }
+
+        function log(...text)
+        {
+            if(!log_area) return;
+            log_area.append(text.join(""), "\\n");
+        }
+
+        function handleEnterSession(evt) {
+            sessionId = evt.sessionId;
+            setStatus("sessionId", sessionId);
+        }
+
+        function handleJoinSessionFailed(evt) {
+
+        }
+
+        function handleKicked(evt) {
+            sessionId = null;
+            setStatus("sessionId", "-");
+        }
+
+        function handleChangeGameView(evt) {
+            setStatus("view", evt.view);
+        }
+
+        function handleChangeToolModifier(evt) {
+
+        }
+
+        function handlePaintingChanged(evt) {
+
+        }
+
+        function handlePlayersChanged(evt) {
+            setStatus("players", evt.players.join(", "));
+        }
+
+""")
+
+    for atype in type_registry.values():
+        if atype.dir == ApiDirection.command:
+           
+            lineout("function send", atype.name, "()")
+            lineout("{")
+
+            for field, hint in typing.get_type_hints(atype.pytype).items():
+                lineout("    let ", field, ' = document.getElementById("', f"{atype.name}-arg-{field}", '").value;')
+                
+                if hint == float:
+                    lineout("    ", field, " = Number(", field, ");")
+                elif hint == str:
+                    pass
+                elif hint == Any:
+                    pass 
+                else:
+                    print("Unsupported command type:", hint)
+                    exit(1)
+
+
+            lineout("    let cmd_struct = JSON.stringify({")
+            lineout("        type : '", atype.json_tag, "',")
+            
+            for field, hint in typing.get_type_hints(atype.pytype).items():
+                lineout("        ", field, " : ", field, ", // ", hint.__name__)
+
+            lineout("    });")
+            lineout("    console.log('Sending', cmd_struct);")
+            lineout("    socket.send(cmd_struct);")
+            lineout("}")
+
+    
+
+    lineout("function deserialize(msg)")
+    lineout("{")
+    lineout("    const obj = JSON.parse(msg);")
+    lineout("    switch(obj.type) {")
+    for atype in type_registry.values():
+        if atype.dir == ApiDirection.event:
+            lineout("    case '", atype.json_tag, "':")
+            lineout("        log('event: ", atype.name ,"');")
+
+            for field, hint in typing.get_type_hints(atype.pytype).items():
+                lineout("        log('  ", field, ": ', JSON.stringify(obj.", field, "))")
+            lineout("          log();")
+            lineout("          handle", atype.name.removesuffix("Event"), "(obj);")
+            lineout("        break;")
+
+    lineout("    default:")
+    lineout("        log('received unknown object of type ', obj.type);")
+    lineout("        break;")
+    lineout("    }")
+    lineout("}")
+
+    lineout("""
+
+        function reconnect() {
+            if(socket) {
+                socket.close();
+            }
+            socket = new WebSocket("ws://" + document.location.host + "/ws");
+            socket.onclose = function (evt) {
+              log("Connection closed.");
+            };
+            socket.onmessage = function (evt) {
+                console.log("Recieved: " + evt.data);
+                deserialize(evt.data)
+            };
+        }
+    
+        window.addEventListener("DOMContentLoaded", () => {
+            log_area = document.getElementById("log");
+            """)
+
+    for field_name in  STATUS_FIELDS.keys():
+        lineout("            STATUS_FIELDS['",field_name,"'] = document.getElementById('status-",field_name,"');");
+
+    lineout("""
+            reconnect();
+        });
+
+    </script>
+  </head>
+  <body>
+    <table id="status">""")
+    lineout("<tr>")
+    for field_label in  STATUS_FIELDS.values():
+        lineout("<td>",field_label,"</td>")
+    lineout("</tr>")
+    for field_label in  STATUS_FIELDS.keys():
+        lineout("<td id=\"status-",field_label,"\">-</td>")
+    
+    lineout("""</table>
+    <div class="commands">
+    <div class="command">
+        <button onClick="reconnect()">Reconnect ws</button>
+    </div>
+    """)
+
+    for atype in type_registry.values():
+        if atype.dir == ApiDirection.command:
+            lineout("<div class=\"command\">")
+            lineout(
+                '<button onClick="send', atype.name, '()">',atype.name,   '</button>'
+            )
+
+            for field, hint in typing.get_type_hints(atype.pytype).items():
+                js_type = "text"
+                if hint == float:
+                    js_type = "number"
+
+                lineout("<span>", field, ":</span>")
+                lineout('<input id="', f"{atype.name}-arg-{field}" ,'" type="',js_type,'">')
+
+            lineout("</div>")
+
+    lineout("""
+    </div>
+    <textarea id="log"></textarea>
+  </body>
+</html>
+""")
+
+    pass 
+
 
 def main():
 
@@ -394,6 +653,9 @@ def main():
 
     with JS_MODULE.open("w") as f:
         generate_js_file(f)
+
+    with API_MODULE.open("w") as f:
+        generate_debug_file(f)
 
 
 if __name__ == "__main__":
