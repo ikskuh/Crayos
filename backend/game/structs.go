@@ -142,6 +142,14 @@ const (
 )
 
 const (
+	EFFECT_FLASHLIGHT = "flashlight"
+	EFFECT_DRUNK = "drunk"
+	EFFECT_FLIP = "flip"
+	EFFECT_SWAP_TOOL = "swap_tool"
+	EFFECT_LOCK_PENCIL = "lock_pencil"
+)
+
+const (
 	USER_ACTION_START_GAME = "startGame"
 	USER_ACTION_READY_TO_START_GAME = "readyToStartGame"
 	USER_ACTION_NOT_READY_TO_START_GAME = "notReadyToStartGame"
@@ -196,6 +204,8 @@ type ChangeGameViewEvent struct {
 	PaintingBackdrop *string `json:"paintingBackdrop"`
 	PaintingStickers []Sticker `json:"paintingStickers"`
 	AvailableStickers []string `json:"availableStickers"`
+	VotePrompt *string `json:"votePrompt"`
+	VoteOptions []string `json:"voteOptions"`
 }
 
 type ChangeToolModifierEvent struct {

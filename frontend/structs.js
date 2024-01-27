@@ -33,6 +33,15 @@ const GameView = {
 };
 
 // Enum:
+const Effect = {
+    flashlight : 'flashlight',
+    drunk : 'drunk',
+    flip : 'flip',
+    swap_tool : 'swap_tool',
+    lock_pencil : 'lock_pencil',
+};
+
+// Enum:
 const UserAction = {
     startGame : 'startGame',
     readyToStartGame : 'readyToStartGame',
@@ -71,7 +80,7 @@ function sendUserCommand(action)
 {
     socket.send(JSON.stringify({
         type : CommandId.User,
-        action : action, // str
+        action : action, // UserAction
     }));
 }
 
