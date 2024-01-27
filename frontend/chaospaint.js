@@ -10,6 +10,7 @@ const distanceThreshold = 5; // minimum distance between points to add a new poi
 const eraserRadius = 40;
 const TOOL_PENCIL = "pencil";
 const TOOL_ERASER = "eraser";
+const EFFECT_COOLDOWN_MS = 10000;
 
 let selectedTool = TOOL_PENCIL;
 
@@ -107,7 +108,6 @@ function initPainter() {
     }
   }, 1000);
 
-  onChaosEffect(Effect.drunk);
 }
 
 function drawCanvas() {
@@ -164,7 +164,7 @@ function onChaosEffect(effect) {
   chaosEffect = effect;
   setTimeout(() => {
     deactivateChaosEffect();
-  }, 10000);
+  }, EFFECT_COOLDOWN_MS);
 
   if (chaosEffect == Effect.flip) {
     canvas.classList.add(Effect.flip);

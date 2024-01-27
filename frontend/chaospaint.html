@@ -10,20 +10,25 @@
 
   <body onload="init();">
     <div id="wrapper">
-        <section id="painter">
-            <div id="timer">
-                <p>Time left:<br><span id="timer-number">60</span></p>
-            </div>
-            <div id="prompt">
-                <p id="prompt-text">T-Rex trying to paint its toenails</p>
-            </div>
-            <div id="toolbox">
-                <button id="pencil" onclick="selectTool('pencil')"></button>
-                <button id="eraser" onclick="selectTool('eraser')"></button>
-                <canvas id="palette" width="264" height="360"></canvas>
-            </div>
-            <canvas id="canvas" width="1385" height="737"></canvas>
-        </section>
+      <section id="painter">
+        <div id="timer">
+          <p>Time left:<br /><span id="timer-number">60</span></p>
+        </div>
+        <div id="prompt">
+          <p id="prompt-text">T-Rex trying to paint its toenails</p>
+        </div>
+        <div id="toolbox">
+            <button id="pencil" onclick="selectTool('pencil')" style="display: none;" />
+            <button id="eraser" onclick="selectTool('eraser')" style="display: none;" />
+            <button id="drunk" onclick="onChaosEffect('drunk')" />
+            <button id="flashlight" onclick="onChaosEffect('flashlight')" />
+            <button id="flip" onclick="onChaosEffect('flip')" />
+            <button id="lock_pen" onclick="onChaosEffect('lock_pen')" />
+            <button id="swap_tool" onclick="onChaosEffect('swap_tool')" />
+          <canvas id="palette" width="264" height="360" style="display: none;"></canvas>
+        </div>
+        <canvas id="canvas" width="1385" height="737"></canvas>
+      </section>
     </div>
   </body>
 </html>

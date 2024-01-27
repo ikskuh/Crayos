@@ -43,23 +43,37 @@
     border-radius: 20px;
     width: 260px;
     height: 104px;
+    margin-left: 32px;
+    margin-top: 32px;
 }
-
 #toolbox button.selected {
     border: 4px solid black;
+    height: 108px;
 }
-
+#toolbox button:active {
+    border: 4px solid black;
+    height: 108px;
+}
 #toolbox button#pencil {
-    position: absolute;
-    left: 32px;
-    top: 49px;
     background-image: url('img/pencil.png');
 }
 #toolbox button#eraser {
-    position: absolute;
-    left: 32px;
-    top: 180px;
     background-image: url('img/eraser.png');
+}
+#toolbox button#drunk {
+    background-image: url('img/drunk.png');
+}
+#toolbox button#flashlight {
+    background-image: url('img/flashlight.png');
+}
+#toolbox button#flip {
+    background-image: url('img/flip.png');
+}
+#toolbox button#lock_pen {
+    background-image: url('img/lock_pen.png');
+}
+#toolbox button#swap_tool {
+    background-image: url('img/swap_tool.png');
 }
 
 #toolbox #palette {
@@ -74,6 +88,7 @@
     top: 233px;
     cursor: none;
     transform-origin: center;
+    transform: perspective(2000px) rotateY(0deg);
     transition: all 1s;
 }
 
