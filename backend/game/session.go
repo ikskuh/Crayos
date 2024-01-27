@@ -205,7 +205,7 @@ func (session *Session) Run() {
 
 			switch msg := pmsg.Message.(type) {
 			case *UserCommand:
-				startGame = (msg.Action == USER_ACTION_START_GAME) && len(session.Players) >= 2
+				startGame = (msg.Action == USER_ACTION_SET_READY) && len(session.Players) >= 2
 			}
 		}
 

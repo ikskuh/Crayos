@@ -16,6 +16,7 @@ const EventId = {
     ChangeToolModifier : 'change-tool-modifier-event',
     PaintingChanged : 'painting-changed-event',
     PlayersChanged : 'players-changed-event',
+    PlayerReadyChanged : 'player-ready-changed-event',
 };
 
 // Enum:
@@ -43,7 +44,9 @@ const Effect = {
 
 // Enum:
 const UserAction = {
-    startGame : 'startGame',
+    setReady : 'set-ready',
+    setNotReady : 'set-not-ready',
+    continueGame : 'continue',
 };
 
 // Command:
