@@ -65,12 +65,16 @@ function setView(newView) {
             hideSection(currentView);
             currentView = newView;
             showSection(newView);
+
+            if (newView == GameView.gallery) {
+                initGallery();
+            }
         }
     else {
+        hideSection(currentView);
+        showSection("artstudio");
         switch(newView) {
             case GameView.promptselection:
-                hideSection(currentView);
-                showSection(newView);
                 
                 break;
             case GameView.artstudioGeneric:
@@ -93,8 +97,8 @@ function onSocketReceive(event) {
 
     switch (data.type) {
         case EventId.ChangeGameView:
-            
-            setView(data.view);
+            setView("gallery");
+            //setView(data.view);
             break;
         case EventId.PlayersChanged:
             for (let i = 0; i < data.players.length; i++) {
