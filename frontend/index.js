@@ -10,7 +10,6 @@ let players = ["", "", "", ""];
 let localPlayer = "nickname"
 let localIsReady = false;
 
-const gamestates = ["title", "connecting", "connection_failed", "lobby", "painer", "viewer", "troll", "voting", "winner"];
 let currentGamestate = "connecting";
 
 function init() {
@@ -81,7 +80,10 @@ function onSocketReceive(event) {
             updateLobby();
             break;
         case "enter-session-event":
-            sessionID = data.session;
+            sessionID = data.sessionId;
+            break;
+        case "join-session-failed-event":
+            setView("link_invalid");
             break;
         
 

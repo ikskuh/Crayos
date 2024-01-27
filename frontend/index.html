@@ -26,13 +26,19 @@
         <section id="connection_failed">
             <div class="info_box">
                 <div>Connection to the server failed. Please try again.</div>
-                <button type="button" id="reconnect" onclick="btnReconnect()">Reconnect</button>
+                <button type="button" class="infoBoxBtn" onclick="btnReconnect()">Retry</button>
             </div>
         </section>
         <section id="link_required">
             <div class="info_box">
                 <div>If you want to join a lobby you need the join-link from your friends!</div>
-                <button type="button" id="back_to_lobby" onclick="btnBackToLobby()">To Menu</button>
+                <button type="button" class="infoBoxBtn" onclick="btnBackToLobby()">To Menu</button>
+            </div>
+        </section>
+        <section id="link_invalid">
+            <div class="info_box">
+                <div>Your invite link is invalid!</div>
+                <button type="button" class="infoBoxBtn" onclick="btnBackToLobby()">To Menu</button>
             </div>
         </section>
         <section id="lobby">
@@ -41,6 +47,7 @@
             <input type="text" id="player3" value="Player 3" disabled></input>
             <input type="text" id="player4" value="Player 4" disabled></input>
             <button type="button" id="ready" onclick="readyClicked()">Ready</button>
+            <button type="button" id="joinLink" onclick="btnCopyInvite()">Copy Invite Link</input>
         </section>
         <section id="painter">
             <<h1 style="font-size: 100px; font-family: Comic Sans MS;">Hallo Canvas</h1>

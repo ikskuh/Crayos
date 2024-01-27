@@ -70,3 +70,16 @@ button#ready {
     text-align: center;
     font-size: 50px;
 }
+
+button#joinLink {
+    position: absolute;
+    top: 842px;
+    left: 719px;
+    width: 553px;
+    height: 113px;
+
+    background-color: #FD5A46;
+    color: black;
+    text-align: center;
+    font-size: 30px;
+}

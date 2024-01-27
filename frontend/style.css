@@ -47,13 +47,3 @@ div.info_box {
     padding: 40px;
     font-size: 30px;
 }
-
-button#reconnect {
-    margin-top: 60px;
-    height: 90px;
-    width: 300px;
-
-    background-color: rgba(240,240,240,0.1);
-
-    font-size: 30px;
-}
