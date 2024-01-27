@@ -387,32 +387,55 @@ func (session *Session) Run() {
 
 				// Phase 3:
 				log.Println(session.Id, "Trolls now select stickers")
-				for {
+				for false {
 					//
 				}
 
 				// Phase 4:
 				log.Println(session.Id, "Players can now gaze upon the art")
-				for {
+				for false {
 					//
 				}
 			}
 		}
 
 		// Phase 5:
-		log.Println(session.Id, "All rounds done, show the gallery")
+		{
+			log.Println(session.Id, "All rounds done, show the gallery")
 
-		for {
-			//
+			timeLeft := false
+			players_ready := createPlayerSetFromMap(session.Players, nil)
+			for timeLeft && players_ready.any(false) {
+				log.Println("Ready")
+			}
+
 		}
 
 		// Phase 6:
-		log.Println(session.Id, "Showcase the winner")
+		{
+			log.Println(session.Id, "Showcase the winner")
 
-		for {
-			//
+			timeLeft := true
+			players_ready := createPlayerSetFromMap(session.Players, nil)
+			for timeLeft && players_ready.any(false) {
+				pmsg := session.PumpEvents(no_timeout)
+				if pmsg == nil {
+					return
+				}
+
+				switch msg := pmsg.Message.(type) {
+				case *UserCommand:
+					switch msg.Action {
+					case USER_ACTION_CONTINUE_GAME:
+						players_ready.add(pmsg.Player)
+					}
+				case *NotifyTimeout:
+					timeLeft = false
+				}
+				broadcastPlayerReadyState(session, players_ready)
+			}
+
 		}
-
 	}
 }
 
@@ -473,22 +496,21 @@ func (set *playerSet) remove(p *Player) {
 	set.items[p].value = false
 }
 
-func (set *playerSet) all() bool {
+func (set *playerSet) any(predicate bool) bool {
 	for _, item := range set.items {
-		if !item.value {
-			return false
+		if item.value == predicate {
+			return true
 		}
 	}
-	return true
+	return false
+}
+
+func (set *playerSet) all() bool {
+	return !set.any(false)
 }
 
 func (set *playerSet) none() bool {
-	for _, item := range set.items {
-		if item.value {
-			return false
-		}
-	}
-	return true
+	return !set.any(true)
 }
 
 func (set *playerSet) allTrolls() bool {
