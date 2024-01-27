@@ -9,6 +9,7 @@ from enum import Enum
 SCRIPT_ROOT = Path(__file__).parent 
 
 GO_MODULE = SCRIPT_ROOT / ".." / "game" / "structs.go"
+JS_MODULE = SCRIPT_ROOT / ".." / ".." / "frontend" / "structs.js"
 
 GO_TYPES: dict[type,str] = {
     int: "int",
@@ -302,6 +303,81 @@ func DeserializeMessage(data []byte) (Message, error) {
         lineout()
 
 
+
+def generate_js_file(file: io.IOBase):
+
+    def lineout(*args):
+        file.write("".join(str(a) for a in args)+"\n")
+
+    def scoped_kv(name: str, items: dict [str,Any] ):
+
+        lineout("const ", name, " = {")
+        for key, value in items.items():
+            lineout("    ", key, " : '", value, "',")
+        lineout("};")
+
+    scoped_kv("CommandId", {
+        atype.name.removesuffix("Command"): atype.json_tag
+        for atype in type_registry.values()
+        if atype.dir == ApiDirection.command
+    })
+    lineout()
+    scoped_kv("EventId", {
+        atype.name.removesuffix("Event"): atype.json_tag
+        for atype in type_registry.values()
+        if atype.dir == ApiDirection.event
+    })
+    lineout()
+
+    for atype in type_registry.values():
+        if atype.dir == ApiDirection.enum:
+            
+            lineout("// Enum:")
+            scoped_kv(atype.name, {
+                item.name: item.value 
+                for item in atype.pytype
+            })
+
+        elif atype.dir == ApiDirection.command:
+           
+            lineout("// Command:")
+            lineout("function create", atype.name, "(", ", ".join(typing.get_type_hints(atype.pytype).keys()), ")")
+            lineout("{")
+            lineout("    return {")
+            lineout("        type : CommandId.", atype.name.removesuffix("Command"), ",")
+            
+            for field, hint in typing.get_type_hints(atype.pytype).items():
+                lineout("        ", field, " : ", field, ", // ", hint.__name__)
+
+            lineout("    };")
+            lineout("}")
+
+            # lineout("type ", atype.name, " struct {")
+
+            # # lineout("\treflect.TypeOf(&",atype.name,"{}): ",atype.go_tag,",")
+
+                
+            #     if hint not in GO_TYPES:
+            #         print("Could not find mapping for type ", hint)
+            #         print("available mappings are:")
+            #         for ktype, gtype in GO_TYPES.items():
+            #             print(ktype, "=>", gtype)
+            #         exit(1)
+
+            #     go_name = caseconverter.pascalcase(field)
+            #     go_type = GO_TYPES[hint]
+
+            #     lineout("\t", go_name, " ", go_type, ' `json:"', field, '"`')
+
+            # lineout("}")
+        else:
+            # skip all unsupported types
+            continue 
+
+        lineout()
+
+
+
 def main():
 
     # preprocess the classes
@@ -316,6 +392,8 @@ def main():
     with GO_MODULE.open("w") as f:
         generate_go_file(f)
 
+    with JS_MODULE.open("w") as f:
+        generate_js_file(f)
 
 
 if __name__ == "__main__":
