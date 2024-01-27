@@ -1,3 +1,33 @@
+#timer {
+    position: absolute;
+    left: 78px;
+    top: 70px;
+    width: 328px;
+    height: 116px;
+    font-size: 50px;
+    text-align: center;
+    color: #000;
+}
+
+#prompt {
+    position: absolute;
+    left: 453px;
+    top: 70px;
+    width: 1385px;
+    height: 116px;
+    color: white;
+    background-image: url('img/prompt_box.png');
+}
+#prompt-text {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 60px;
+    white-space: nowrap;
+    text-align: center;
+}
+
 #toolbox {
     position: absolute;
     left: 78px;
@@ -34,25 +64,6 @@
     position: absolute;
     left: 30px;
     top: 326px;
-}
-
-#prompt {
-    position: absolute;
-    left: 453px;
-    top: 70px;
-    width: 1385px;
-    height: 116px;
-    color: white;
-    background-image: url('img/prompt_box.png');
-}
-#prompt-text {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 60px;
-    text-wrap: nowrap;
-    text-align: center;
 }
 
 #canvas {
