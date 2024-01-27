@@ -220,11 +220,16 @@ function deserialize(msg)
         log('  paintingPrompt: ', JSON.stringify(obj.paintingPrompt))
         log('  paintingBackdrop: ', JSON.stringify(obj.paintingBackdrop))
         log('  paintingStickers: ', JSON.stringify(obj.paintingStickers))
-        log('  availableStickers: ', JSON.stringify(obj.availableStickers))
         log('  votePrompt: ', JSON.stringify(obj.votePrompt))
         log('  voteOptions: ', JSON.stringify(obj.voteOptions))
           log();
           handleChangeGameView(obj);
+        break;
+    case 'timer-changed-event':
+        log('event: TimerChangedEvent');
+        log('  secondsLeft: ', JSON.stringify(obj.secondsLeft))
+          log();
+          handleTimerChanged(obj);
         break;
     case 'change-tool-modifier-event':
         log('event: ChangeToolModifierEvent');

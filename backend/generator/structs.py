@@ -75,7 +75,7 @@ def api_struct(cls: type):
 def api_enum(cls: type):
     assert cls.__name__ not in type_registry
     type_registry[cls.__name__] = ApiType(dir=ApiDirection.enum, pytype=cls)
-    register_custom_type("string", cls ) # all enums are serialized as integers in go
+    register_custom_type(cls.__name__, cls ) # all enums are serialized as integers in go
     return cls 
 
 @api_struct
@@ -108,6 +108,12 @@ class UserAction(Enum):
     setNotReady = "set-not-ready" # sets the player to "not ready" in the lobby
     continueGame = "continue" # the player wants to continue/leave the current screen
 
+@api_enum
+class Backdrop(Enum):
+	arctic  = "arctic"
+	graveyard  = "graveyard"
+	pirateShip  = "pirate_ship"
+	theaterStage1  = "theater_stage1"
 
 @api_command
 class CreateSessionCommand:
@@ -160,15 +166,17 @@ class KickedEvent:
 class ChangeGameViewEvent:
     view: GameView # what view the frontend should show
 
-    painting: Any # any view with the painting: the current painting data
-    paintingPrompt: None | str # any view with the painting: shows the current drawing prompt
-    paintingBackdrop: None | str # any view with the painting: the ID of the backdrop 
-    paintingStickers: None | list[Sticker] # any view with the painting: the current list of stickers that should be shown
+    painting: Any # artstudio*: the current painting data
+    paintingPrompt: str # artstudio*: shows the current drawing prompt
+    paintingBackdrop: Backdrop # artstudio*: the ID of the backdrop 
+    paintingStickers: list[Sticker] # artstudio*: the current list of stickers that should be shown
 
-    availableStickers: None | list[str] # exhibitionStickering: list of all available 
+    votePrompt: str # artstudioGeneric: the prompt that is shown when 
+    voteOptions: list[str] # promptselection, artstudioGeneric: list of options that the player can vote for.
 
-    votePrompt: None | str # exhibitionVoting: the prompt that is shown when 
-    voteOptions: None | list[str] # exhibitionVoting: list of options that the player can vote for.
+@api_event
+class TimerChangedEvent:
+    secondsLeft: int 
 
 @api_event
 class ChangeToolModifierEvent:
@@ -275,13 +283,18 @@ func DeserializeMessage(data []byte) (Message, error) {
 
         if atype.dir == ApiDirection.enum:
             
+            lineout("type ", atype.name, " string")
             lineout("const (")
 
             for item in atype.pytype:
 
-                lineout("\t", caseconverter.macrocase(atype.name), "_", caseconverter.macrocase(item.name), ' = "', item.value, '"')
+                lineout("\t", caseconverter.macrocase(atype.name), "_", caseconverter.macrocase(item.name), ' ', atype.name, ' = "', item.value, '"')
 
             lineout(")")
+            lineout("var ALL_", caseconverter.macrocase(atype.name), "_ITEMS = []",atype.name,"{")
+            for item in atype.pytype:
+                lineout("\t", '"', item.value, '",')
+            lineout("}")
 
         else:
 

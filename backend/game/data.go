@@ -1,17 +1,17 @@
 package game
 
-import "time"
-
 const (
-	GAME_ROUND_TIME = 60 * time.Second
+	// Length of a drawing round in seconds
+	GAME_ROUND_TIME_S = 90
+
+	/// Time of a "trolling" time slice
+	GAME_TROLL_EFFECT_COOLDOWN_S = 10
 )
 
-var AVAILABLE_BACKGROUNDS = []string{
-	"arctic",
-	"graveyard",
-	"pirate_ship",
-	"theater_stage1",
-}
+const (
+	VOTE_PROMPT_PROMPT string = "Select a prompt"
+	VOTE_PROMPT_EFFECT string = "Select a trolling effect"
+)
 
 var AVAILABLE_PROMPTS = []string{
 	"a vampire who is afraid of garlic bread",
@@ -20,7 +20,3 @@ var AVAILABLE_PROMPTS = []string{
 	"a t-rex trying to paint its toe nails",
 	"a viking tripping over his beard",
 }
-
-var (
-	VOTE_PROMPT_PROMPT string = "Select a prompt"
-)

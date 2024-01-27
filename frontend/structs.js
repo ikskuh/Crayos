@@ -13,6 +13,7 @@ const EventId = {
     JoinSessionFailed : 'join-session-failed-event',
     Kicked : 'kicked-event',
     ChangeGameView : 'change-game-view-event',
+    TimerChanged : 'timer-changed-event',
     ChangeToolModifier : 'change-tool-modifier-event',
     PaintingChanged : 'painting-changed-event',
     PlayersChanged : 'players-changed-event',
@@ -44,6 +45,14 @@ const UserAction = {
     setReady : 'set-ready',
     setNotReady : 'set-not-ready',
     continueGame : 'continue',
+};
+
+// Enum:
+const Backdrop = {
+    arctic : 'arctic',
+    graveyard : 'graveyard',
+    pirateShip : 'pirate_ship',
+    theaterStage1 : 'theater_stage1',
 };
 
 // Command:
