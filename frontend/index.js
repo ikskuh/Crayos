@@ -71,7 +71,7 @@ function showSection(id) {
   document.getElementById(id).style.display = "flow";
 }
 
-function setView(newView, data) {
+function setView(newView) {
   if (
     newView == GameView.title ||
     newView == GameView.lobby ||

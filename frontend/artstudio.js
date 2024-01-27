@@ -8,7 +8,7 @@ const TOOL_PENCIL = "pencil";
 const TOOL_ERASER = "eraser";
 const TIMER_SECONDS = 90;
 
-let selectedTool = TOOL_PENCIL;
+let selectedTool = null;
 
 const palette = [
   "#FFF",
@@ -34,11 +34,9 @@ function setPaintingToolsEnabled(enabled) {
   if (enabled) {
     initPalette();
     selectTool(TOOL_PENCIL);
+  } else {
+    selectTool(null);
   }
-}
-
-function setVotingButtonsEnabled(enabled) {
-  document.getElementById("voting-buttons").style.display = enabled ? "block" : "none";
 }
 
 function setPromptSelectionEnabled(enabled) {
@@ -46,13 +44,11 @@ function setPromptSelectionEnabled(enabled) {
 }
 
 function setPromptOptions(prompts) {
-  document.getElementById("painter-prompt-text").innerText = "Vote for a prompt!";
+  setPaintingPrompt("Vote for a prompt!");
   for (let i = 0; i < 3; i++) {
     const button = document.getElementById("prompt" + i);
     button.innerText = prompts[i];
-    button.onclick = () => {
-      sendVoteCommand(prompts[i]);
-    }
+    button.onclick = () => sendVoteCommand(prompts[i]);
   }
 }
 
@@ -62,9 +58,7 @@ function setVoteOptions(voteOptions) {
     if (i < voteOptions.length) {
       button.style.display = "block";
       button.style.backgroundImage = "url('img/" + voteOptions[i] + ".png')";
-      button.onclick = () => {
-        sendVoteCommand(voteOptions[i]);
-      }
+      button.onclick = () => sendVoteCommand(voteOptions[i]);
     } else {
       button.style.display = "none";
     }
@@ -80,8 +74,8 @@ function setTimerSecondsLeft(secondsLeft) {
 }
 
 function setPainting(paths) {
-  const painterCanvas = document.getElementById("painter-canvas");
-  drawPainting(painterCanvas, paths);
+  painterPaths = paths;
+  drawPainterCanvas();
 }
 
 function onMouseDown(e) {
@@ -114,8 +108,7 @@ function onMouseUp(e) {
   mx = -1000;
   my = -1000;
   drawPainterCanvas();
-  console.log("let's go")
-  sendSetPaintingCommand( painterPaths);
+  sendSetPaintingCommand(painterPaths);
 }
 
 function onMouseEnter(e) {
@@ -158,19 +151,6 @@ function setInputEnabled(enabled) {
 
 function resetPainting() {
   painterPaths.splice(0, painterPaths.length);
-}
-
-function initArtstudio() {
-  const painterTimerNumberElem = document.getElementById("painter-timer-number");
-
-  // countdown
-  painterTimerNumberElem.innerText = TIMER_SECONDS;
-  const timerInterval = setInterval(() => {
-    painterTimerNumberElem.innerText--;
-    if (painterTimerNumberElem.innerText == 0) {
-      clearInterval(timerInterval);
-    }
-  }, 1000);
 }
 
 function drawPainterCanvas() {
@@ -242,13 +222,9 @@ function deactivateChaosEffect(effect) {
 
 function selectTool(tool) {
   selectedTool = tool;
-  if (tool == TOOL_PENCIL) {
-    document.getElementById(TOOL_PENCIL).classList.add("selected");
-    document.getElementById("eraser").classList.remove("selected");
-  } else if (tool == "eraser") {
-    document.getElementById("eraser").classList.add("selected");
-    document.getElementById(TOOL_PENCIL).classList.remove("selected");
-  }
+  document.getElementById(TOOL_PENCIL).classList.remove("selected");
+  document.getElementById(TOOL_ERASER).classList.remove("selected");
+  if (tool) document.getElementById(tool).classList.add("selected");
 }
 
 function swapTools() {
@@ -289,15 +265,14 @@ function eraserDeleteAt(point) {
 
 // PALETTE
 
-const colorw = 122;
-const colorh = 80;
-
 const makeColorRect = (i) => {
+  const w = 122;
+  const h = 80;
   return {
-    x: 2 + (i % 2) * (colorw + 16),
-    y: 2 + Math.floor(i / 2) * (colorh + 12),
-    w: colorw,
-    h: colorh,
+    x: 2 + (i % 2) * (w + 16),
+    y: 2 + Math.floor(i / 2) * (h + 12),
+    w,
+    h,
   };
 };
 
@@ -320,18 +295,18 @@ function initPalette() {
 
 function drawPalette() {
   const paletteElem = document.getElementById("palette");
-  pctx = paletteElem.getContext("2d");
-  pctx.clearRect(0, 0, paletteElem.width, paletteElem.height);
+  const ctx = paletteElem.getContext("2d");
+  ctx.clearRect(0, 0, paletteElem.width, paletteElem.height);
   for (let i = 0; i < palette.length; i++) {
-    pctx.beginPath();
+    ctx.beginPath();
     const rect = makeColorRect(i);
-    pctx.rect(rect.x, rect.y, rect.w, rect.h);
-    pctx.fillStyle = palette[i];
-    pctx.fill();
+    ctx.rect(rect.x, rect.y, rect.w, rect.h);
+    ctx.fillStyle = palette[i];
+    ctx.fill();
     if (i == selectedColor) {
-      pctx.strokeStyle = "#000";
-      pctx.lineWidth = 4;
-      pctx.stroke();
+      ctx.strokeStyle = "#000";
+      ctx.lineWidth = 4;
+      ctx.stroke();
     }
   }
 }
