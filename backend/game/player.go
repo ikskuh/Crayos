@@ -76,8 +76,6 @@ func (player *Player) readPump() {
 			break
 		}
 
-		var message Message //  = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
-
 		msg, err := DeserializeMessage(raw_message)
 
 		log.Println("message from websocket", string(raw_message), reflect.TypeOf(msg), msg, err)
@@ -91,7 +89,7 @@ func (player *Player) readPump() {
 			log.Println("Forward message to session ", msg)
 			player.Session.InboundDataChan <- PlayerMessage{
 				Player:  player,
-				Message: message,
+				Message: msg,
 			}
 		} else {
 			switch v := msg.(type) {

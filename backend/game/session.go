@@ -80,6 +80,7 @@ func (session *Session) AddPlayer(new *Player) {
 		return
 	}
 
+	new.Session = session
 	session.Players[new] = true
 
 	new.SendChan <- &EnterSessionEvent{
@@ -152,6 +153,8 @@ func (session *Session) Run() {
 		if pmsg == nil {
 			return
 		}
+
+		log.Println("Handle message from [", pmsg.Player.NickName, "]: ", pmsg.Message)
 
 		// sm.Transition()
 

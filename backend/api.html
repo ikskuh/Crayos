@@ -46,6 +46,22 @@ table#status tr:nth-child(2) td {
     font-family: monospace;
 }
 
+.commands {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.commands .command {
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+}
+
+.commands .command button {
+    width: 12rem;
+}
+
     </style>
     <script type="text/javascript">
         var socket;
@@ -74,7 +90,8 @@ table#status tr:nth-child(2) td {
         }
 
         function handleKicked(evt) {
-
+            sessionId = null;
+            setStatus("sessionId", "-");
         }
 
         function handleChangeGameView(evt) {
@@ -94,105 +111,82 @@ table#status tr:nth-child(2) td {
         }
 
 
-const CommandId = {
-    CreateSession : 'create-session-command',
-    JoinSession : 'join-session-command',
-    LeaveSession : 'leave-session-command',
-    User : 'user-command',
-    Vote : 'vote-command',
-    PlaceSticker : 'place-sticker-command',
-    SetPainting : 'set-painting-command',
-};
-
-const EventId = {
-    EnterSession : 'enter-session-event',
-    JoinSessionFailed : 'join-session-failed-event',
-    Kicked : 'kicked-event',
-    ChangeGameView : 'change-game-view-event',
-    ChangeToolModifier : 'change-tool-modifier-event',
-    PaintingChanged : 'painting-changed-event',
-    PlayersChanged : 'players-changed-event',
-};
-
-// Enum:
-const GameView = {
-    title : 'title',
-    lobby : 'lobby',
-    promptselection : 'promptselection',
-    artstudioEmpty : 'artstudio-empty',
-    artstudioActive : 'artstudio-active',
-    exhibition : 'exhibition',
-    exhibitionVoting : 'exhibition-voting',
-    exhibitionStickering : 'exhibition-stickering',
-    showcase : 'showcase',
-    gallery : 'gallery',
-};
-
-// Command:
-function sendCreateSessionCommand(nickName)
+function sendCreateSessionCommand()
 {
-    socket.send(JSON.stringify({
-        type : CommandId.CreateSession,
+    let nickName = document.getElementById("CreateSessionCommand-arg-nickName").value;
+    let cmd_struct = JSON.stringify({
+        type : 'create-session-command',
         nickName : nickName, // str
-    }));
+    });
+    console.log('Sending', cmd_struct);
+    socket.send(cmd_struct);
 }
-
-// Command:
-function sendJoinSessionCommand(nickName, sessionId)
+function sendJoinSessionCommand()
 {
-    socket.send(JSON.stringify({
-        type : CommandId.JoinSession,
+    let nickName = document.getElementById("JoinSessionCommand-arg-nickName").value;
+    let sessionId = document.getElementById("JoinSessionCommand-arg-sessionId").value;
+    let cmd_struct = JSON.stringify({
+        type : 'join-session-command',
         nickName : nickName, // str
         sessionId : sessionId, // str
-    }));
+    });
+    console.log('Sending', cmd_struct);
+    socket.send(cmd_struct);
 }
-
-// Command:
 function sendLeaveSessionCommand()
 {
-    socket.send(JSON.stringify({
-        type : CommandId.LeaveSession,
-    }));
+    let cmd_struct = JSON.stringify({
+        type : 'leave-session-command',
+    });
+    console.log('Sending', cmd_struct);
+    socket.send(cmd_struct);
 }
-
-// Command:
-function sendUserCommand(action)
+function sendUserCommand()
 {
-    socket.send(JSON.stringify({
-        type : CommandId.User,
+    let action = document.getElementById("UserCommand-arg-action").value;
+    let cmd_struct = JSON.stringify({
+        type : 'user-command',
         action : action, // str
-    }));
+    });
+    console.log('Sending', cmd_struct);
+    socket.send(cmd_struct);
 }
-
-// Command:
-function sendVoteCommand(option)
+function sendVoteCommand()
 {
-    socket.send(JSON.stringify({
-        type : CommandId.Vote,
+    let option = document.getElementById("VoteCommand-arg-option").value;
+    let cmd_struct = JSON.stringify({
+        type : 'vote-command',
         option : option, // str
-    }));
+    });
+    console.log('Sending', cmd_struct);
+    socket.send(cmd_struct);
 }
-
-// Command:
-function sendPlaceStickerCommand(sticker, x, y)
+function sendPlaceStickerCommand()
 {
-    socket.send(JSON.stringify({
-        type : CommandId.PlaceSticker,
+    let sticker = document.getElementById("PlaceStickerCommand-arg-sticker").value;
+    let x = document.getElementById("PlaceStickerCommand-arg-x").value;
+    x = Number(x);
+    let y = document.getElementById("PlaceStickerCommand-arg-y").value;
+    y = Number(y);
+    let cmd_struct = JSON.stringify({
+        type : 'place-sticker-command',
         sticker : sticker, // str
         x : x, // float
         y : y, // float
-    }));
+    });
+    console.log('Sending', cmd_struct);
+    socket.send(cmd_struct);
 }
-
-// Command:
-function sendSetPaintingCommand(path)
+function sendSetPaintingCommand()
 {
-    socket.send(JSON.stringify({
-        type : CommandId.SetPainting,
+    let path = document.getElementById("SetPaintingCommand-arg-path").value;
+    let cmd_struct = JSON.stringify({
+        type : 'set-painting-command',
         path : path, // Any
-    }));
+    });
+    console.log('Sending', cmd_struct);
+    socket.send(cmd_struct);
 }
-
 function deserialize(msg)
 {
     const obj = JSON.parse(msg);
@@ -275,7 +269,6 @@ function deserialize(msg)
 
             reconnect();
         });
-    
 
     </script>
   </head>
@@ -290,16 +283,50 @@ function deserialize(msg)
 <td id="status-players">-</td>
 <td id="status-view">-</td>
 </table>
-    <div>
-    <button onClick="reconnect()">Reconnect ws</button>
+    <div class="commands">
+    <div class="command">
+        <button onClick="reconnect()">Reconnect ws</button>
+    </div>
     
+<div class="command">
 <button onClick="sendCreateSessionCommand()">CreateSessionCommand</button>
+<span>nickName:</span>
+<input id="CreateSessionCommand-arg-nickName" type="text">
+</div>
+<div class="command">
 <button onClick="sendJoinSessionCommand()">JoinSessionCommand</button>
+<span>nickName:</span>
+<input id="JoinSessionCommand-arg-nickName" type="text">
+<span>sessionId:</span>
+<input id="JoinSessionCommand-arg-sessionId" type="text">
+</div>
+<div class="command">
 <button onClick="sendLeaveSessionCommand()">LeaveSessionCommand</button>
+</div>
+<div class="command">
 <button onClick="sendUserCommand()">UserCommand</button>
+<span>action:</span>
+<input id="UserCommand-arg-action" type="text">
+</div>
+<div class="command">
 <button onClick="sendVoteCommand()">VoteCommand</button>
+<span>option:</span>
+<input id="VoteCommand-arg-option" type="text">
+</div>
+<div class="command">
 <button onClick="sendPlaceStickerCommand()">PlaceStickerCommand</button>
+<span>sticker:</span>
+<input id="PlaceStickerCommand-arg-sticker" type="text">
+<span>x:</span>
+<input id="PlaceStickerCommand-arg-x" type="number">
+<span>y:</span>
+<input id="PlaceStickerCommand-arg-y" type="number">
+</div>
+<div class="command">
 <button onClick="sendSetPaintingCommand()">SetPaintingCommand</button>
+<span>path:</span>
+<input id="SetPaintingCommand-arg-path" type="text">
+</div>
 
     </div>
     <textarea id="log"></textarea>

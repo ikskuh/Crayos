@@ -437,6 +437,22 @@ table#status tr:nth-child(2) td {
     font-family: monospace;
 }
 
+.commands {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.commands .command {
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+}
+
+.commands .command button {
+    width: 12rem;
+}
+
     </style>
     <script type="text/javascript">
         var socket;
@@ -465,7 +481,8 @@ table#status tr:nth-child(2) td {
         }
 
         function handleKicked(evt) {
-
+            sessionId = null;
+            setStatus("sessionId", "-");
         }
 
         function handleChangeGameView(evt) {
@@ -486,8 +503,36 @@ table#status tr:nth-child(2) td {
 
 """)
 
-    # just slurp in the full generated js api:
-    generate_js_file(file)
+    for atype in type_registry.values():
+        if atype.dir == ApiDirection.command:
+           
+            lineout("function send", atype.name, "()")
+            lineout("{")
+
+            for field, hint in typing.get_type_hints(atype.pytype).items():
+                lineout("    let ", field, ' = document.getElementById("', f"{atype.name}-arg-{field}", '").value;')
+                
+                if hint == float:
+                    lineout("    ", field, " = Number(", field, ");")
+                elif hint == str:
+                    pass
+                elif hint == Any:
+                    pass 
+                else:
+                    print("Unsupported command type:", hint)
+                    exit(1)
+
+
+            lineout("    let cmd_struct = JSON.stringify({")
+            lineout("        type : '", atype.json_tag, "',")
+            
+            for field, hint in typing.get_type_hints(atype.pytype).items():
+                lineout("        ", field, " : ", field, ", // ", hint.__name__)
+
+            lineout("    });")
+            lineout("    console.log('Sending', cmd_struct);")
+            lineout("    socket.send(cmd_struct);")
+            lineout("}")
 
     
 
@@ -538,17 +583,7 @@ table#status tr:nth-child(2) td {
     lineout("""
             reconnect();
         });
-    """);
 
-        # function createSession() {
-        #   conn.send(JSON.stringify({  "type": "create-session-command" }))
-        # }
-        # function joinSession() {
-        #   conn.send(JSON.stringify({  "type": "join-session-command", "session": session, "nickname": "xq" }))
-        # }
-
-
-    lineout("""
     </script>
   </head>
   <body>
@@ -561,16 +596,28 @@ table#status tr:nth-child(2) td {
         lineout("<td id=\"status-",field_label,"\">-</td>")
     
     lineout("""</table>
-    <div>
-    <button onClick="reconnect()">Reconnect ws</button>
+    <div class="commands">
+    <div class="command">
+        <button onClick="reconnect()">Reconnect ws</button>
+    </div>
     """)
 
     for atype in type_registry.values():
         if atype.dir == ApiDirection.command:
-           
+            lineout("<div class=\"command\">")
             lineout(
                 '<button onClick="send', atype.name, '()">',atype.name,   '</button>'
             )
+
+            for field, hint in typing.get_type_hints(atype.pytype).items():
+                js_type = "text"
+                if hint == float:
+                    js_type = "number"
+
+                lineout("<span>", field, ":</span>")
+                lineout('<input id="', f"{atype.name}-arg-{field}" ,'" type="',js_type,'">')
+
+            lineout("</div>")
 
     lineout("""
     </div>
