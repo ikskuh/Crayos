@@ -178,7 +178,8 @@ class PaintingChangedEvent:
 @api_event
 class PlayersChangedEvent:
     players: list[str] 
-    joinedPlayer: None | str
+    addedPlayer: None | str
+    removedPlayer: None | str
     pass 
 
 

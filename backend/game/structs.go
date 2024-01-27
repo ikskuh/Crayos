@@ -208,6 +208,7 @@ type PaintingChangedEvent struct {
 
 type PlayersChangedEvent struct {
 	Players []string `json:"players"`
-	JoinedPlayer *string `json:"joinedPlayer"`
+	AddedPlayer *string `json:"addedPlayer"`
+	RemovedPlayer *string `json:"removedPlayer"`
 }
 

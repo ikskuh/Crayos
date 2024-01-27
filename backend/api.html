@@ -235,7 +235,8 @@ function deserialize(msg)
     case 'players-changed-event':
         log('event: PlayersChangedEvent');
         log('  players: ', JSON.stringify(obj.players))
-        log('  joinedPlayer: ', JSON.stringify(obj.joinedPlayer))
+        log('  addedPlayer: ', JSON.stringify(obj.addedPlayer))
+        log('  removedPlayer: ', JSON.stringify(obj.removedPlayer))
           log();
           handlePlayersChanged(obj);
         break;

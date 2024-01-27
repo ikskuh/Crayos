@@ -87,20 +87,7 @@ func (session *Session) AddPlayer(new *Player) {
 		SessionId: session.Id,
 	}
 
-	{
-		nicknames := make([]string, len(session.Players))
-
-		i := 0
-		for k := range session.Players {
-			nicknames[i] = k.NickName
-			i++
-		}
-
-		session.Broadcast(&PlayersChangedEvent{
-			Players:      nicknames,
-			JoinedPlayer: &new.NickName,
-		})
-	}
+	session.BroadcastPlayers(new, nil)
 
 	new.SendChan <- &ChangeGameViewEvent{
 		View: GAME_VIEW_LOBBY,
@@ -114,6 +101,31 @@ func (session *Session) Broadcast(msg Message) {
 	}
 }
 
+func (session *Session) BroadcastPlayers(added_player *Player, removed_player *Player) {
+	nicknames := make([]string, len(session.Players))
+
+	i := 0
+	for k := range session.Players {
+		nicknames[i] = k.NickName
+		i++
+	}
+
+	evt := PlayersChangedEvent{
+		Players:       nicknames,
+		AddedPlayer:   nil,
+		RemovedPlayer: nil,
+	}
+
+	if added_player != nil {
+		evt.AddedPlayer = &added_player.NickName
+	}
+	if removed_player != nil {
+		evt.RemovedPlayer = &removed_player.NickName
+	}
+
+	session.Broadcast(&evt)
+}
+
 func (session *Session) PumpEvents() *PlayerMessage {
 	for len(session.Players) > 0 {
 		select {
@@ -125,11 +137,13 @@ func (session *Session) PumpEvents() *PlayerMessage {
 
 		case old := <-session.LeaveChan:
 
-			// TODO(fqu): Check if player is active player in the session,
-			// so we can skip
+			// TODO(fqu): Handle dropping players out of active session!
+			// In the Lobby, it's totally fine to join/leave all the time
 
 			log.Println("Player leaves", old)
 			delete(session.Players, old)
+
+			session.BroadcastPlayers(nil, old)
 
 			// case <- ticker.C:
 			// 	player.ws.SetWriteDeadline(time.Now().Add(writeWait))
