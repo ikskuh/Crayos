@@ -59,6 +59,7 @@ button#ready {
 
 button#ready:hover {
     color: white;
+    transform: scale(0.95);
 }
 
 button#joinLink {
@@ -74,4 +75,5 @@ button#joinLink {
 
 button#joinLink:hover {
     color: white;
+    transform: scale(0.95);
 }

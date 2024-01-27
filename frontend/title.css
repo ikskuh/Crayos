@@ -15,6 +15,7 @@ section#title {
 
 #join:hover {
     color: white;
+    transform: scale(0.95);
 }
 
 #create {
@@ -30,6 +31,7 @@ section#title {
 
 #create:hover {
     color: white;
+    transform: scale(0.95);
 }
 
 #nicknameInput {
@@ -60,4 +62,5 @@ button.infoBoxBtn {
 
 button.infoBoxBtn:hover {
     color: white;
+    transform: scale(0.95);
 }
