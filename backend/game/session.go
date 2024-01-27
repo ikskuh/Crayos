@@ -145,7 +145,7 @@ func (session *Session) Run() {
 	log.Println("Starting ", session.Id, " opened")
 	defer log.Println("Session ", session.Id, " closed")
 
-	// sm := NewStateMachine(&Lobby{})
+	sm := NewStateMachine(&Lobby{})
 
 	for len(session.Players) > 0 {
 
@@ -158,5 +158,6 @@ func (session *Session) Run() {
 
 		// sm.Transition()
 
+		sm.Transition(pmsg)
 	}
 }

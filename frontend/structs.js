@@ -32,6 +32,13 @@ const GameView = {
     gallery : 'gallery',
 };
 
+// Enum:
+const UserAction = {
+    startGame : 'startGame',
+    readyToStartGame : 'readyToStartGame',
+    notReadyToStartGame : 'notReadyToStartGame',
+};
+
 // Command:
 function sendCreateSessionCommand(nickName)
 {

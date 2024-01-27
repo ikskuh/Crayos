@@ -3,7 +3,7 @@ package game
 type State interface {
 	Enter()
 	Exit()
-	Update(l *StateMachine)
+	Update(*StateMachine, *PlayerMessage)
 }
 
 type StateMachine struct {
@@ -16,8 +16,8 @@ func (sm *StateMachine) setState(s State) {
 	sm.currentState.Enter()
 }
 
-func (sm *StateMachine) Transition() {
-	sm.currentState.Update(sm)
+func (sm *StateMachine) Transition(pmsg *PlayerMessage) {
+	sm.currentState.Update(sm, pmsg)
 }
 
 func NewStateMachine(initialState State) *StateMachine {

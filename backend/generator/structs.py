@@ -96,6 +96,14 @@ class GameView(Enum):
     showcase = "showcase"
     gallery = "gallery"
 
+
+@api_enum
+class UserAction(Enum):
+    startGame = "startGame"
+    readyToStartGame = "readyToStartGame"
+    notReadyToStartGame = "notReadyToStartGame"
+
+
 @api_command
 class CreateSessionCommand:
     nickName: str

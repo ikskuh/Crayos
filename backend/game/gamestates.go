@@ -13,8 +13,9 @@ func (g Lobby) Enter() {
 func (g Lobby) Exit() {
 	fmt.Println("sm: exit Lobby")
 }
-func (g Lobby) Update(sm *StateMachine) {
+func (g Lobby) Update(sm *StateMachine, pmsg *PlayerMessage) {
 	fmt.Println("sm: update Lobby")
+
 	var startPressed bool = true
 	if startPressed {
 		sm.setState(&SelectPrompt{})
@@ -30,9 +31,8 @@ func (g SelectPrompt) Enter() {
 func (g SelectPrompt) Exit() {
 	fmt.Println("sm: exit SelectPrompt")
 }
-func (g SelectPrompt) Update(sm *StateMachine) {
+func (g SelectPrompt) Update(sm *StateMachine, pmsg *PlayerMessage) {
 	fmt.Println("sm: update SelectPrompt")
-
 	var voteDone bool = true
 	if voteDone {
 		sm.setState(&Painting{})
@@ -48,7 +48,7 @@ func (g Painting) Enter() {
 func (g Painting) Exit() {
 	fmt.Println("sm: exit Painting")
 }
-func (g Painting) Update(sm *StateMachine) {
+func (g Painting) Update(sm *StateMachine, pmsg *PlayerMessage) {
 	fmt.Println("sm: update Painting")
 
 	var state State = SelectStickers{}
@@ -71,7 +71,7 @@ func (g PaintingAndVoting) Enter() {
 func (g PaintingAndVoting) Exit() {
 	fmt.Println("sm: exit PaintingAndVoting")
 }
-func (g PaintingAndVoting) Update(sm *StateMachine) {
+func (g PaintingAndVoting) Update(sm *StateMachine, pmsg *PlayerMessage) {
 	fmt.Println("sm: update PaintingAndVoting")
 	sm.setState(&Painting{})
 }
@@ -85,7 +85,7 @@ func (g SelectStickers) Enter() {
 func (g SelectStickers) Exit() {
 	fmt.Println("sm: exit SelectStickers")
 }
-func (g SelectStickers) Update(sm *StateMachine) {
+func (g SelectStickers) Update(sm *StateMachine, pmsg *PlayerMessage) {
 	fmt.Println("sm: update SelectStickers")
 	var places bool = true
 	if places {
@@ -102,7 +102,7 @@ func (g Showcase) Enter() {
 func (g Showcase) Exit() {
 	fmt.Println("sm: exit Showcase")
 }
-func (g Showcase) Update(sm *StateMachine) {
+func (g Showcase) Update(sm *StateMachine, pmsg *PlayerMessage) {
 	fmt.Println("sm: update Showcase")
 	var allSeen bool = true
 	if allSeen {
@@ -124,7 +124,7 @@ func (g VoteForBest) Enter() {
 func (g VoteForBest) Exit() {
 	fmt.Println("sm: exit VoteForBest")
 }
-func (g VoteForBest) Update(sm *StateMachine) {
+func (g VoteForBest) Update(sm *StateMachine, pmsg *PlayerMessage) {
 	fmt.Println("sm: update VoteForBest")
 	var allVotes bool = true
 	if allVotes {
@@ -141,7 +141,7 @@ func (g ShowBest) Enter() {
 func (g ShowBest) Exit() {
 	fmt.Println("sm: exit ShowBest")
 }
-func (g ShowBest) Update(sm *StateMachine) {
+func (g ShowBest) Update(sm *StateMachine, pmsg *PlayerMessage) {
 	fmt.Println("sm: update ShowBest")
 	var allSeen bool = true
 	if allSeen {
