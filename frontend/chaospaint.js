@@ -169,8 +169,8 @@ function drawCanvas() {
 
 // CHAOS EFFECTS
 
-function onChaosEffect(effect) {
-  console.log("chaos effect: " + effect);
+function activateChaosEffect(effect) {
+  console.log("activate chaos effect: " + effect);
   chaosEffect = effect;
   setTimeout(() => {
     deactivateChaosEffect(effect);
