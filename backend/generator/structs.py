@@ -161,7 +161,7 @@ class JoinSessionFailedEvent:
 
 @api_event
 class KickedEvent:
-    reason: str 
+    reason: str
 
 @api_event
 class ChangeGameViewEvent:
@@ -221,26 +221,6 @@ def generate_go_file(file: io.IOBase):
 
     lineout(
 """
-
-func SerializeMessage(msg Message) ([]byte, error) {
-
-	temp, err := json.Marshal(msg)
-	if err != nil {
-		return nil, err
-	}
-
-	var dummy map[string]interface{}
-
-	err = json.Unmarshal(temp, &dummy)
-	if err != nil {
-		return nil, err
-	}
-
-    dummy["type"] = msg.GetJsonType()
-
-	return json.Marshal(dummy)
-}
-
 func DeserializeMessage(data []byte) (Message, error) {
 
 	var raw_map map[string]interface{} // must be an object
@@ -288,7 +268,6 @@ func DeserializeMessage(data []byte) (Message, error) {
             lineout("const (")
 
             for item in atype.pytype:
-
                 lineout("\t", caseconverter.macrocase(atype.name), "_", caseconverter.macrocase(item.name), ' ', atype.name, ' = "', item.value, '"')
 
             lineout(")")
@@ -325,9 +304,24 @@ func DeserializeMessage(data []byte) (Message, error) {
     for atype in type_registry.values():
         if not atype.dir.is_top_level():
             continue 
-        lineout("func (item *", atype.name,") GetJsonType() string {")
+        lineout("func (item *", atype.name, ") GetJsonType() string {")
         lineout('\treturn "',atype.json_tag, '"')
         lineout("}")
+
+        lineout("func (item *", atype.name, ") FixNils() Message {")
+        lineout("\t", "copy := *item")
+
+        for field, hint in typing.get_type_hints(atype.pytype).items():
+            go_name = caseconverter.pascalcase(field)
+            go_type = GO_TYPES[hint]
+            if go_type.startswith("map[") or go_type.startswith("["):
+                lineout("\t", "if copy.", go_name, " == nil {")
+                lineout("\t\t", "copy.", go_name, " = ", go_type, "{}")
+                lineout("\t", "}")
+
+        lineout("\t", "return &copy")
+        lineout("}")
+
         lineout()
 
 
@@ -414,6 +408,7 @@ def generate_debug_file(file):
         "sessionId": "Session ID",
         "view": "Current View",
         "players": "Players",
+        "backdrop": "Backdrop",
         "timer": "Timer",
     }
 
@@ -559,36 +554,38 @@ table#status tr:nth-child(2) td {
 
         function handleChangeGameView(evt) {
             setStatus("view", evt.view);
+            setStatus("backdrop", evt.paintingBackdrop);
+
+            log('ChangeGameViewEvent to ', JSON.stringify(evt.view));
+            log('  painting: ', JSON.stringify(evt.painting));
+            log('  paintingPrompt: ', JSON.stringify(evt.paintingPrompt));
+            log('  paintingBackdrop: ', JSON.stringify(evt.paintingBackdrop));
+            log('  paintingStickers: ', JSON.stringify(evt.paintingStickers));
+            if (evt.voteOptions && evt.voteOptions.length > 0) {
+                log('  vote:');
+                for(const option of evt.voteOptions) {
+                    logButton(option, function() {
+                        sendVoteCommand(option);
+                    });
+                }
+            } else {
+                log('  vote: none');
+            }
+
 
             switch(evt.view) {
                 case GameView.lobby: 
-                    log("Entered lobby")
+                    log("Entered lobby, select if you're ready:")
                     logButton("ready", function() {
                         sendUserCommand(UserAction.setReady);
                     });
                     logButton("not ready", function() {
                         sendUserCommand(UserAction.setNotReady);
                     });
-                    return true;
-                case GameView.promptselection:
-                    log("Select a prompt:");
-                    for(const option of evt.voteOptions) {
-                        logButton(option, function() {
-                            sendVoteCommand(option);
-                        });
-                    }
-                    return true;
+                    break;
             }
             
-            
-            if (evt.voteOptions && evt.voteOptions.length > 0) {
-                log("Generic voting:");
-                for(const option of evt.voteOptions) {
-                    logButton(option, function() {
-                        sendVoteCommand(option);
-                    });
-                }
-            }
+            return true;
         }
 
         function handleChangeToolModifier(evt) {
@@ -601,10 +598,28 @@ table#status tr:nth-child(2) td {
 
         function handlePlayersChanged(evt) {
             setStatus("players", evt.players.join(", "));
+
+            if (evt.addedPlayer) {
+                log(evt.addedPlayer, " joined the game");
+            }
+            else if (evt.addedPlayer) {
+                log(evt.removedPlayer, " joined the game");
+            }
+            else {
+                log("Players changed to: ", evt.players.join(", "));
+            }
+
+            return true;
         }
 
         function handlePlayerReadyChanged(evt) {
-
+            log(
+                "READY: ", 
+                Object.keys(evt.players).filter(k => evt.players[k]).join(", ") || "-",
+                "\tNOT READY:",
+                Object.keys(evt.players).filter(k => !evt.players[k]).join(", " || "-")
+            )
+            return true;
         }
 
 """)

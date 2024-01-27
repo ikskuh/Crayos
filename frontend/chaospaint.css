@@ -27,6 +27,20 @@
     white-space: nowrap;
     text-align: center;
 }
+#prompt-selection {
+    position: absolute;
+    left: 453px;
+    top: 350px;
+}
+#prompt-selection button {
+    border: none;
+    border-radius: 20px;
+    width: 1321px;
+    height: 104px;
+    margin-left: 32px;
+    margin-top: 32px;
+    font-size: 60px;
+}
 
 .toolbox {
     position: absolute;

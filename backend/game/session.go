@@ -156,11 +156,19 @@ func (_ *NotifyTimeout) GetJsonType() string {
 	return ""
 }
 
+func (self *NotifyTimeout) FixNils() Message {
+	return self
+}
+
 type NotifyPlayerJoined struct {
 }
 
 func (_ *NotifyPlayerJoined) GetJsonType() string {
 	return ""
+}
+
+func (self *NotifyPlayerJoined) FixNils() Message {
+	return self
 }
 
 type NotifyPlayerLeft struct {
@@ -169,6 +177,10 @@ type NotifyPlayerLeft struct {
 
 func (_ *NotifyPlayerLeft) GetJsonType() string {
 	return ""
+}
+
+func (self *NotifyPlayerLeft) FixNils() Message {
+	return self
 }
 
 func (session *Session) PumpEvents(timeout <-chan time.Time) *PlayerMessage {
@@ -452,6 +464,7 @@ func (session *Session) Run() {
 					}
 
 					next_troll_event := 0
+					troll_did_effect := false
 
 					// Setup session timing:
 					total_time_left := GAME_ROUND_TIME_S
@@ -475,6 +488,7 @@ func (session *Session) Run() {
 							vote_effect_view.VoteOptions = *(*[]string)(unsafe.Pointer(&ALL_EFFECT_ITEMS))
 
 							trolls[0].Send(&vote_effect_view) // troll view is "generic empty" here
+							troll_did_effect = false
 
 							next_troll_event = GAME_TROLL_EFFECT_COOLDOWN_S
 						}
@@ -494,12 +508,13 @@ func (session *Session) Run() {
 							})
 
 						case *VoteCommand:
-							if pmsg.Player == trolls[0] {
+							if pmsg.Player == trolls[0] && !troll_did_effect {
 								// TODO(fqu): validate that msg.Option is actually a legal vote!
 								active_painter.Send(&ChangeToolModifierEvent{
 									Modifier: Effect(msg.Option),
 								})
 								trolls[0].Send(troll_view) // reset troll to regular view, hide the vote options
+								troll_did_effect = true
 							} else {
 								log.Println("someone else tried to harm the painter. BAD BOY!")
 							}

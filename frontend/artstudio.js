@@ -1,5 +1,3 @@
-let painterTimerNumberElem;
-
 // CONSTANTS
 const width = 1920;
 const height = 1080;
@@ -32,7 +30,7 @@ let my = -1000;
 let chaosEffect = null;
 
 function setPaintingToolsEnabled(enabled) {
-  document.getElementById('painting-tools').style.display = enabled ? "block" : "none";
+  document.getElementById("painting-tools").style.display = enabled ? "block" : "none";
   setInputEnabled(enabled);
   if (enabled) {
     initPalette();
@@ -40,12 +38,50 @@ function setPaintingToolsEnabled(enabled) {
   }
 }
 
-function setChaosEffectsEnabled(enabled) {
-  document.getElementById('chaos-effects').style.display = enabled ? "block" : "none";
+function setVotingButtonsEnabled(enabled) {
+  document.getElementById("voting-buttons").style.display = enabled ? "block" : "none";
 }
 
-function setVotingButtonsEnabled(enabled) {
-  document.getElementById('voting-buttons').style.display = enabled ? "block" : "none";
+function setPromptSelectionEnabled(enabled) {
+  document.getElementById("prompt-selection").style.display = enabled ? "block" : "none";
+}
+
+function setPromptOptions(prompts) {
+  document.getElementById("painter-prompt-text").innerText = "Vote for a prompt!";
+  for (let i = 0; i < 3; i++) {
+    const button = document.getElementById("prompt" + i);
+    button.innerText = prompts[i];
+    button.onclick = () => {
+      sendVoteCommand(prompts[i]);
+    }
+  }
+}
+
+function setVoteOptions(voteOptions) {
+  for (let i = 0; i < 5; i++) {
+    const button = document.getElementById("vote" + i);
+    if (i < voteOptions.length) {
+      button.style.display = "block";
+      button.style.backgroundImage = "url('img/" + voteOptions[i] + ".png')";
+      button.onclick = () => {
+        sendVoteCommand(voteOptions[i]);
+      }
+    } else {
+      button.style.display = "none";
+    }
+  }
+}
+
+function setPaintingPrompt(prompt) {
+  document.getElementById("painter-prompt-text").innerText = prompt;
+}
+
+function setTimerSecondsLeft(secondsLeft) {
+  document.getElementById("painter-timer-number").innerText = secondsLeft;
+}
+
+function setPainting(paths) {
+  drawPainting(paths);
 }
 
 function onMouseDown(e) {
@@ -124,7 +160,7 @@ function resetPainting() {
 }
 
 function initArtstudio() {
-  painterTimerNumberElem = document.getElementById("painter-timer-number");
+  const painterTimerNumberElem = document.getElementById("painter-timer-number");
 
   // countdown
   painterTimerNumberElem.innerText = TIMER_SECONDS;
@@ -134,8 +170,6 @@ function initArtstudio() {
       clearInterval(timerInterval);
     }
   }, 1000);
-
-  drawPainterCanvas();
 }
 
 function drawPainterCanvas() {
