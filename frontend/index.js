@@ -70,28 +70,29 @@ function onSocketReceive(event) {
     console.log(data);
 
     switch (data.type) {
-        case "change-game-view-event":
-            setView(data.view);
+        case EventId.ChangeGameView:
+            //setView(data.view);
+            setView("rating");
             break;
-        case "players-changed-event":
+        case EventId.PlayersChanged:
             for (let i = 0; i < data.players.length; i++) {
                 players[i] = data.players[i];
             }
             updateLobby();
             break;
-        case "enter-session-event":
+        case EventId.EnterSession:
             sessionID = data.sessionId;
             break;
-        case "join-session-failed-event":
+        case EventId.JoinSessionFailed:
             setView("link_invalid");
             break;
-        case "kicked-event":
+        case EventId.Kicked:
             break;
-        case "change-tool-modifier-event":
+        case EventId.ChangeToolModifier:
             break;
-        case "painting-changed-event":
+        case EventId.PaintingChanged:
             break;
-        case "player-ready-changed-event":
+        case EventId.PlayerReadyChanged:
             updateLobby(data.players);
             break;
     }

@@ -3,7 +3,17 @@
 }
 
 .ratingStar {
+    background-image: url(../img/gray_star.png);
     display: inline-block;
-    padding: 30px;
+    height: 300px;
+    width: 300px;
+    vertical-align: middle;
+}
+
+.ratinStarActive {
+    background-image: url(../img/star.png);
+    display: none;
+    height: 300px;
+    width: 300px;
     vertical-align: middle;
 }
