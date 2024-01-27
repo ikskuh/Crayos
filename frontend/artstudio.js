@@ -1,5 +1,3 @@
-let painterCanvas;
-let paletteElem;
 let painterTimerNumberElem;
 
 // CONSTANTS
@@ -31,13 +29,15 @@ const painterPaths = [];
 let mx = -1000;
 let my = -1000;
 
-let selectedBackground = 0;
-
 let chaosEffect = null;
 
 function setPaintingToolsEnabled(enabled) {
   document.getElementById('painting-tools').style.display = enabled ? "block" : "none";
   setInputEnabled(enabled);
+  if (enabled) {
+    initPalette();
+    selectTool(TOOL_PENCIL);
+  }
 }
 
 function setChaosEffectsEnabled(enabled) {
@@ -101,6 +101,7 @@ function onMouseLeave(e) {
 }
 
 function setInputEnabled(enabled) {
+  const painterCanvas = document.getElementById("painter-canvas");
   if (enabled) {
     painterCanvas.classList.add("input-enabled");
     painterCanvas.addEventListener("mousedown", onMouseDown);
@@ -118,19 +119,12 @@ function setInputEnabled(enabled) {
   }
 }
 
-function initPainter() {
-  painterCanvas = document.getElementById("painter-canvas");
-  painterTimerNumberElem = document.getElementById("painter-timer-number");
-
-  setPaintingToolsEnabled(true);
-  setChaosEffectsEnabled(false);
-  setVotingButtonsEnabled(false);
-
-  initPalette();
-  selectTool(TOOL_PENCIL);
+function resetPainting() {
   painterPaths.splice(0, painterPaths.length);
+}
 
-  selectedBackground = Math.floor(Math.random() * backgrounds.length);
+function initArtstudio() {
+  painterTimerNumberElem = document.getElementById("painter-timer-number");
 
   // countdown
   painterTimerNumberElem.innerText = TIMER_SECONDS;
@@ -145,6 +139,7 @@ function initPainter() {
 }
 
 function drawPainterCanvas() {
+  const painterCanvas = document.getElementById("painter-canvas");
   const ctx = painterCanvas.getContext("2d");
   drawPainting(painterCanvas, painterPaths);
 
@@ -175,6 +170,7 @@ function drawPainterCanvas() {
 // CHAOS EFFECTS
 
 function activateChaosEffect(effect) {
+  const painterCanvas = document.getElementById("painter-canvas");
   console.log("activate chaos effect: " + effect);
   chaosEffect = effect;
   setTimeout(() => {
@@ -270,7 +266,7 @@ const makeColorRect = (i) => {
 };
 
 function initPalette() {
-  paletteElem = document.getElementById("palette");
+  const paletteElem = document.getElementById("palette");
 
   paletteElem.onclick = (e) => {
     for (let i = 0; i < palette.length; i++) {
@@ -287,6 +283,7 @@ function initPalette() {
 }
 
 function drawPalette() {
+  const paletteElem = document.getElementById("palette");
   pctx = paletteElem.getContext("2d");
   pctx.clearRect(0, 0, paletteElem.width, paletteElem.height);
   for (let i = 0; i < palette.length; i++) {

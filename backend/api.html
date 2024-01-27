@@ -3,7 +3,7 @@
   <head>
     <title>API</title>
     <style>
-        * {
+* {
     box-sizing: border-box;
 }
 
@@ -17,11 +17,6 @@ body {
     
     width: 100%;
     height: 100%;
-}
-
-body > textarea {
-    flex: 1;
-    resize: none;
 }
 
 table#status {
@@ -62,9 +57,154 @@ table#status tr:nth-child(2) td {
     width: 12rem;
 }
 
+#log {
+    border: 1px solid black;
+    padding: 5px;
+    flex: 1;
+    resize: none;
+    overflow: scroll;
+    font-family: monospace;
+}
+
+#log p {
+    margin: 0;
+    padding: 0;
+    white-space: pre;
+}
+
+#log button {
+    margin: 2px;
+    padding: 3px;
+}
+
     </style>
     <script type="text/javascript">
         var socket;
+    
+const CommandId = {
+    CreateSession : 'create-session-command',
+    JoinSession : 'join-session-command',
+    LeaveSession : 'leave-session-command',
+    User : 'user-command',
+    Vote : 'vote-command',
+    PlaceSticker : 'place-sticker-command',
+    SetPainting : 'set-painting-command',
+};
+
+const EventId = {
+    EnterSession : 'enter-session-event',
+    JoinSessionFailed : 'join-session-failed-event',
+    Kicked : 'kicked-event',
+    ChangeGameView : 'change-game-view-event',
+    TimerChanged : 'timer-changed-event',
+    ChangeToolModifier : 'change-tool-modifier-event',
+    PaintingChanged : 'painting-changed-event',
+    PlayersChanged : 'players-changed-event',
+    PlayerReadyChanged : 'player-ready-changed-event',
+};
+
+// Enum:
+const GameView = {
+    title : 'title',
+    lobby : 'lobby',
+    promptselection : 'promptselection',
+    artstudioGeneric : 'artstudio-generic',
+    artstudioActive : 'artstudio-active',
+    artstudioSticker : 'artstudio-sticker',
+    gallery : 'gallery',
+    podium : 'podium',
+};
+
+// Enum:
+const Effect = {
+    flashlight : 'flashlight',
+    drunk : 'drunk',
+    flip : 'flip',
+    swap_tool : 'swap_tool',
+    lock_pencil : 'lock_pencil',
+};
+
+// Enum:
+const UserAction = {
+    setReady : 'set-ready',
+    setNotReady : 'set-not-ready',
+    continueGame : 'continue',
+};
+
+// Enum:
+const Backdrop = {
+    arctic : 'arctic',
+    graveyard : 'graveyard',
+    pirateShip : 'pirate_ship',
+    theaterStage1 : 'theater_stage1',
+};
+
+// Command:
+function sendCreateSessionCommand(nickName)
+{
+    socket.send(JSON.stringify({
+        type : CommandId.CreateSession,
+        nickName : nickName, // str
+    }));
+}
+
+// Command:
+function sendJoinSessionCommand(nickName, sessionId)
+{
+    socket.send(JSON.stringify({
+        type : CommandId.JoinSession,
+        nickName : nickName, // str
+        sessionId : sessionId, // str
+    }));
+}
+
+// Command:
+function sendLeaveSessionCommand()
+{
+    socket.send(JSON.stringify({
+        type : CommandId.LeaveSession,
+    }));
+}
+
+// Command:
+function sendUserCommand(action)
+{
+    socket.send(JSON.stringify({
+        type : CommandId.User,
+        action : action, // UserAction
+    }));
+}
+
+// Command:
+function sendVoteCommand(option)
+{
+    socket.send(JSON.stringify({
+        type : CommandId.Vote,
+        option : option, // str
+    }));
+}
+
+// Command:
+function sendPlaceStickerCommand(sticker, x, y)
+{
+    socket.send(JSON.stringify({
+        type : CommandId.PlaceSticker,
+        sticker : sticker, // str
+        x : x, // float
+        y : y, // float
+    }));
+}
+
+// Command:
+function sendSetPaintingCommand(path)
+{
+    socket.send(JSON.stringify({
+        type : CommandId.SetPainting,
+        path : path, // Any
+    }));
+}
+
+
         var log_area;
         var sessionId = null;
 
@@ -74,10 +214,28 @@ table#status tr:nth-child(2) td {
             STATUS_FIELDS[field].innerText = String(value);
         }
 
+        function logElement(element)
+        {
+            if(!log_area) {
+                return;
+            }
+            log_area.appendChild(element);
+            element.scrollIntoView();
+        }
+
         function log(...text)
         {
-            if(!log_area) return;
-            log_area.append(text.join(""), "\n");
+            const text_node = document.createElement("p");
+            text_node.innerText = text.join("");
+            logElement(text_node);
+        }
+
+        function logButton(text, handler)
+        {
+            const btn = document.createElement("button");
+            btn.innerText = text;
+            btn.addEventListener("click", handler)
+            logElement(btn);
         }
 
         function handleEnterSession(evt) {
@@ -89,6 +247,11 @@ table#status tr:nth-child(2) td {
 
         }
 
+        function handleTimerChanged(evt) {
+            setStatus("timer", evt.secondsLeft);
+            return true;
+        }
+
         function handleKicked(evt) {
             sessionId = null;
             setStatus("sessionId", "-");
@@ -96,6 +259,36 @@ table#status tr:nth-child(2) td {
 
         function handleChangeGameView(evt) {
             setStatus("view", evt.view);
+
+            switch(evt.view) {
+                case GameView.lobby: 
+                    log("Entered lobby")
+                    logButton("ready", function() {
+                        sendUserCommand(UserAction.setReady);
+                    });
+                    logButton("not ready", function() {
+                        sendUserCommand(UserAction.setNotReady);
+                    });
+                    return true;
+                case GameView.promptselection:
+                    log("Select a prompt:");
+                    for(const option of evt.voteOptions) {
+                        logButton(option, function() {
+                            sendVoteCommand(option);
+                        });
+                    }
+                    return true;
+            }
+            
+            
+            if (evt.voteOptions && evt.voteOptions.length > 0) {
+                log("Generic voting:");
+                for(const option of evt.voteOptions) {
+                    logButton(option, function() {
+                        sendVoteCommand(option);
+                    });
+                }
+            }
         }
 
         function handleChangeToolModifier(evt) {
@@ -115,7 +308,7 @@ table#status tr:nth-child(2) td {
         }
 
 
-function sendCreateSessionCommand()
+function autoSendCreateSessionCommand()
 {
     let nickName = document.getElementById("CreateSessionCommand-arg-nickName").value;
     let cmd_struct = JSON.stringify({
@@ -125,7 +318,7 @@ function sendCreateSessionCommand()
     console.log('Sending', cmd_struct);
     socket.send(cmd_struct);
 }
-function sendJoinSessionCommand()
+function autoSendJoinSessionCommand()
 {
     let nickName = document.getElementById("JoinSessionCommand-arg-nickName").value;
     let sessionId = document.getElementById("JoinSessionCommand-arg-sessionId").value;
@@ -137,7 +330,7 @@ function sendJoinSessionCommand()
     console.log('Sending', cmd_struct);
     socket.send(cmd_struct);
 }
-function sendLeaveSessionCommand()
+function autoSendLeaveSessionCommand()
 {
     let cmd_struct = JSON.stringify({
         type : 'leave-session-command',
@@ -145,7 +338,7 @@ function sendLeaveSessionCommand()
     console.log('Sending', cmd_struct);
     socket.send(cmd_struct);
 }
-function sendUserCommand()
+function autoSendUserCommand()
 {
     let action = document.getElementById("UserCommand-arg-action").value;
     let cmd_struct = JSON.stringify({
@@ -155,7 +348,7 @@ function sendUserCommand()
     console.log('Sending', cmd_struct);
     socket.send(cmd_struct);
 }
-function sendVoteCommand()
+function autoSendVoteCommand()
 {
     let option = document.getElementById("VoteCommand-arg-option").value;
     let cmd_struct = JSON.stringify({
@@ -165,7 +358,7 @@ function sendVoteCommand()
     console.log('Sending', cmd_struct);
     socket.send(cmd_struct);
 }
-function sendPlaceStickerCommand()
+function autoSendPlaceStickerCommand()
 {
     let sticker = document.getElementById("PlaceStickerCommand-arg-sticker").value;
     let x = document.getElementById("PlaceStickerCommand-arg-x").value;
@@ -181,7 +374,7 @@ function sendPlaceStickerCommand()
     console.log('Sending', cmd_struct);
     socket.send(cmd_struct);
 }
-function sendSetPaintingCommand()
+function autoSendSetPaintingCommand()
 {
     let path = document.getElementById("SetPaintingCommand-arg-path").value;
     let cmd_struct = JSON.stringify({
@@ -196,24 +389,33 @@ function deserialize(msg)
     const obj = JSON.parse(msg);
     switch(obj.type) {
     case 'enter-session-event':
+        if(handleEnterSession(obj)) {
+            return;
+        }
         log('event: EnterSessionEvent');
         log('  sessionId: ', JSON.stringify(obj.sessionId))
           log();
-          handleEnterSession(obj);
         break;
     case 'join-session-failed-event':
+        if(handleJoinSessionFailed(obj)) {
+            return;
+        }
         log('event: JoinSessionFailedEvent');
         log('  reason: ', JSON.stringify(obj.reason))
           log();
-          handleJoinSessionFailed(obj);
         break;
     case 'kicked-event':
+        if(handleKicked(obj)) {
+            return;
+        }
         log('event: KickedEvent');
         log('  reason: ', JSON.stringify(obj.reason))
           log();
-          handleKicked(obj);
         break;
     case 'change-game-view-event':
+        if(handleChangeGameView(obj)) {
+            return;
+        }
         log('event: ChangeGameViewEvent');
         log('  view: ', JSON.stringify(obj.view))
         log('  painting: ', JSON.stringify(obj.painting))
@@ -223,39 +425,48 @@ function deserialize(msg)
         log('  votePrompt: ', JSON.stringify(obj.votePrompt))
         log('  voteOptions: ', JSON.stringify(obj.voteOptions))
           log();
-          handleChangeGameView(obj);
         break;
     case 'timer-changed-event':
+        if(handleTimerChanged(obj)) {
+            return;
+        }
         log('event: TimerChangedEvent');
         log('  secondsLeft: ', JSON.stringify(obj.secondsLeft))
           log();
-          handleTimerChanged(obj);
         break;
     case 'change-tool-modifier-event':
+        if(handleChangeToolModifier(obj)) {
+            return;
+        }
         log('event: ChangeToolModifierEvent');
         log('  modifier: ', JSON.stringify(obj.modifier))
           log();
-          handleChangeToolModifier(obj);
         break;
     case 'painting-changed-event':
+        if(handlePaintingChanged(obj)) {
+            return;
+        }
         log('event: PaintingChangedEvent');
         log('  path: ', JSON.stringify(obj.path))
           log();
-          handlePaintingChanged(obj);
         break;
     case 'players-changed-event':
+        if(handlePlayersChanged(obj)) {
+            return;
+        }
         log('event: PlayersChangedEvent');
         log('  players: ', JSON.stringify(obj.players))
         log('  addedPlayer: ', JSON.stringify(obj.addedPlayer))
         log('  removedPlayer: ', JSON.stringify(obj.removedPlayer))
           log();
-          handlePlayersChanged(obj);
         break;
     case 'player-ready-changed-event':
+        if(handlePlayerReadyChanged(obj)) {
+            return;
+        }
         log('event: PlayerReadyChangedEvent');
         log('  players: ', JSON.stringify(obj.players))
           log();
-          handlePlayerReadyChanged(obj);
         break;
     default:
         log('received unknown object of type ', obj.type);
@@ -282,8 +493,9 @@ function deserialize(msg)
             log_area = document.getElementById("log");
             
             STATUS_FIELDS['sessionId'] = document.getElementById('status-sessionId');
-            STATUS_FIELDS['players'] = document.getElementById('status-players');
             STATUS_FIELDS['view'] = document.getElementById('status-view');
+            STATUS_FIELDS['players'] = document.getElementById('status-players');
+            STATUS_FIELDS['timer'] = document.getElementById('status-timer');
 
             const nick_names = [
                 "xq", "manello", "captainhorst","philippwendel", "dionymoth", "Alm4nditte" 
@@ -304,12 +516,14 @@ function deserialize(msg)
     <table id="status">
 <tr>
 <td>Session ID</td>
-<td>Players</td>
 <td>Current View</td>
+<td>Players</td>
+<td>Timer</td>
 </tr>
 <td id="status-sessionId">-</td>
-<td id="status-players">-</td>
 <td id="status-view">-</td>
+<td id="status-players">-</td>
+<td id="status-timer">-</td>
 </table>
     <div class="commands">
     <div class="command">
@@ -317,22 +531,22 @@ function deserialize(msg)
     </div>
     
 <div class="command">
-<button onClick="sendCreateSessionCommand()">CreateSessionCommand</button>
+<button onClick="autoSendCreateSessionCommand()">CreateSessionCommand</button>
 <span>nickName:</span>
 <input id="CreateSessionCommand-arg-nickName" type="text">
 </div>
 <div class="command">
-<button onClick="sendJoinSessionCommand()">JoinSessionCommand</button>
+<button onClick="autoSendJoinSessionCommand()">JoinSessionCommand</button>
 <span>nickName:</span>
 <input id="JoinSessionCommand-arg-nickName" type="text">
 <span>sessionId:</span>
 <input id="JoinSessionCommand-arg-sessionId" type="text">
 </div>
 <div class="command">
-<button onClick="sendLeaveSessionCommand()">LeaveSessionCommand</button>
+<button onClick="autoSendLeaveSessionCommand()">LeaveSessionCommand</button>
 </div>
 <div class="command">
-<button onClick="sendUserCommand()">UserCommand</button>
+<button onClick="autoSendUserCommand()">UserCommand</button>
 <span>action:</span>
 <select id="UserCommand-arg-action">
 <option value="set-ready">setReady</option>
@@ -341,12 +555,12 @@ function deserialize(msg)
 </select>
 </div>
 <div class="command">
-<button onClick="sendVoteCommand()">VoteCommand</button>
+<button onClick="autoSendVoteCommand()">VoteCommand</button>
 <span>option:</span>
 <input id="VoteCommand-arg-option" type="text">
 </div>
 <div class="command">
-<button onClick="sendPlaceStickerCommand()">PlaceStickerCommand</button>
+<button onClick="autoSendPlaceStickerCommand()">PlaceStickerCommand</button>
 <span>sticker:</span>
 <input id="PlaceStickerCommand-arg-sticker" type="text">
 <span>x:</span>
@@ -355,13 +569,13 @@ function deserialize(msg)
 <input id="PlaceStickerCommand-arg-y" type="number">
 </div>
 <div class="command">
-<button onClick="sendSetPaintingCommand()">SetPaintingCommand</button>
+<button onClick="autoSendSetPaintingCommand()">SetPaintingCommand</button>
 <span>path:</span>
 <input id="SetPaintingCommand-arg-path" type="text">
 </div>
 
     </div>
-    <textarea id="log"></textarea>
+    <div id="log"></div>
   </body>
 </html>
 

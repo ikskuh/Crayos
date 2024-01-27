@@ -92,7 +92,8 @@ class GameView(Enum):
     artstudioGeneric = "artstudio-generic" # (A) (generic voting or empty)
     artstudioActive = "artstudio-active" # (C)
     artstudioSticker = "artstudio-sticker" # (A) + Sticker Mode
-    gallery = "gallery" 
+    gallery = "gallery"
+    podium = "podium" # Show winner 
 
 @api_enum
 class Effect(Enum):
@@ -411,8 +412,9 @@ def generate_debug_file(file):
 
     STATUS_FIELDS = {
         "sessionId": "Session ID",
-        "players": "Players",
         "view": "Current View",
+        "players": "Players",
+        "timer": "Timer",
     }
 
     lineout("""<!DOCTYPE html>
@@ -420,7 +422,7 @@ def generate_debug_file(file):
   <head>
     <title>API</title>
     <style>
-        * {
+* {
     box-sizing: border-box;
 }
 
@@ -434,11 +436,6 @@ body {
     
     width: 100%;
     height: 100%;
-}
-
-body > textarea {
-    flex: 1;
-    resize: none;
 }
 
 table#status {
@@ -479,9 +476,35 @@ table#status tr:nth-child(2) td {
     width: 12rem;
 }
 
+#log {
+    border: 1px solid black;
+    padding: 5px;
+    flex: 1;
+    resize: none;
+    overflow: scroll;
+    font-family: monospace;
+}
+
+#log p {
+    margin: 0;
+    padding: 0;
+    white-space: pre;
+}
+
+#log button {
+    margin: 2px;
+    padding: 3px;
+}
+
     </style>
     <script type="text/javascript">
         var socket;
+    """)
+
+    # just include the full API
+    generate_js_file(file)
+
+    lineout("""
         var log_area;
         var sessionId = null;
 
@@ -491,10 +514,28 @@ table#status tr:nth-child(2) td {
             STATUS_FIELDS[field].innerText = String(value);
         }
 
+        function logElement(element)
+        {
+            if(!log_area) {
+                return;
+            }
+            log_area.appendChild(element);
+            element.scrollIntoView();
+        }
+
         function log(...text)
         {
-            if(!log_area) return;
-            log_area.append(text.join(""), "\\n");
+            const text_node = document.createElement("p");
+            text_node.innerText = text.join("");
+            logElement(text_node);
+        }
+
+        function logButton(text, handler)
+        {
+            const btn = document.createElement("button");
+            btn.innerText = text;
+            btn.addEventListener("click", handler)
+            logElement(btn);
         }
 
         function handleEnterSession(evt) {
@@ -506,6 +547,11 @@ table#status tr:nth-child(2) td {
 
         }
 
+        function handleTimerChanged(evt) {
+            setStatus("timer", evt.secondsLeft);
+            return true;
+        }
+
         function handleKicked(evt) {
             sessionId = null;
             setStatus("sessionId", "-");
@@ -513,6 +559,36 @@ table#status tr:nth-child(2) td {
 
         function handleChangeGameView(evt) {
             setStatus("view", evt.view);
+
+            switch(evt.view) {
+                case GameView.lobby: 
+                    log("Entered lobby")
+                    logButton("ready", function() {
+                        sendUserCommand(UserAction.setReady);
+                    });
+                    logButton("not ready", function() {
+                        sendUserCommand(UserAction.setNotReady);
+                    });
+                    return true;
+                case GameView.promptselection:
+                    log("Select a prompt:");
+                    for(const option of evt.voteOptions) {
+                        logButton(option, function() {
+                            sendVoteCommand(option);
+                        });
+                    }
+                    return true;
+            }
+            
+            
+            if (evt.voteOptions && evt.voteOptions.length > 0) {
+                log("Generic voting:");
+                for(const option of evt.voteOptions) {
+                    logButton(option, function() {
+                        sendVoteCommand(option);
+                    });
+                }
+            }
         }
 
         function handleChangeToolModifier(evt) {
@@ -536,7 +612,7 @@ table#status tr:nth-child(2) td {
     for atype in type_registry.values():
         if atype.dir == ApiDirection.command:
            
-            lineout("function send", atype.name, "()")
+            lineout("function autoSend", atype.name, "()")
             lineout("{")
 
             for field, hint in typing.get_type_hints(atype.pytype).items():
@@ -575,12 +651,15 @@ table#status tr:nth-child(2) td {
     for atype in type_registry.values():
         if atype.dir == ApiDirection.event:
             lineout("    case '", atype.json_tag, "':")
+            lineout("        if(handle", atype.name.removesuffix("Event"), "(obj)) {")
+            lineout("            return;")
+            lineout("        }")
             lineout("        log('event: ", atype.name ,"');")
 
             for field, hint in typing.get_type_hints(atype.pytype).items():
                 lineout("        log('  ", field, ": ', JSON.stringify(obj.", field, "))")
             lineout("          log();")
-            lineout("          handle", atype.name.removesuffix("Event"), "(obj);")
+            
             lineout("        break;")
 
     lineout("    default:")
@@ -648,7 +727,7 @@ table#status tr:nth-child(2) td {
         if atype.dir == ApiDirection.command:
             lineout("<div class=\"command\">")
             lineout(
-                '<button onClick="send', atype.name, '()">',atype.name,   '</button>'
+                '<button onClick="autoSend', atype.name, '()">',atype.name,   '</button>'
             )
 
             for field, hint in typing.get_type_hints(atype.pytype).items():
@@ -672,7 +751,7 @@ table#status tr:nth-child(2) td {
 
     lineout("""
     </div>
-    <textarea id="log"></textarea>
+    <div id="log"></div>
   </body>
 </html>
 """)

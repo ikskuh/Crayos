@@ -229,12 +229,11 @@ func (session *Session) Run() {
 
 	for len(session.Players) > 0 {
 
-		// show lobby
-
+		// Lobby
 		{
 			players_ready := createPlayerSetFromMap(session.Players, nil)
 
-			for len(session.Players) < 2 || !players_ready.all() {
+			for len(session.Players) < 2 || players_ready.any(false) {
 				pmsg := session.PumpEvents(no_timeout)
 				if pmsg == nil {
 					return
@@ -488,49 +487,108 @@ func (session *Session) Run() {
 						switch msg := pmsg.Message.(type) {
 
 						case *NotifyTimeout:
-
 							total_time_left -= 1
 							next_troll_event -= 1
 							session.Broadcast(&TimerChangedEvent{
 								SecondsLeft: total_time_left,
 							})
 
+						case *VoteCommand:
+							if pmsg.Player == trolls[0] {
+								// TODO(fqu): validate that msg.Option is actually a legal vote!
+								active_painter.Send(&ChangeToolModifierEvent{
+									Modifier: Effect(msg.Option),
+								})
+								trolls[0].Send(troll_view) // reset troll to regular view, hide the vote options
+							} else {
+								log.Println("someone else tried to harm the painter. BAD BOY!")
+							}
+
 						case *SetPaintingCommand:
-							// Keep the state up to date with the painted image:
-							troll_view.Painting = msg.Path
-							painter_view.Painting = msg.Path
+							if pmsg.Player == active_painter {
 
-							// Forward painting actions when the user changes the image.
-							session.BroadcastExcept(&PaintingChangedEvent{
-								Path: msg.Path,
-							}, pmsg.Player)
+								// Keep the state up to date with the painted image:
+								troll_view.Painting = msg.Path
+								painter_view.Painting = msg.Path
 
+								// Forward painting actions when the user changes the image.
+								session.BroadcastExcept(&PaintingChangedEvent{
+									Path: msg.Path,
+								}, pmsg.Player)
+
+							} else {
+								log.Println("someone else tried to paint. BAD BOY!")
+							}
 						}
 					}
 				}
 
 				// Phase 3:
-				log.Println(session.Id, "Trolls now select stickers")
-				for false {
-					//
+				{
+					log.Println(session.Id, "Trolls now select stickers")
+					for false {
+						//
+					}
 				}
 
 				// Phase 4:
-				log.Println(session.Id, "Players can now gaze upon the art")
-				for false {
-					//
+				{
+					log.Println(session.Id, "Players can now gaze upon the art")
+					round_end_timer := time.NewTimer(GAME_ROUND_TIME_S)
+					timeLeft := true
+					players_ready := createPlayerSetFromMap(session.Players, nil)
+					for timeLeft && players_ready.any(false) {
+						pmsg := session.PumpEvents(round_end_timer.C)
+						if pmsg == nil {
+							return
+						}
+
+						switch msg := pmsg.Message.(type) {
+						case *UserCommand:
+							switch msg.Action {
+							case USER_ACTION_CONTINUE_GAME:
+								players_ready.add(pmsg.Player)
+							}
+						case *VoteCommand:
+
+						case *NotifyTimeout:
+							timeLeft = false
+						}
+						broadcastPlayerReadyState(session, players_ready)
+					}
 				}
 			}
 		}
 
 		// Phase 5:
 		{
-			log.Println(session.Id, "All rounds done, show the gallery")
+			log.Println(session.Id, "All rounds done, show the gallery and vote for the winner")
 
-			timeLeft := false
+			session.Broadcast(&ChangeGameViewEvent{
+				View: GAME_VIEW_GALLERY,
+			})
+
+			round_end_timer := time.NewTimer(GAME_ROUND_TIME_S)
+			timeLeft := true
 			players_ready := createPlayerSetFromMap(session.Players, nil)
 			for timeLeft && players_ready.any(false) {
-				log.Println("Ready")
+				pmsg := session.PumpEvents(round_end_timer.C)
+				if pmsg == nil {
+					return
+				}
+
+				switch msg := pmsg.Message.(type) {
+				case *UserCommand:
+					switch msg.Action {
+					case USER_ACTION_CONTINUE_GAME:
+						players_ready.add(pmsg.Player)
+					}
+				case *VoteCommand:
+
+				case *NotifyTimeout:
+					timeLeft = false
+				}
+				broadcastPlayerReadyState(session, players_ready)
 			}
 
 		}
@@ -539,11 +597,25 @@ func (session *Session) Run() {
 		{
 			log.Println(session.Id, "Showcase the winner")
 
-			// TODO(philippwendel) Setup NotifyTimeout
+			// TODO set drawing of winner
+			session.Broadcast(&ChangeGameViewEvent{
+				View: GAME_VIEW_PODIUM,
+				// Painting: winner.painting
+				// PaintingPrompt: "The winner is" + winner.name
+
+				//// Unchanged stuff
+				//paintingBackdrop: Backdrop # artstudio*: the ID of the backdrop
+				//paintingStickers: list[Sticker] # artstudio*: the current list of stickers that should be shown
+
+				//votePrompt: str # artstudioGeneric: the prompt that is shown when
+				//voteOptions: list[str] # promptselection, artstudioGeneric: list of options that the player can vote for.
+			})
+
+			round_end_timer := time.NewTimer(GAME_ROUND_TIME_S)
 			timeLeft := true
 			players_ready := createPlayerSetFromMap(session.Players, nil)
 			for timeLeft && players_ready.any(false) {
-				pmsg := session.PumpEvents(no_timeout)
+				pmsg := session.PumpEvents(round_end_timer.C)
 				if pmsg == nil {
 					return
 				}
