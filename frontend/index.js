@@ -54,6 +54,7 @@ function hideSection(id) {
 }
 
 function showSection(id) {
+    console.log('showSection', id);
     document.getElementById(id).style.display = "flow";
 }
 
@@ -67,17 +68,17 @@ function setView(newView) {
             showSection(newView);
         }
     else {
+        hideSection(currentView);
+        showSection("artstudio", newView);
         switch(newView) {
             case GameView.promptselection:
-                hideSection(currentView);
-                showSection(newView);
                 
                 break;
             case GameView.artstudioGeneric:
-
+                initViewer();
                 break;
-            case GameView.artstudioActive:
-
+                case GameView.artstudioActive:
+                initPainter();
                 break;
             case GameView.artstudioSticker:
 
@@ -93,7 +94,7 @@ function onSocketReceive(event) {
 
     switch (data.type) {
         case EventId.ChangeGameView:
-            
+            console.log("ChangeGameView", data.view);
             setView(data.view);
             break;
         case EventId.PlayersChanged:

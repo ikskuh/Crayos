@@ -44,8 +44,8 @@ function setChaosEffectsEnabled(enabled) {
   document.getElementById('chaos-effects').style.display = enabled ? "block" : "none";
 }
 
-function setRatingButtonsEnabled(enabled) {
-  document.getElementById('rating-buttons').style.display = enabled ? "block" : "none";
+function setVotingButtonsEnabled(enabled) {
+  document.getElementById('voting-buttons').style.display = enabled ? "block" : "none";
 }
 
 function onMouseDown(e) {
@@ -124,7 +124,7 @@ function initPainter() {
 
   setPaintingToolsEnabled(true);
   setChaosEffectsEnabled(false);
-  setRatingButtonsEnabled(false);
+  setVotingButtonsEnabled(false);
 
   initPalette();
   selectTool(TOOL_PENCIL);
