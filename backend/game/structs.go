@@ -136,13 +136,9 @@ const (
 	GAME_VIEW_TITLE = "title"
 	GAME_VIEW_LOBBY = "lobby"
 	GAME_VIEW_PROMPTSELECTION = "promptselection"
-	GAME_VIEW_ARTSTUDIO_EMPTY = "artstudio-empty"
+	GAME_VIEW_ARTSTUDIO_GENERIC = "artstudio-empty"
 	GAME_VIEW_ARTSTUDIO_ACTIVE = "artstudio-active"
-	GAME_VIEW_EXHIBITION = "exhibition"
-	GAME_VIEW_EXHIBITION_VOTING = "exhibition-voting"
-	GAME_VIEW_EXHIBITION_STICKERING = "exhibition-stickering"
-	GAME_VIEW_SHOWCASE = "showcase"
-	GAME_VIEW_GALLERY = "gallery"
+	GAME_VIEW_ARTSTUDIO_STICKER = "artstudio-sticker"
 )
 
 const (

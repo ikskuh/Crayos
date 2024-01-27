@@ -1,5 +1,11 @@
 package game
 
+import "time"
+
+const (
+	GAME_ROUND_TIME = 60 * time.Second
+)
+
 var AVAILABLE_BACKGROUNDS = []string{
 	"arctic",
 	"graveyard",
