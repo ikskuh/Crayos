@@ -88,14 +88,11 @@ class Sticker:
 class GameView(Enum):
     title = "title"
     lobby = "lobby"
-    promptselection = "promptselection"
-    artstudioEmpty = "artstudio-empty"
-    artstudioActive = "artstudio-active"
-    exhibition = "exhibition"
-    exhibitionVoting = "exhibition-voting"
-    exhibitionStickering = "exhibition-stickering"
-    showcase = "showcase"
-    gallery = "gallery"
+    promptselection = "promptselection" # (B)
+    artstudioGeneric = "artstudio-empty" # (A) (generic voting or empty)
+    artstudioActive = "artstudio-active" # (C)
+    artstudioSticker = "artstudio-sticker" # (A) + Sticker Mode
+
 
 @api_enum
 class Effect(Enum):
@@ -172,7 +169,6 @@ class ChangeGameViewEvent:
 
     votePrompt: None | str # exhibitionVoting: the prompt that is shown when 
     voteOptions: None | list[str] # exhibitionVoting: list of options that the player can vote for.
-    pass 
 
 @api_event
 class ChangeToolModifierEvent:
