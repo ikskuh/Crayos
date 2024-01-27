@@ -85,9 +85,9 @@ func (session *Session) Destroy() {
 func (session *Session) AddPlayer(new *Player) {
 
 	if !session.Flags.Joinable {
-		new.SendChan <- &JoinSessionFailedEvent{
+		new.Send(&JoinSessionFailedEvent{
 			Reason: "Session is already running.",
-		}
+		})
 		return
 	}
 
@@ -96,28 +96,28 @@ func (session *Session) AddPlayer(new *Player) {
 	new.Session = session
 	session.Players[new] = true
 
-	new.SendChan <- &EnterSessionEvent{
+	new.Send(&EnterSessionEvent{
 		SessionId: session.Id,
-	}
+	})
 
 	session.BroadcastPlayers(new, nil)
 
-	new.SendChan <- &ChangeGameViewEvent{
+	new.Send(&ChangeGameViewEvent{
 		View: GAME_VIEW_LOBBY,
-	}
+	})
 
 }
 
 func (session *Session) Broadcast(msg Message) {
 	for player := range session.Players {
-		player.SendChan <- msg
+		player.Send(msg)
 	}
 }
 
 func (session *Session) BroadcastExcept(msg Message, except *Player) {
 	for player := range session.Players {
 		if player != except {
-			player.SendChan <- msg
+			player.Send(msg)
 		}
 	}
 }
@@ -151,11 +151,23 @@ type NotifyTimeout struct {
 	timestamp time.Time
 }
 
+func (_ *NotifyTimeout) GetJsonType() string {
+	return ""
+}
+
 type NotifyPlayerJoined struct {
+}
+
+func (_ *NotifyPlayerJoined) GetJsonType() string {
+	return ""
 }
 
 type NotifyPlayerLeft struct {
 	// PlayerMessage.Player is not in the session anymore!
+}
+
+func (_ *NotifyPlayerLeft) GetJsonType() string {
+	return ""
 }
 
 func (session *Session) PumpEvents(timeout <-chan time.Time) *PlayerMessage {
@@ -327,11 +339,11 @@ func (session *Session) Run() {
 					for _, player := range players {
 						switch player_role[player] {
 						case ROLE_PAINTER:
-							log.Println("painter", player.NickName, painter_view)
-							player.SendChan <- painter_view
+							log.Println("set view (painter)", player.NickName, painter_view)
+							player.Send(painter_view)
 						case ROLE_TROLL:
-							log.Println("troll", player.NickName, troll_view)
-							player.SendChan <- troll_view
+							log.Println("set view (troll)", player.NickName, troll_view)
+							player.Send(troll_view)
 						}
 					}
 				}
@@ -359,7 +371,7 @@ func (session *Session) Run() {
 							prompt_voted.add(pmsg.Player)
 
 							// Hide the options for the troll that voted:
-							pmsg.Player.SendChan <- &troll_view
+							pmsg.Player.Send(troll_view)
 
 							// TODO(fqu): add vote to election
 						}

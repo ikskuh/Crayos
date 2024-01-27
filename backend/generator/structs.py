@@ -89,10 +89,10 @@ class GameView(Enum):
     title = "title"
     lobby = "lobby"
     promptselection = "promptselection" # (B)
-    artstudioGeneric = "artstudio-empty" # (A) (generic voting or empty)
+    artstudioGeneric = "artstudio-generic" # (A) (generic voting or empty)
     artstudioActive = "artstudio-active" # (C)
     artstudioSticker = "artstudio-sticker" # (A) + Sticker Mode
-
+    gallery = "gallery" 
 
 @api_enum
 class Effect(Enum):
@@ -201,7 +201,6 @@ def generate_go_file(file: io.IOBase):
     lineout('import (')
     lineout('	"encoding/json"')
     lineout('	"errors"')
-    lineout('	"reflect"')
     lineout(')')
     lineout()
     lineout("const (")
@@ -210,19 +209,9 @@ def generate_go_file(file: io.IOBase):
             continue 
         lineout("\t", atype.go_tag, ' = "', atype.json_tag, '"')
     lineout(")")
-    lineout()
-    lineout("var JSON_TYPE_ID = map[reflect.Type]string{")
-    for atype in type_registry.values():
-        if not atype.dir.is_top_level():
-            continue 
-        lineout("\treflect.TypeOf(&",atype.name,"{}): ",atype.go_tag, ",")
-    lineout("}")
-    lineout()
 
     lineout(
 """
-type Message interface {
-}
 
 func SerializeMessage(msg Message) ([]byte, error) {
 
@@ -238,7 +227,7 @@ func SerializeMessage(msg Message) ([]byte, error) {
 		return nil, err
 	}
 
-	dummy["type"] = JSON_TYPE_ID[reflect.TypeOf(msg)]
+    dummy["type"] = msg.GetJsonType()
 
 	return json.Marshal(dummy)
 }
@@ -257,7 +246,7 @@ func DeserializeMessage(data []byte) (Message, error) {
 		return nil, errors.New("Invalid json")
 	}
 
-	var out interface{}
+	var out Message
 
 	switch type_tag {
 """)
@@ -316,6 +305,15 @@ func DeserializeMessage(data []byte) (Message, error) {
 
             lineout("}")
         
+        lineout()
+
+    lineout()
+    for atype in type_registry.values():
+        if not atype.dir.is_top_level():
+            continue 
+        lineout("func (item *", atype.name,") GetJsonType() string {")
+        lineout('\treturn "',atype.json_tag, '"')
+        lineout("}")
         lineout()
 
 
@@ -514,6 +512,10 @@ table#status tr:nth-child(2) td {
 
         function handlePlayersChanged(evt) {
             setStatus("players", evt.players.join(", "));
+        }
+
+        function handlePlayerReadyChanged(evt) {
+
         }
 
 """)

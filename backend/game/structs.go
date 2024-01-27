@@ -3,7 +3,6 @@ package game
 import (
 	"encoding/json"
 	"errors"
-	"reflect"
 )
 
 const (
@@ -24,27 +23,6 @@ const (
 	PLAYER_READY_CHANGED_EVENT_TAG = "player-ready-changed-event"
 )
 
-var JSON_TYPE_ID = map[reflect.Type]string{
-	reflect.TypeOf(&CreateSessionCommand{}): CREATE_SESSION_COMMAND_TAG,
-	reflect.TypeOf(&JoinSessionCommand{}): JOIN_SESSION_COMMAND_TAG,
-	reflect.TypeOf(&LeaveSessionCommand{}): LEAVE_SESSION_COMMAND_TAG,
-	reflect.TypeOf(&UserCommand{}): USER_COMMAND_TAG,
-	reflect.TypeOf(&VoteCommand{}): VOTE_COMMAND_TAG,
-	reflect.TypeOf(&PlaceStickerCommand{}): PLACE_STICKER_COMMAND_TAG,
-	reflect.TypeOf(&SetPaintingCommand{}): SET_PAINTING_COMMAND_TAG,
-	reflect.TypeOf(&EnterSessionEvent{}): ENTER_SESSION_EVENT_TAG,
-	reflect.TypeOf(&JoinSessionFailedEvent{}): JOIN_SESSION_FAILED_EVENT_TAG,
-	reflect.TypeOf(&KickedEvent{}): KICKED_EVENT_TAG,
-	reflect.TypeOf(&ChangeGameViewEvent{}): CHANGE_GAME_VIEW_EVENT_TAG,
-	reflect.TypeOf(&ChangeToolModifierEvent{}): CHANGE_TOOL_MODIFIER_EVENT_TAG,
-	reflect.TypeOf(&PaintingChangedEvent{}): PAINTING_CHANGED_EVENT_TAG,
-	reflect.TypeOf(&PlayersChangedEvent{}): PLAYERS_CHANGED_EVENT_TAG,
-	reflect.TypeOf(&PlayerReadyChangedEvent{}): PLAYER_READY_CHANGED_EVENT_TAG,
-}
-
-
-type Message interface {
-}
 
 func SerializeMessage(msg Message) ([]byte, error) {
 
@@ -60,7 +38,7 @@ func SerializeMessage(msg Message) ([]byte, error) {
 		return nil, err
 	}
 
-	dummy["type"] = JSON_TYPE_ID[reflect.TypeOf(msg)]
+    dummy["type"] = msg.GetJsonType()
 
 	return json.Marshal(dummy)
 }
@@ -79,7 +57,7 @@ func DeserializeMessage(data []byte) (Message, error) {
 		return nil, errors.New("Invalid json")
 	}
 
-	var out interface{}
+	var out Message
 
 	switch type_tag {
 
@@ -136,9 +114,10 @@ const (
 	GAME_VIEW_TITLE = "title"
 	GAME_VIEW_LOBBY = "lobby"
 	GAME_VIEW_PROMPTSELECTION = "promptselection"
-	GAME_VIEW_ARTSTUDIO_GENERIC = "artstudio-empty"
+	GAME_VIEW_ARTSTUDIO_GENERIC = "artstudio-generic"
 	GAME_VIEW_ARTSTUDIO_ACTIVE = "artstudio-active"
 	GAME_VIEW_ARTSTUDIO_STICKER = "artstudio-sticker"
+	GAME_VIEW_GALLERY = "gallery"
 )
 
 const (
@@ -224,5 +203,66 @@ type PlayersChangedEvent struct {
 
 type PlayerReadyChangedEvent struct {
 	Players map[string]bool `json:"players"`
+}
+
+
+func (item *CreateSessionCommand) GetJsonType() string {
+	return "create-session-command"
+}
+
+func (item *JoinSessionCommand) GetJsonType() string {
+	return "join-session-command"
+}
+
+func (item *LeaveSessionCommand) GetJsonType() string {
+	return "leave-session-command"
+}
+
+func (item *UserCommand) GetJsonType() string {
+	return "user-command"
+}
+
+func (item *VoteCommand) GetJsonType() string {
+	return "vote-command"
+}
+
+func (item *PlaceStickerCommand) GetJsonType() string {
+	return "place-sticker-command"
+}
+
+func (item *SetPaintingCommand) GetJsonType() string {
+	return "set-painting-command"
+}
+
+func (item *EnterSessionEvent) GetJsonType() string {
+	return "enter-session-event"
+}
+
+func (item *JoinSessionFailedEvent) GetJsonType() string {
+	return "join-session-failed-event"
+}
+
+func (item *KickedEvent) GetJsonType() string {
+	return "kicked-event"
+}
+
+func (item *ChangeGameViewEvent) GetJsonType() string {
+	return "change-game-view-event"
+}
+
+func (item *ChangeToolModifierEvent) GetJsonType() string {
+	return "change-tool-modifier-event"
+}
+
+func (item *PaintingChangedEvent) GetJsonType() string {
+	return "painting-changed-event"
+}
+
+func (item *PlayersChangedEvent) GetJsonType() string {
+	return "players-changed-event"
+}
+
+func (item *PlayerReadyChangedEvent) GetJsonType() string {
+	return "player-ready-changed-event"
 }
 

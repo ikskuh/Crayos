@@ -35,25 +35,37 @@ type Player struct {
 
 	NickName string
 
-	SendChan chan Message
+	// NOTE(fqu):
+	// Must be a buffered channel, as we have to be able to send
+	// non-blockingly.
+	sendChan chan []byte
 }
 
 func CreatePlayer(ws *websocket.Conn) *Player {
 	player := &Player{
 		ws:       ws,
 		Session:  nil,
-		SendChan: make(chan Message, 256),
 		NickName: "Anonymouse",
+
+		sendChan: make(chan []byte, 256),
 	}
 
-	player.SendChan <- &ChangeGameViewEvent{
+	player.Send(&ChangeGameViewEvent{
 		View: GAME_VIEW_TITLE,
-	}
+	})
 
 	go player.writePump()
 	go player.readPump()
 
 	return player
+}
+
+func (player *Player) Send(msg Message) {
+	encoded_msg, err := SerializeMessage(msg)
+	if err != nil {
+		log.Fatalln("failed to serialize message for client: ", err, msg)
+	}
+	player.sendChan <- encoded_msg
 }
 
 func (player *Player) Close() {
@@ -70,7 +82,7 @@ func (player *Player) Close() {
 		player.Session = nil
 	}
 	player.ws.Close()
-	close(player.SendChan)
+	close(player.sendChan)
 
 	player.closed = true
 }
@@ -120,9 +132,9 @@ func (player *Player) readPump() {
 					_ = session
 
 				} else {
-					player.SendChan <- &JoinSessionFailedEvent{
+					player.Send(&JoinSessionFailedEvent{
 						Reason: "Empty nick not allowed",
-					}
+					})
 				}
 
 			case *JoinSessionCommand:
@@ -136,14 +148,14 @@ func (player *Player) readPump() {
 						session.JoinChan <- player
 					} else {
 						log.Println("didn't find session", v.SessionId)
-						player.SendChan <- &JoinSessionFailedEvent{
+						player.Send(&JoinSessionFailedEvent{
 							Reason: "Session does not exist",
-						}
+						})
 					}
 				} else {
-					player.SendChan <- &JoinSessionFailedEvent{
+					player.Send(&JoinSessionFailedEvent{
 						Reason: "Empty nick not allowed",
-					}
+					})
 				}
 
 			default:
@@ -163,7 +175,7 @@ func (player *Player) writePump() {
 
 	for {
 		select {
-		case message, ok := <-player.SendChan:
+		case message, ok := <-player.sendChan:
 			player.ws.SetWriteDeadline(time.Now().Add(writeWait))
 			if !ok {
 				// The hub closed the channel.
@@ -171,13 +183,7 @@ func (player *Player) writePump() {
 				return
 			}
 
-			encoded_msg, err := SerializeMessage(message)
-			if err != nil {
-				log.Println("failed to serialize message for client: ", err, message)
-				return
-			}
-
-			err = player.ws.WriteMessage(websocket.TextMessage, encoded_msg)
+			err := player.ws.WriteMessage(websocket.TextMessage, message)
 			if err != nil {
 				log.Println("failed to send message to client: ", err)
 				return
