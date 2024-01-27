@@ -8,7 +8,6 @@ section#painter {
     top: 233px;
     width: 328px;
     height: 737px;
-    background-color: rgba(255,255,0,0.5);
 }
 
 #toolbox button {
@@ -17,13 +16,16 @@ section#painter {
     height: 104px;
 }
 
+#toolbox button.selected {
+    border: 4px solid black;
+}
+
 #toolbox button#pencil {
     position: absolute;
     left: 32px;
     top: 49px;
     background-image: url('img/pencil.png');
 }
-
 #toolbox button#eraser {
     position: absolute;
     left: 32px;
@@ -32,6 +34,7 @@ section#painter {
 }
 
 #toolbox #palette {
+    position: absolute;
     left: 30px;
     top: 326px;
 }
@@ -49,8 +52,9 @@ section#painter {
     color: white;
 }
 
-canvas {
+#canvas {
     position: absolute;
     left: 453px;
     top: 233px;
+    cursor: none;
 }
