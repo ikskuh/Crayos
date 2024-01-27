@@ -107,8 +107,6 @@ class Effect(Enum):
 @api_enum
 class UserAction(Enum):
     startGame = "startGame"
-    readyToStartGame = "readyToStartGame"
-    notReadyToStartGame = "notReadyToStartGame"
 
 
 @api_command

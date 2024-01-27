@@ -44,8 +44,6 @@ const Effect = {
 // Enum:
 const UserAction = {
     startGame : 'startGame',
-    readyToStartGame : 'readyToStartGame',
-    notReadyToStartGame : 'notReadyToStartGame',
 };
 
 // Command:

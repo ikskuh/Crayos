@@ -161,6 +161,108 @@ func (session *Session) Run() {
 
 	for len(session.Players) > 0 {
 
+		// show lobby
+		var startGame = false
+		for startGame {
+			pmsg := session.PumpEvents()
+			if pmsg == nil {
+				return
+			}
+
+			switch msg := pmsg.Message.(type) {
+			case *UserCommand:
+				startGame = (msg.Action == USER_ACTION_START_GAME) && len(session.Players) >= 2
+			}
+		}
+
+		for current_player := range session.Players {
+
+			// determine painter
+			_ = current_player
+
+			// change view for all, clear current painting
+			var painting_time_not_up = false
+			for painting_time_not_up {
+				pmsg := session.PumpEvents()
+				if pmsg == nil {
+					return
+				}
+
+				switch msg := pmsg.Message.(type) {
+				// case *Timeout:
+				// 	break
+				default:
+					_ = msg
+				}
+
+			}
+
+			// enter sticker stage
+			var stickers_not_placed = false
+			for stickers_not_placed {
+				pmsg := session.PumpEvents()
+				if pmsg == nil {
+					return
+				}
+
+				switch msg := pmsg.Message.(type) {
+				//case Timeout:
+				//	break
+				default:
+					_ = msg
+				}
+
+			}
+
+			// show picture/showcase
+			for painting_time_not_up {
+				pmsg := session.PumpEvents()
+				if pmsg == nil {
+					return
+				}
+
+				switch msg := pmsg.Message.(type) {
+				// case Timeout:
+				// 	break
+				default:
+					_ = msg
+				}
+
+			}
+		}
+
+		// show art gallery with voting
+		var gallery_time_not_up_and_players_not_finished = false
+		for gallery_time_not_up_and_players_not_finished {
+			pmsg := session.PumpEvents()
+			if pmsg == nil {
+				return
+			}
+
+			switch msg := pmsg.Message.(type) {
+			// case Timeout:
+			//	break
+			default:
+				_ = msg
+			}
+		}
+
+		// higjlight winner
+
+		// show art gallery with winner
+		for gallery_time_not_up_and_players_not_finished {
+			pmsg := session.PumpEvents()
+			if pmsg == nil {
+				return
+			}
+
+			switch msg := pmsg.Message.(type) {
+			// case Timeout:
+			//	break
+			default:
+				_ = msg
+			}
+		}
 		pmsg := session.PumpEvents()
 		if pmsg == nil {
 			return
