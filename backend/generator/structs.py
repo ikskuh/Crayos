@@ -107,9 +107,9 @@ class Effect(Enum):
 
 @api_enum
 class UserAction(Enum):
-    setReady = "set-ready"
-    setNotReady = "set-not-ready"
-    continueGame = "continue"
+    setReady = "set-ready" # sets the player ready
+    setNotReady = "set-not-ready" # sets the player to "not ready" in the lobby
+    continueGame = "continue" # the player wants to continue/leave the current screen
 
 
 @api_command
@@ -127,14 +127,13 @@ class JoinSessionCommand:
 class LeaveSessionCommand:
     pass 
 
-
 @api_command
 class UserCommand:
     action: UserAction
 
 @api_command
 class VoteCommand:
-    option: str
+    option: str # user has voted for an option from ChangeGameViewEvent.voteOptions
 
 
 @api_command

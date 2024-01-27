@@ -1,6 +1,6 @@
-let canvas;
+let painterCanvas;
 let paletteElem;
-let timerNumberElem;
+let painterTimerNumberElem;
 
 // CONSTANTS
 const width = 1920;
@@ -27,24 +27,19 @@ const palette = [
 ];
 let selectedColor = 7;
 
-const paths = [];
+const painterPaths = [];
 let mx = -1000;
 let my = -1000;
 
-const backgroundUrls = ["img/arctic.png", "img/graveyard.png", "img/pirate_ship.png", "img/theater_stage1.png"];
-const backgrounds = [];
 let selectedBackground = 0;
 
 let chaosEffect = null;
 
 function initPainter() {
-  document.getElementById("painter").style.display = "block";
-  canvas = document.getElementById("canvas");
-  timerNumberElem = document.getElementById("timer-number");
+  painterCanvas = document.getElementById("painter-canvas");
+  painterTimerNumberElem = document.getElementById("painter-timer-number");
 
-  loadBackgrounds();
-
-  canvas.onmousedown = (e) => {
+  painterCanvas.onmousedown = (e) => {
     mx = e.offsetX;
     my = e.offsetY;
     const point = { x: mx, y: my };
@@ -53,9 +48,9 @@ function initPainter() {
     } else if (selectedTool == TOOL_ERASER) {
       eraserDeleteAt(point);
     }
-    drawCanvas();
+    drawPainterCanvas();
   };
-  canvas.onmousemove = (e) => {
+  painterCanvas.onmousemove = (e) => {
     mx = e.offsetX;
     my = e.offsetY;
     if (e.buttons & 1 || chaosEffect == Effect.lock_pencil) {
@@ -66,13 +61,13 @@ function initPainter() {
         eraserDeleteAt(point);
       }
     }
-    drawCanvas();
+    drawPainterCanvas();
   };
-  canvas.onmouseup = (e) => {
+  painterCanvas.onmouseup = (e) => {
     // TODO: send paths to server
     console.log(JSON.stringify(paths));
   };
-  canvas.onmouseenter = (e) => {
+  painterCanvas.onmouseenter = (e) => {
     if (e.buttons & 1) {
       mx = e.offsetX;
       my = e.offsetY;
@@ -84,60 +79,33 @@ function initPainter() {
       }
     }
   };
-  canvas.onmouseleave = (e) => {
+  painterCanvas.onmouseleave = (e) => {
     mx = -1000;
     my = -1000;
-    drawCanvas();
+    drawPainterCanvas();
   };
 
   initPalette();
   selectTool(TOOL_PENCIL);
-  paths.splice(0, paths.length);
+  painterPaths.splice(0, painterPaths.length);
 
   selectedBackground = Math.floor(Math.random() * backgrounds.length);
 
   // countdown
-  timerNumberElem.innerText = TIMER_SECONDS;
+  painterTimerNumberElem.innerText = TIMER_SECONDS;
   const timerInterval = setInterval(() => {
-    timerNumberElem.innerText--;
-    if (timerNumberElem.innerText == 0) {
+    painterTimerNumberElem.innerText--;
+    if (painterTimerNumberElem.innerText == 0) {
       clearInterval(timerInterval);
     }
   }, 1000);
+
+  drawPainterCanvas();
 }
 
-function drawCanvas() {
-  const ctx = canvas.getContext("2d");
-  ctx.drawImage(backgrounds[selectedBackground], 0, 0, canvas.width, canvas.height);
-
-  ctx.lineWidth = lineWidth;
-  ctx.lineCap = "round";
-  ctx.lineJoin = "round";
-  for (let i = 0; i < paths.length; i++) {
-    const path = paths[i];
-    ctx.beginPath();
-    if (path.points.length == 1 && !path.points[0].erased) {
-      ctx.arc(path.points[0].x, path.points[0].y, lineWidth / 2, 0, 2 * Math.PI);
-      ctx.fillStyle = path.color;
-      ctx.fill();
-    } else {
-      let moved = false;
-      for (let j = 0; j < path.points.length; j++) {
-        if (path.points[j].erased) {
-          moved = false;
-          continue;
-        }
-        if (!moved) {
-          ctx.moveTo(path.points[j].x, path.points[j].y);
-          moved = true;
-        } else {
-          ctx.lineTo(path.points[j].x, path.points[j].y);
-        }
-      }
-      ctx.strokeStyle = path.color;
-      ctx.stroke();
-    }
-  }
+function drawPainterCanvas() {
+  const ctx = painterCanvas.getContext("2d");
+  drawPainting(painterCanvas, painterPaths);
 
   // preview tool
   if (selectedTool == TOOL_PENCIL) {
@@ -156,7 +124,7 @@ function drawCanvas() {
   // chaos effect
   if (chaosEffect == Effect.flashlight) {
     ctx.beginPath();
-    ctx.rect(0, 0, canvas.width, canvas.height);
+    ctx.rect(0, 0, painterCanvas.width, painterCanvas.height);
     ctx.arc(mx, my, 200, 2 * Math.PI, 0);
     ctx.fillStyle = "#000";
     ctx.fill("evenodd");
@@ -173,28 +141,28 @@ function activateChaosEffect(effect) {
   }, EFFECT_COOLDOWN_MS);
 
   if (chaosEffect == Effect.flip) {
-    canvas.classList.add(Effect.flip);
+    painterCanvas.classList.add(Effect.flip);
   } else if (chaosEffect == Effect.drunk) {
-    canvas.classList.add(Effect.drunk);
+    painterCanvas.classList.add(Effect.drunk);
   } else if (chaosEffect == Effect.swap_tool) {
     swapTools();
   }
 
-  drawCanvas();
+  drawPainterCanvas();
 }
 
 function deactivateChaosEffect(effect) {
   console.log("deactivate chaos effect: " + effect);
   if (effect == Effect.flip) {
-    canvas.classList.remove(Effect.flip);
+    painterCanvas.classList.remove(Effect.flip);
   } else if (effect == Effect.drunk) {
-    canvas.classList.remove(Effect.drunk);
+    painterCanvas.classList.remove(Effect.drunk);
   } else if (chaosEffect == Effect.swap_tool) {
     swapTools();
   }
 
   chaosEffect = null;
-  drawCanvas();
+  drawPainterCanvas();
 }
 
 // TOOLS
@@ -219,15 +187,15 @@ function swapTools() {
 }
 
 function pencilBeginPath(point) {
-  paths.push({ color: palette[selectedColor], points: [point] });
+  painterPaths.push({ color: palette[selectedColor], points: [point] });
 }
 
 function pencilContinuePath(point) {
-  if (paths.length == 0) {
+  if (painterPaths.length == 0) {
     pencilBeginPath(point);
     return;
   }
-  const currentPath = paths[paths.length - 1];
+  const currentPath = painterPaths[painterPaths.length - 1];
   const lastPoint = currentPath.points[currentPath.points.length - 1];
   if (distanceSquared(lastPoint, point) > distanceThreshold * distanceThreshold) {
     currentPath.points.push(point);
@@ -235,8 +203,8 @@ function pencilContinuePath(point) {
 }
 
 function eraserDeleteAt(point) {
-  for (let i = 0; i < paths.length; i++) {
-    const path = paths[i];
+  for (let i = 0; i < painterPaths.length; i++) {
+    const path = painterPaths[i];
     for (let j = 0; j < path.points.length; j++) {
       const p = path.points[j];
       if (distanceSquared(p, point) < eraserRadius * eraserRadius) {
@@ -291,17 +259,6 @@ function drawPalette() {
       pctx.lineWidth = 4;
       pctx.stroke();
     }
-  }
-}
-
-function loadBackgrounds() {
-  for (let i = 0; i < backgroundUrls.length; i++) {
-    const img = new Image();
-    img.src = backgroundUrls[i];
-    img.onload = () => {
-      drawCanvas();
-    };
-    backgrounds.push(img);
   }
 }
 

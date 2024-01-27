@@ -3,6 +3,7 @@ package game
 import (
 	"fmt"
 	"log"
+	"math/rand"
 	"time"
 )
 
@@ -29,6 +30,13 @@ type Session struct {
 	JoinChan        chan *Player // receives players that have joined the session
 	LeaveChan       chan *Player // receives players that have left  the session
 }
+
+type Role int
+
+const (
+	ROLE_PAINTER Role = 0
+	ROLE_TROLL   Role = 1
+)
 
 var sessions = map[string]*Session{}
 
@@ -187,11 +195,11 @@ func (session *Session) PumpEvents(timeout chan time.Time) *PlayerMessage {
 	return nil
 }
 
-func broadcastPlayerReadyState(s *Session, m map[*Player]bool) {
-	log.Println("Sending PlayerReadyState")
+func broadcastPlayerReadyState(s *Session, m playerSet) {
+	log.Println("Sending PlayerReadyState", m)
 	readyMap := make(map[string]bool)
-	for p, b := range m {
-		readyMap[p.NickName] = b
+	for p, b := range m.items {
+		readyMap[p.NickName] = b.value
 	}
 	s.Broadcast(&PlayerReadyChangedEvent{
 		Players: readyMap,
@@ -199,6 +207,8 @@ func broadcastPlayerReadyState(s *Session, m map[*Player]bool) {
 }
 
 func (session *Session) Run() {
+	random_source := rand.New(rand.NewSource(time.Now().UnixNano()))
+
 	log.Println("Starting ", session.Id, " opened")
 	defer log.Println("Session ", session.Id, " closed")
 
@@ -207,139 +217,304 @@ func (session *Session) Run() {
 	for len(session.Players) > 0 {
 
 		// show lobby
-		playersReady := false
-		playersReadyMap := make(map[*Player]bool)
-		for len(session.Players) < 2 || !playersReady {
-			pmsg := session.PumpEvents(no_timeout)
-			if pmsg == nil {
-				return
-			}
 
-			switch msg := pmsg.Message.(type) {
-			case *UserCommand:
-				switch msg.Action {
-				case USER_ACTION_SET_READY:
-					playersReadyMap[pmsg.Player] = true
-				case USER_ACTION_SET_NOT_READY:
-					playersReadyMap[pmsg.Player] = false
-				}
-			case *CreateSessionCommand:
-				playersReadyMap[pmsg.Player] = false
-			case *NotifyPlayerJoined:
-				playersReadyMap[pmsg.Player] = false
-			case *NotifyPlayerLeft:
-				delete(playersReadyMap, pmsg.Player)
-			}
-			broadcastPlayerReadyState(session, playersReadyMap)
+		{
+			players_ready := createPlayerSetFromMap(session.Players, nil)
 
-			acc := true
-			for _, b := range playersReadyMap {
-				acc = acc && b
-			}
-			playersReady = acc
-
-		}
-
-		for current_player := range session.Players {
-
-			// determine painter
-			_ = current_player
-
-			// change view for all, clear current painting
-			var painting_time_not_up = false
-			for painting_time_not_up {
+			for len(session.Players) < 2 || !players_ready.all() {
 				pmsg := session.PumpEvents(no_timeout)
 				if pmsg == nil {
 					return
 				}
 
 				switch msg := pmsg.Message.(type) {
-				// case *Timeout:
-				// 	break
+				case *UserCommand:
+					switch msg.Action {
+					case USER_ACTION_SET_READY:
+						players_ready.add(pmsg.Player)
+					case USER_ACTION_SET_NOT_READY:
+						players_ready.remove(pmsg.Player)
+					}
+				case *NotifyPlayerJoined:
+					players_ready.insertNewPlayer(pmsg.Player, false)
 
-				case *NotifyTimeout:
+				case *NotifyPlayerLeft:
+					players_ready.removePlayer(pmsg.Player)
 
-					log.Println("message timeout received")
-
-				// Forward painting actions
-				case *SetPaintingCommand:
-					session.BroadcastExcept(&PaintingChangedEvent{
-						Path: msg.Path,
-					}, pmsg.Player)
-
-				default:
-					_ = msg
 				}
-
-			}
-
-			// enter sticker stage
-			var stickers_not_placed = false
-			for stickers_not_placed {
-				pmsg := session.PumpEvents(no_timeout)
-				if pmsg == nil {
-					return
-				}
-
-				switch msg := pmsg.Message.(type) {
-				//case Timeout:
-				//	break
-				default:
-					_ = msg
-				}
-
-			}
-
-			// show picture/showcase
-			for painting_time_not_up {
-				pmsg := session.PumpEvents(no_timeout)
-				if pmsg == nil {
-					return
-				}
-
-				switch msg := pmsg.Message.(type) {
-				// case Timeout:
-				// 	break
-				default:
-					_ = msg
-				}
+				broadcastPlayerReadyState(session, players_ready)
 
 			}
 		}
 
-		// show art gallery with voting
-		var gallery_time_not_up_and_players_not_finished = false
-		for gallery_time_not_up_and_players_not_finished {
-			pmsg := session.PumpEvents(no_timeout)
-			if pmsg == nil {
-				return
+		log.Println(session.Id, "Start game")
+
+		{
+			// Create a list of players:
+			players := make([]*Player, len(session.Players))
+			{
+				i := 0
+				for p := range session.Players {
+					players[i] = p
+					i += 1
+				}
 			}
 
-			switch msg := pmsg.Message.(type) {
-			// case Timeout:
-			//	break
-			default:
-				_ = msg
+			// create random player order which we will use this round:
+			random_source.Shuffle(len(players), func(i, j int) {
+				players[i], players[j] = players[j], players[i]
+			})
+
+			// Each player gets their turn:
+			for index, active_painter := range players {
+
+				log.Println(session.Id, "Start round", index+1)
+
+				// Assign roles:
+				player_role := make(map[*Player]Role)
+				for _, player := range players {
+					if player == active_painter {
+						player_role[player] = ROLE_PAINTER
+					} else {
+						player_role[player] = ROLE_TROLL
+					}
+				}
+
+				// Select one random background:
+
+				backdrop := AVAILABLE_BACKGROUNDS[random_source.Intn(len(AVAILABLE_BACKGROUNDS))]
+
+				prompts := make([]string, len(AVAILABLE_PROMPTS))
+				random_source.Shuffle(len(prompts), func(i, j int) {
+					prompts[i], prompts[j] = prompts[j], prompts[i]
+				})
+				prompts = prompts[0:3]
+
+				log.Println("selected backdrop:", backdrop)
+				log.Println("selected prompts: ", prompts)
+
+				// Create prototypes for the views:
+				troll_view := ChangeGameViewEvent{
+					View: GAME_VIEW_EXHIBITION,
+
+					Painting:         nil,
+					PaintingBackdrop: &backdrop,
+					PaintingPrompt:   nil,
+					PaintingStickers: []Sticker{},
+
+					AvailableStickers: []string{},
+
+					VotePrompt:  &VOTE_PROMPT_PROMPT,
+					VoteOptions: prompts,
+				}
+				painter_view := ChangeGameViewEvent{
+					View: GAME_VIEW_EXHIBITION,
+
+					Painting:         nil,
+					PaintingBackdrop: &backdrop,
+					PaintingPrompt:   nil,
+					PaintingStickers: []Sticker{},
+
+					AvailableStickers: []string{},
+
+					VotePrompt:  nil,
+					VoteOptions: []string{},
+				}
+
+				// local function to update the roles:
+				updateViews := func() {
+					for _, player := range players {
+						switch player_role[player] {
+						case ROLE_PAINTER:
+							player.SendChan <- &painter_view
+						case ROLE_TROLL:
+							player.SendChan <- &troll_view
+						}
+					}
+				}
+
+				// Now update the views for the players
+				updateViews()
+
+				// Phase 1: Trolls vote for a prompt
+				log.Println(session.Id, "Voting for trolls starts")
+				{
+					prompt_voted := createPlayerSetFromList(players, active_painter)
+					for !prompt_voted.allTrolls() {
+						pmsg := session.PumpEvents(no_timeout)
+						if pmsg == nil {
+							return
+						}
+
+						switch msg := pmsg.Message.(type) {
+						case *VoteCommand:
+							log.Println("Player ", pmsg.Player.NickName, "voted for", msg)
+							prompt_voted.add(pmsg.Player)
+
+							// TODO(fqu): add vote to election
+						}
+					}
+
+					// TODO(fqu): evaluate votes, select prompt
+				}
+
+				// Phase 2:
+				log.Println(session.Id, "Painter is now being tortured")
+				for {
+					pmsg := session.PumpEvents(no_timeout)
+					if pmsg == nil {
+						return
+					}
+
+					switch msg := pmsg.Message.(type) {
+					// case *Timeout:
+					// 	break
+
+					case *NotifyTimeout:
+
+						log.Println("message timeout received")
+
+					// Forward painting actions
+					case *SetPaintingCommand:
+						session.BroadcastExcept(&PaintingChangedEvent{
+							Path: msg.Path,
+						}, pmsg.Player)
+
+					default:
+						_ = msg
+					}
+				}
+
+				// Phase 3:
+				log.Println(session.Id, "Trolls now select stickers")
+				for {
+					//
+				}
+
+				// Phase 4:
+				log.Println(session.Id, "Players can now gaze upon the art")
+				for {
+					//
+				}
 			}
 		}
 
-		// higjlight winner
+		// Phase 5:
+		log.Println(session.Id, "All rounds done, show the gallery")
 
-		// show art gallery with winner
-		for gallery_time_not_up_and_players_not_finished {
-			pmsg := session.PumpEvents(no_timeout)
-			if pmsg == nil {
-				return
-			}
-
-			switch msg := pmsg.Message.(type) {
-			// case Timeout:
-			//	break
-			default:
-				_ = msg
-			}
+		for {
+			//
 		}
-		// pmsg := session.PumpEvents(no_timeout)
-		// log.Println("Handle message from [", pmsg.Player.NickName, "]: ", pmsg.Message)
+
+		// Phase 6:
+		log.Println(session.Id, "Showcase the winner")
+
+		for {
+			//
+		}
+
 	}
+}
+
+type playerSetItem struct {
+	value bool
+	role  Role
+}
+
+type playerSet struct {
+	items map[*Player]*playerSetItem
+}
+
+func createPlayerSetFromMap(players map[*Player]bool, painter *Player) playerSet {
+
+	items := make(map[*Player]*playerSetItem)
+
+	for p := range players {
+		item := playerSetItem{
+			value: false,
+			role:  ROLE_TROLL,
+		}
+		if p == painter {
+			item.role = ROLE_PAINTER
+		}
+		items[p] = &item
+	}
+
+	return playerSet{
+		items: items,
+	}
+}
+
+func createPlayerSetFromList(players []*Player, painter *Player) playerSet {
+
+	items := make(map[*Player]*playerSetItem)
+
+	for _, p := range players {
+		item := playerSetItem{
+			value: false,
+			role:  ROLE_TROLL,
+		}
+		if p == painter {
+			item.role = ROLE_PAINTER
+		}
+		items[p] = &item
+	}
+
+	return playerSet{
+		items: items,
+	}
+}
+
+func (set *playerSet) add(p *Player) {
+	set.items[p].value = true
+}
+
+func (set *playerSet) remove(p *Player) {
+	set.items[p].value = false
+}
+
+func (set *playerSet) all() bool {
+	for _, item := range set.items {
+		if !item.value {
+			return false
+		}
+	}
+	return true
+}
+
+func (set *playerSet) none() bool {
+	for _, item := range set.items {
+		if item.value {
+			return false
+		}
+	}
+	return true
+}
+
+func (set *playerSet) allTrolls() bool {
+	for _, item := range set.items {
+		if item.role == ROLE_TROLL && !item.value {
+			return false
+		}
+	}
+	return true
+}
+
+func (set *playerSet) painter() bool {
+	for _, item := range set.items {
+		if item.role == ROLE_PAINTER {
+			return item.value
+		}
+	}
+	return false
+}
+
+func (set *playerSet) insertNewPlayer(p *Player, inital bool) {
+	set.items[p] = &playerSetItem{
+		value: inital,
+	}
+}
+
+func (set *playerSet) removePlayer(p *Player) {
+	delete(set.items, p)
 }
