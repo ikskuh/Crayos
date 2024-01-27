@@ -7,7 +7,7 @@ import (
 
 const (
 	// Length of a drawing round in seconds
-	GAME_ROUND_TIME_S = 90
+	GAME_ROUND_TIME_S = 20 // 90
 
 	/// Time of a "trolling" time slice
 	GAME_TROLL_EFFECT_COOLDOWN_S = 10

@@ -414,6 +414,7 @@ def generate_debug_file(file):
         "sessionId": "Session ID",
         "view": "Current View",
         "players": "Players",
+        "backdrop": "Backdrop",
         "timer": "Timer",
     }
 
@@ -559,36 +560,39 @@ table#status tr:nth-child(2) td {
 
         function handleChangeGameView(evt) {
             setStatus("view", evt.view);
+            setStatus("backdrop", evt.paintingBackdrop);
+
+            log('ChangeGameViewEvent to ', JSON.stringify(evt.view));
+            log('  painting: ', JSON.stringify(evt.painting));
+            log('  paintingPrompt: ', JSON.stringify(evt.paintingPrompt));
+            log('  paintingBackdrop: ', JSON.stringify(evt.paintingBackdrop));
+            log('  paintingStickers: ', JSON.stringify(evt.paintingStickers));
+            if (evt.voteOptions && evt.voteOptions.length > 0) {
+                log('  vote:');
+                for(const option of evt.voteOptions) {
+                    logButton(option, function() {
+                        sendVoteCommand(option);
+                    });
+                }
+            } else {
+                log('  vote: none');
+                
+            }
+
 
             switch(evt.view) {
                 case GameView.lobby: 
-                    log("Entered lobby")
+                    log("Entered lobby, select if you're ready:")
                     logButton("ready", function() {
                         sendUserCommand(UserAction.setReady);
                     });
                     logButton("not ready", function() {
                         sendUserCommand(UserAction.setNotReady);
                     });
-                    return true;
-                case GameView.promptselection:
-                    log("Select a prompt:");
-                    for(const option of evt.voteOptions) {
-                        logButton(option, function() {
-                            sendVoteCommand(option);
-                        });
-                    }
-                    return true;
+                    break;
             }
             
-            
-            if (evt.voteOptions && evt.voteOptions.length > 0) {
-                log("Generic voting:");
-                for(const option of evt.voteOptions) {
-                    logButton(option, function() {
-                        sendVoteCommand(option);
-                    });
-                }
-            }
+            return true;
         }
 
         function handleChangeToolModifier(evt) {
@@ -601,10 +605,28 @@ table#status tr:nth-child(2) td {
 
         function handlePlayersChanged(evt) {
             setStatus("players", evt.players.join(", "));
+
+            if (evt.addedPlayer) {
+                log(evt.addedPlayer, " joined the game");
+            }
+            else if (evt.addedPlayer) {
+                log(evt.removedPlayer, " joined the game");
+            }
+            else {
+                log("Players changed to: ", evt.players.join(", "));
+            }
+
+            return true;
         }
 
         function handlePlayerReadyChanged(evt) {
-
+            log(
+                "READY: ", 
+                Object.keys(evt.players).filter(k => evt.players[k]).join(", ") || "-",
+                "\tNOT READY:",
+                Object.keys(evt.players).filter(k => !evt.players[k]).join(", " || "-")
+            )
+            return true;
         }
 
 """)
