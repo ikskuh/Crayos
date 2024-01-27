@@ -41,6 +41,7 @@ function loadBackgrounds() {
 }
 
 function initPainter() {
+  document.getElementById("painter").style.display = "block";
   canvas = document.getElementById("canvas");
 
   loadBackgrounds();
