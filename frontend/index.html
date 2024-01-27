@@ -9,8 +9,7 @@
     <script src="index.js"></script>
     <script src="title.js"></script>
     <script src="lobby.js"></script>
-    <script src="chaospaint.js"></script>
-    <script src="viewer.js"></script>
+    <script src="artstudio.js"></script>
   </head>
 
   <body onload="init();">
@@ -51,7 +50,7 @@
         <button type="button" id="ready" onclick="readyClicked()">Ready</button>
         <button type="button" id="joinLink" onclick="btnCopyInvite()">Copy Invite Link</button>
       </section>
-      <section id="painter">
+      <section id="artstudio">
         <div class="timer">
           <p>Time left:<br /><span id="painter-timer-number"></span></p>
         </div>
@@ -59,27 +58,27 @@
           <p id="painter-prompt-text">T-Rex trying to paint its toenails</p>
         </div>
         <div class="toolbox">
-          <button id="pencil" onclick="selectTool('pencil')" />
-          <button id="eraser" onclick="selectTool('eraser')" />
-          <canvas id="palette" width="264" height="360"></canvas>
-        </div>
-        <canvas id="painter-canvas" class="drawing-canvas" width="1385" height="737"></canvas>
-      </section>
-      <section id="viewer">
-        <div class="timer">
-            <p>Time left:<br /><span id="viewer-timer-number"></span></p>
+          <div id="painting-tools">
+            <button id="pencil" onclick="selectTool('pencil')" />
+            <button id="eraser" onclick="selectTool('eraser')" />
+            <canvas id="palette" width="264" height="360"></canvas>
           </div>
-          <div class="prompt">
-            <p id="viewer-prompt-text">T-Rex trying to paint its toenails</p>
-          </div>
-          <div class="toolbox">
+          <div id="chaos-effects">
             <button id="drunk" onclick="activateChaosEffect('drunk')" />
             <button id="flashlight" onclick="activateChaosEffect('flashlight')" />
             <button id="flip" onclick="activateChaosEffect('flip')" />
             <button id="lock_pencil" onclick="activateChaosEffect('lock_pencil')" />
             <button id="swap_tool" onclick="activateChaosEffect('swap_tool')" />
           </div>
-          <canvas id="viewer-canvas" class="drawing-canvas" width="1385" height="737"></canvas>
+          <div id="voting-buttons">
+            <button id="vote0" onclick="vote(0)" />
+            <button id="vote1" onclick="vote(1)" />
+            <button id="vote2" onclick="vote(2)" />
+            <button id="vote3" onclick="vote(3)" />
+            <button id="vote4" onclick="vote(4)" />
+          </div>
+        </div>
+        <canvas id="painter-canvas" class="drawing-canvas" width="1385" height="737"></canvas>
       </section>
       <section id="gallery">
         

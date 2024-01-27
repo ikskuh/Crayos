@@ -17,6 +17,7 @@ const (
 	JOIN_SESSION_FAILED_EVENT_TAG = "join-session-failed-event"
 	KICKED_EVENT_TAG = "kicked-event"
 	CHANGE_GAME_VIEW_EVENT_TAG = "change-game-view-event"
+	TIMER_CHANGED_EVENT_TAG = "timer-changed-event"
 	CHANGE_TOOL_MODIFIER_EVENT_TAG = "change-tool-modifier-event"
 	PAINTING_CHANGED_EVENT_TAG = "painting-changed-event"
 	PLAYERS_CHANGED_EVENT_TAG = "players-changed-event"
@@ -83,6 +84,8 @@ func DeserializeMessage(data []byte) (Message, error) {
 		out = &KickedEvent{}
 	case CHANGE_GAME_VIEW_EVENT_TAG:
 		out = &ChangeGameViewEvent{}
+	case TIMER_CHANGED_EVENT_TAG:
+		out = &TimerChangedEvent{}
 	case CHANGE_TOOL_MODIFIER_EVENT_TAG:
 		out = &ChangeToolModifierEvent{}
 	case PAINTING_CHANGED_EVENT_TAG:
@@ -110,29 +113,67 @@ type Sticker struct {
 	Y float32 `json:"y"`
 }
 
+type GameView string
 const (
-	GAME_VIEW_TITLE = "title"
-	GAME_VIEW_LOBBY = "lobby"
-	GAME_VIEW_PROMPTSELECTION = "promptselection"
-	GAME_VIEW_ARTSTUDIO_GENERIC = "artstudio-generic"
-	GAME_VIEW_ARTSTUDIO_ACTIVE = "artstudio-active"
-	GAME_VIEW_ARTSTUDIO_STICKER = "artstudio-sticker"
-	GAME_VIEW_GALLERY = "gallery"
+	GAME_VIEW_TITLE GameView = "title"
+	GAME_VIEW_LOBBY GameView = "lobby"
+	GAME_VIEW_PROMPTSELECTION GameView = "promptselection"
+	GAME_VIEW_ARTSTUDIO_GENERIC GameView = "artstudio-generic"
+	GAME_VIEW_ARTSTUDIO_ACTIVE GameView = "artstudio-active"
+	GAME_VIEW_ARTSTUDIO_STICKER GameView = "artstudio-sticker"
+	GAME_VIEW_GALLERY GameView = "gallery"
 )
+var ALL_GAME_VIEW_ITEMS = []GameView{
+	"title",
+	"lobby",
+	"promptselection",
+	"artstudio-generic",
+	"artstudio-active",
+	"artstudio-sticker",
+	"gallery",
+}
 
+type Effect string
 const (
-	EFFECT_FLASHLIGHT = "flashlight"
-	EFFECT_DRUNK = "drunk"
-	EFFECT_FLIP = "flip"
-	EFFECT_SWAP_TOOL = "swap_tool"
-	EFFECT_LOCK_PENCIL = "lock_pencil"
+	EFFECT_FLASHLIGHT Effect = "flashlight"
+	EFFECT_DRUNK Effect = "drunk"
+	EFFECT_FLIP Effect = "flip"
+	EFFECT_SWAP_TOOL Effect = "swap_tool"
+	EFFECT_LOCK_PENCIL Effect = "lock_pencil"
 )
+var ALL_EFFECT_ITEMS = []Effect{
+	"flashlight",
+	"drunk",
+	"flip",
+	"swap_tool",
+	"lock_pencil",
+}
 
+type UserAction string
 const (
-	USER_ACTION_SET_READY = "set-ready"
-	USER_ACTION_SET_NOT_READY = "set-not-ready"
-	USER_ACTION_CONTINUE_GAME = "continue"
+	USER_ACTION_SET_READY UserAction = "set-ready"
+	USER_ACTION_SET_NOT_READY UserAction = "set-not-ready"
+	USER_ACTION_CONTINUE_GAME UserAction = "continue"
 )
+var ALL_USER_ACTION_ITEMS = []UserAction{
+	"set-ready",
+	"set-not-ready",
+	"continue",
+}
+
+type Backdrop string
+const (
+	BACKDROP_ARCTIC Backdrop = "arctic"
+	BACKDROP_GRAVEYARD Backdrop = "graveyard"
+	BACKDROP_PIRATE_SHIP Backdrop = "pirate_ship"
+	BACKDROP_THEATER_STAGE1 Backdrop = "theater_stage1"
+)
+var ALL_BACKDROP_ITEMS = []Backdrop{
+	"arctic",
+	"graveyard",
+	"pirate_ship",
+	"theater_stage1",
+}
 
 type CreateSessionCommand struct {
 	NickName string `json:"nickName"`
@@ -147,7 +188,7 @@ type LeaveSessionCommand struct {
 }
 
 type UserCommand struct {
-	Action string `json:"action"`
+	Action UserAction `json:"action"`
 }
 
 type VoteCommand struct {
@@ -177,18 +218,21 @@ type KickedEvent struct {
 }
 
 type ChangeGameViewEvent struct {
-	View string `json:"view"`
+	View GameView `json:"view"`
 	Painting interface{} `json:"painting"`
-	PaintingPrompt *string `json:"paintingPrompt"`
-	PaintingBackdrop *string `json:"paintingBackdrop"`
+	PaintingPrompt string `json:"paintingPrompt"`
+	PaintingBackdrop Backdrop `json:"paintingBackdrop"`
 	PaintingStickers []Sticker `json:"paintingStickers"`
-	AvailableStickers []string `json:"availableStickers"`
-	VotePrompt *string `json:"votePrompt"`
+	VotePrompt string `json:"votePrompt"`
 	VoteOptions []string `json:"voteOptions"`
 }
 
+type TimerChangedEvent struct {
+	SecondsLeft int `json:"secondsLeft"`
+}
+
 type ChangeToolModifierEvent struct {
-	Modifier string `json:"modifier"`
+	Modifier Effect `json:"modifier"`
 }
 
 type PaintingChangedEvent struct {
@@ -248,6 +292,10 @@ func (item *KickedEvent) GetJsonType() string {
 
 func (item *ChangeGameViewEvent) GetJsonType() string {
 	return "change-game-view-event"
+}
+
+func (item *TimerChangedEvent) GetJsonType() string {
+	return "timer-changed-event"
 }
 
 func (item *ChangeToolModifierEvent) GetJsonType() string {
