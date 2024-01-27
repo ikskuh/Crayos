@@ -8,8 +8,10 @@ const height = 1080;
 const lineWidth = 20;
 const distanceThreshold = 5; // minimum distance between points to add a new point
 const eraserRadius = 40;
+const TOOL_PENCIL = "pencil";
+const TOOL_ERASER = "eraser";
 
-let selectedTool = "pencil";
+let selectedTool = TOOL_PENCIL;
 
 const palette = [
   "#FFF",
@@ -36,16 +38,7 @@ const backgroundUrls = [
 const backgrounds = [];
 let selectedBackground = 0;
 
-function loadBackgrounds() {
-  for (let i = 0; i < backgroundUrls.length; i++) {
-    const img = new Image();
-    img.src = backgroundUrls[i];
-    img.onload = () => {
-      drawCanvas();
-    };
-    backgrounds.push(img);
-  }
-}
+let chaosEffect = "flashlight";
 
 function initPainter() {
   document.getElementById("painter").style.display = "block";
@@ -58,9 +51,9 @@ function initPainter() {
     mx = e.offsetX;
     my = e.offsetY;
     const point = { x: mx, y: my };
-    if (selectedTool == "pencil") {
+    if (selectedTool == TOOL_PENCIL) {
       pencilBeginPath(point);
-    } else if (selectedTool == "eraser") {
+    } else if (selectedTool == TOOL_ERASER) {
       eraserDeleteAt(point);
     }
     drawCanvas();
@@ -70,9 +63,9 @@ function initPainter() {
     my = e.offsetY;
     if (e.buttons & 1) {
       const point = { x: mx, y: my };
-      if (selectedTool == "pencil") {
+      if (selectedTool == TOOL_PENCIL) {
         pencilContinuePath(point);
-      } else if (selectedTool == "eraser") {
+      } else if (selectedTool == TOOL_ERASER) {
         eraserDeleteAt(point);
       }
     }
@@ -87,9 +80,9 @@ function initPainter() {
       mx = e.offsetX;
       my = e.offsetY;
       const point = { x: mx, y: my };
-      if (selectedTool == "pencil") {
+      if (selectedTool == TOOL_PENCIL) {
         pencilBeginPath(point);
-      } else if (selectedTool == "eraser") {
+      } else if (selectedTool == TOOL_ERASER) {
         eraserDeleteAt(point);
       }
     }
@@ -101,7 +94,7 @@ function initPainter() {
   };
 
   initPalette();
-  selectTool("pencil");
+  selectTool(TOOL_PENCIL);
   paths.splice(0, paths.length);
 
   selectedBackground = Math.floor(Math.random() * backgrounds.length);
@@ -113,6 +106,8 @@ function initPainter() {
       clearInterval(timerInterval);
     }
   }, 1000);
+
+  onChaosEffect(Effect.drunk);
 }
 
 function drawCanvas() {
@@ -149,12 +144,12 @@ function drawCanvas() {
   }
 
   // preview tool
-  if (selectedTool == "pencil") {
+  if (selectedTool == TOOL_PENCIL) {
     ctx.fillStyle = palette[selectedColor];
     ctx.beginPath();
     ctx.arc(mx, my, lineWidth / 2, 0, 2 * Math.PI);
     ctx.fill();
-  } else if (selectedTool == "eraser") {
+  } else if (selectedTool == TOOL_ERASER) {
     ctx.strokeStyle = "#000";
     ctx.lineWidth = 2;
     ctx.beginPath();
@@ -163,16 +158,40 @@ function drawCanvas() {
   }
 }
 
+// CHAOS EFFECTS
+
+function onChaosEffect(effect) {
+  chaosEffect = effect;
+  setTimeout(() => {
+    deactivateChaosEffect();
+  }, 10000);
+
+  if (chaosEffect == Effect.flip) {
+    canvas.classList.add(Effect.flip);
+  } else if (chaosEffect == Effect.drunk) {
+    canvas.classList.add(Effect.drunk);
+  }
+}
+
+function deactivateChaosEffect() {
+  if (chaosEffect == Effect.flip) {
+    canvas.classList.remove(Effect.flip);
+  } else if (chaosEffect == Effect.drunk) {
+    canvas.classList.remove(Effect.drunk);
+  }
+  chaosEffect = null;
+}
+
 // TOOLS
 
 function selectTool(tool) {
   selectedTool = tool;
-  if (tool == "pencil") {
-    document.getElementById("pencil").classList.add("selected");
+  if (tool == TOOL_PENCIL) {
+    document.getElementById(TOOL_PENCIL).classList.add("selected");
     document.getElementById("eraser").classList.remove("selected");
   } else if (tool == "eraser") {
     document.getElementById("eraser").classList.add("selected");
-    document.getElementById("pencil").classList.remove("selected");
+    document.getElementById(TOOL_PENCIL).classList.remove("selected");
   }
 }
 
@@ -245,6 +264,17 @@ function drawPalette() {
       pctx.lineWidth = 4;
       pctx.stroke();
     }
+  }
+}
+
+function loadBackgrounds() {
+  for (let i = 0; i < backgroundUrls.length; i++) {
+    const img = new Image();
+    img.src = backgroundUrls[i];
+    img.onload = () => {
+      drawCanvas();
+    };
+    backgrounds.push(img);
   }
 }
 
