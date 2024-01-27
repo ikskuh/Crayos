@@ -329,7 +329,7 @@ func (session *Session) Run() {
 				View: GAME_VIEW_PROMPTSELECTION,
 
 				Painting: Painting{
-					Graphics: nil,
+					Graphics: EMPTY_GRAPHICS,
 					Backdrop: backdrop,
 					Prompt:   "",
 					Stickers: []Sticker{},
@@ -342,7 +342,7 @@ func (session *Session) Run() {
 				View: GAME_VIEW_ARTSTUDIO_GENERIC,
 
 				Painting: Painting{
-					Graphics: nil,
+					Graphics: EMPTY_GRAPHICS,
 					Backdrop: backdrop,
 					Prompt:   "",
 					Stickers: []Sticker{},
@@ -531,12 +531,12 @@ func (session *Session) Run() {
 						if pmsg.Player == active_painter {
 
 							// Keep the state up to date with the painted image:
-							troll_view.Painting.Graphics = msg.Path
-							painter_view.Painting.Graphics = msg.Path
+							troll_view.Painting.Graphics = msg.Graphics
+							painter_view.Painting.Graphics = msg.Graphics
 
 							// Forward painting actions when the user changes the image.
 							session.BroadcastExcept(&PaintingChangedEvent{
-								Path: msg.Path,
+								Graphics: msg.Graphics,
 							}, pmsg.Player)
 
 						} else {

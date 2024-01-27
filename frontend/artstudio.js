@@ -81,7 +81,8 @@ function setTimerSecondsLeft(secondsLeft) {
 }
 
 function setPainting(paths) {
-  drawPainting(paths);
+  const painterCanvas = document.getElementById("painter-canvas");
+  drawPainting(painterCanvas, paths);
 }
 
 function onMouseDown(e) {
@@ -114,7 +115,8 @@ function onMouseUp(e) {
   mx = -1000;
   my = -1000;
   drawPainterCanvas();
-  sendSetPaintingCommand(painterPaths);
+  console.log("let's go")
+  sendSetPaintingCommand( painterPaths);
 }
 
 function onMouseEnter(e) {

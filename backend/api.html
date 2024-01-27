@@ -138,6 +138,7 @@ const Backdrop = {
     graveyard : 'graveyard',
     pirateShip : 'pirate_ship',
     theaterStage1 : 'theater_stage1',
+    desert : 'desert',
 };
 
 // Command:
@@ -197,11 +198,11 @@ function sendPlaceStickerCommand(sticker, x, y)
 }
 
 // Command:
-function sendSetPaintingCommand(path)
+function sendSetPaintingCommand(graphics)
 {
     socket.send(JSON.stringify({
         type : CommandId.SetPainting,
-        path : path, // Graphics
+        graphics : graphics, // Graphics
     }));
 }
 
@@ -394,10 +395,10 @@ function autoSendPlaceStickerCommand()
 }
 function autoSendSetPaintingCommand()
 {
-    let path = document.getElementById("SetPaintingCommand-arg-path").value;
+    let graphics = document.getElementById("SetPaintingCommand-arg-graphics").value;
     let cmd_struct = JSON.stringify({
         type : 'set-painting-command',
-        path : path, // Graphics
+        graphics : graphics, // Graphics
     });
     console.log('Sending', cmd_struct);
     socket.send(cmd_struct);
@@ -463,7 +464,7 @@ function deserialize(msg)
             return;
         }
         log('event: PaintingChangedEvent');
-        log('  path: ', JSON.stringify(obj.path))
+        log('  graphics: ', JSON.stringify(obj.graphics))
           log();
         break;
     case 'players-changed-event':
@@ -597,8 +598,8 @@ function deserialize(msg)
 </div>
 <div class="command">
 <button onClick="autoSendSetPaintingCommand()">SetPaintingCommand</button>
-<span>path:</span>
-<input id="SetPaintingCommand-arg-path" type="text">
+<span>graphics:</span>
+<input id="SetPaintingCommand-arg-graphics" type="text">
 </div>
 
     </div>

@@ -9,6 +9,8 @@ type Message interface {
 
 type Graphics interface{}
 
+var EMPTY_GRAPHICS Graphics = nil // "{\"paths\":[]}"
+
 func SerializeMessage(msg Message) ([]byte, error) {
 
 	msg = msg.FixNils()

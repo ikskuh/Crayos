@@ -55,6 +55,7 @@ const Backdrop = {
     graveyard : 'graveyard',
     pirateShip : 'pirate_ship',
     theaterStage1 : 'theater_stage1',
+    desert : 'desert',
 };
 
 // Command:
@@ -114,11 +115,11 @@ function sendPlaceStickerCommand(sticker, x, y)
 }
 
 // Command:
-function sendSetPaintingCommand(path)
+function sendSetPaintingCommand(graphics)
 {
     socket.send(JSON.stringify({
         type : CommandId.SetPainting,
-        path : path, // Graphics
+        graphics : graphics, // Graphics
     }));
 }
 

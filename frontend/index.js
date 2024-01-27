@@ -31,8 +31,17 @@ function init()
 
 function initSocket()
 {
+    let socketUrl = "ws://192.168.37.247:8090/ws";
+    {
+        let urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has("local"))
+        {
+            socketUrl = "ws://192.168.37.247:8080/ws";
+        }
+    }
+
     document.getElementById("connecting").style.display = "flow";
-    socket = new WebSocket("ws://192.168.37.247:8080/ws");
+    socket = new WebSocket(socketUrl);
 
     socket.onerror = function(event) {
         console.log("WebSocket error: ", event);
@@ -121,21 +130,15 @@ function onSocketReceive(event)
     case EventId.Kicked:
         break;
     case EventId.ChangeGameView:
-<<<<<<< HEAD
-      if (data.painting.backdrop) {
-        setBackground(data.painting.backdrop);
-      }
-      if (data.painting.graphics) {
-        setPainting(data.painting.graphics);
-      }
-      setPaintingPrompt(data.painting.prompt);
-=======
-        if (data.paintingBackdrop)
+        if (data.painting.backdrop)
         {
-            setBackground(data.paintingBackdrop);
+            setBackground(data.painting.backdrop);
         }
-        setPaintingPrompt(data.paintingPrompt);
->>>>>>> e805d99 (fuckups)
+        if (data.painting.graphics)
+        {
+            setPainting(data.painting.graphics);
+        }
+        setPaintingPrompt(data.painting.prompt);
 
         if (data.view == GameView.promptselection)
         {
@@ -167,7 +170,7 @@ function onSocketReceive(event)
         activateChaosEffect(data.modifier);
         break;
     case EventId.PaintingChanged:
-        setPainting(data.paths);
+        setPainting(data.graphics);
         break;
     case EventId.PlayersChanged:
         for (let i = 0; i < data.players.length; i++)

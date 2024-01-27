@@ -152,12 +152,14 @@ const (
 	BACKDROP_GRAVEYARD Backdrop = "graveyard"
 	BACKDROP_PIRATE_SHIP Backdrop = "pirate_ship"
 	BACKDROP_THEATER_STAGE1 Backdrop = "theater_stage1"
+	BACKDROP_DESERT Backdrop = "desert"
 )
 var ALL_BACKDROP_ITEMS = []Backdrop{
 	"arctic",
 	"graveyard",
 	"pirate_ship",
 	"theater_stage1",
+	"desert",
 }
 
 type CreateSessionCommand struct {
@@ -187,7 +189,7 @@ type PlaceStickerCommand struct {
 }
 
 type SetPaintingCommand struct {
-	Path Graphics `json:"path"`
+	Graphics Graphics `json:"graphics"`
 }
 
 type EnterSessionEvent struct {
@@ -226,7 +228,7 @@ type ChangeToolModifierEvent struct {
 }
 
 type PaintingChangedEvent struct {
-	Path Graphics `json:"path"`
+	Graphics Graphics `json:"graphics"`
 }
 
 type PlayersChangedEvent struct {

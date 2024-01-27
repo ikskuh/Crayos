@@ -93,7 +93,7 @@ func (player *Player) Close() {
 // Pumps messages from websocket to the session or creates/joins a new session.
 func (player *Player) readPump() {
 	defer player.Close()
-	player.ws.SetReadLimit(maxMessageSize)
+	// player.ws.SetReadLimit(maxMessageSize)
 	player.ws.SetReadDeadline(time.Now().Add(pongWait))
 	player.ws.SetPongHandler(func(string) error {
 		player.ws.SetReadDeadline(time.Now().Add(pongWait))
@@ -102,22 +102,25 @@ func (player *Player) readPump() {
 	for {
 		_, raw_message, err := player.ws.ReadMessage()
 		if err != nil {
+			log.Println("error from websocket", err)
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				log.Printf("error: %v", err)
 			}
 			break
 		}
 
+		// log.Println("raw message from websocket", string(raw_message))
+
 		msg, err := DeserializeMessage(raw_message)
 
-		log.Println("message from websocket", string(raw_message), reflect.TypeOf(msg), msg, err)
+		// log.Println("message from websocket", string(raw_message), reflect.TypeOf(msg), msg, err)
 
 		if err != nil {
 			log.Println("failed to read message from client: ", err)
 			return
 		}
 		if player.Session != nil {
-			log.Println("Forward message to session ", msg)
+			// log.Println("Forward message to session ", msg)
 			player.Session.InboundDataChan <- PlayerMessage{
 				Player:  player,
 				Message: msg,

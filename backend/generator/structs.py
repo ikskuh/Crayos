@@ -120,6 +120,7 @@ class Backdrop(Enum):
 	graveyard  = "graveyard"
 	pirateShip  = "pirate_ship"
 	theaterStage1  = "theater_stage1"
+	desert  = "desert"
 
 @api_command
 class CreateSessionCommand:
@@ -153,7 +154,7 @@ class PlaceStickerCommand:
 
 @api_command
 class SetPaintingCommand:
-    path: Graphics 
+    graphics: Graphics 
 
 
 @api_event
@@ -197,7 +198,7 @@ class ChangeToolModifierEvent:
 
 @api_event
 class PaintingChangedEvent:
-    path: Graphics # the new painting
+    graphics: Graphics # the new painting
 
 @api_event
 class PlayersChangedEvent:
