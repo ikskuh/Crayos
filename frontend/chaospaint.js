@@ -27,8 +27,8 @@ const palette = [
 let selectedColor = 7;
 
 const paths = [];
-let mx = -100;
-let my = -100;
+let mx = -1000;
+let my = -1000;
 
 const backgroundUrls = [
   "img/arctic.png",
@@ -39,7 +39,7 @@ const backgroundUrls = [
 const backgrounds = [];
 let selectedBackground = 0;
 
-let chaosEffect = "flashlight";
+let chaosEffect = null;
 
 function initPainter() {
   document.getElementById("painter").style.display = "block";
@@ -89,8 +89,8 @@ function initPainter() {
     }
   };
   canvas.onmouseleave = (e) => {
-    mx = -100;
-    my = -100;
+    mx = -1000;
+    my = -1000;
     drawCanvas();
   };
 
@@ -156,14 +156,24 @@ function drawCanvas() {
     ctx.arc(mx, my, eraserRadius, 0, 2 * Math.PI);
     ctx.stroke();
   }
+
+  // chaos effect
+  if (chaosEffect == Effect.flashlight) {
+    ctx.beginPath();
+    ctx.rect(0, 0, canvas.width, canvas.height);
+    ctx.arc(mx, my, 200, 2 * Math.PI, 0);
+    ctx.fillStyle = "#000";
+    ctx.fill("evenodd");
+  }
 }
 
 // CHAOS EFFECTS
 
 function onChaosEffect(effect) {
+  console.log("chaos effect: " + effect);
   chaosEffect = effect;
   setTimeout(() => {
-    deactivateChaosEffect();
+    deactivateChaosEffect(effect);
   }, EFFECT_COOLDOWN_MS);
 
   if (chaosEffect == Effect.flip) {
@@ -171,15 +181,20 @@ function onChaosEffect(effect) {
   } else if (chaosEffect == Effect.drunk) {
     canvas.classList.add(Effect.drunk);
   }
+
+  drawCanvas();
 }
 
-function deactivateChaosEffect() {
-  if (chaosEffect == Effect.flip) {
+function deactivateChaosEffect(effect) {
+  console.log("deactivate chaos effect: " + effect);
+  if (effect == Effect.flip) {
     canvas.classList.remove(Effect.flip);
-  } else if (chaosEffect == Effect.drunk) {
+  } else if (effect == Effect.drunk) {
     canvas.classList.remove(Effect.drunk);
   }
+
   chaosEffect = null;
+  drawCanvas();
 }
 
 // TOOLS
