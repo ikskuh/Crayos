@@ -225,6 +225,7 @@ function activateChaosEffect(effect) {
 }
 
 function deactivateChaosEffect(effect) {
+  const painterCanvas = document.getElementById("painter-canvas");
   console.log("deactivate chaos effect: " + effect);
   if (effect == Effect.flip) {
     painterCanvas.classList.remove(Effect.flip);
