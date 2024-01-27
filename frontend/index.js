@@ -149,7 +149,7 @@ function onSocketReceive(event) {
       setTimerSecondsLeft(data.secondsLeft);
       break;
     case EventId.ChangeToolModifier:
-      activateChaosEffect(data.modifier);
+      activateChaosEffect(data.modifier, data.duration);
       break;
     case EventId.PaintingChanged:
       setPainting(data.graphics);
