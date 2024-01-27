@@ -3,6 +3,7 @@ package game
 import (
 	"log"
 	"reflect"
+	"sync"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -25,6 +26,9 @@ const (
 // client.hub.register <- client
 
 type Player struct {
+	mu     sync.Mutex
+	closed bool
+
 	ws *websocket.Conn
 
 	Session *Session
@@ -53,12 +57,22 @@ func CreatePlayer(ws *websocket.Conn) *Player {
 }
 
 func (player *Player) Close() {
+
+	player.mu.Lock()
+	defer player.mu.Unlock()
+
+	if player.closed {
+		return
+	}
+
 	if player.Session != nil {
 		player.Session.LeaveChan <- player
 		player.Session = nil
 	}
 	player.ws.Close()
 	close(player.SendChan)
+
+	player.closed = true
 }
 
 // Pumps messages from websocket to the session or creates/joins a new session.

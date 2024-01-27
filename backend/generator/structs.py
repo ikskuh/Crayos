@@ -596,6 +596,16 @@ table#status tr:nth-child(2) td {
         lineout("            STATUS_FIELDS['",field_name,"'] = document.getElementById('status-",field_name,"');");
 
     lineout("""
+            const nick_names = [
+                "xq", "manello", "captainhorst","philippwendel", "dionymoth", "Alm4nditte" 
+            ];
+
+            const nick = nick_names[Math.floor(Math.random()*nick_names.length)];
+
+            document.getElementById("CreateSessionCommand-arg-nickName").value = nick;
+            document.getElementById("JoinSessionCommand-arg-nickName").value = nick;
+
+
             reconnect();
         });
 

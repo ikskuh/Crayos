@@ -6,19 +6,19 @@ import (
 	"time"
 )
 
-const (
-	SESSION_JOINABLE = (1 << 0)
-)
-
 type PlayerMessage struct {
 	Player  *Player
 	Message Message
 }
 
+type SessionFlags struct {
+	Joinable bool
+}
+
 type Session struct {
 	Id string
 
-	Flags int
+	Flags SessionFlags
 
 	HostPlayer *Player
 
@@ -41,7 +41,9 @@ func CreateSession(player *Player) *Session {
 		JoinChan:        make(chan *Player),            // synchronous channels
 		LeaveChan:       make(chan *Player),            // synchronous channels
 
-		Flags: SESSION_JOINABLE,
+		Flags: SessionFlags{
+			Joinable: true,
+		},
 	}
 	session.Id = fmt.Sprintf("%p", session)
 
@@ -74,13 +76,14 @@ func (session *Session) Destroy() {
 
 func (session *Session) AddPlayer(new *Player) {
 
-	log.Println("Player joins", new)
-	if session.Flags&SESSION_JOINABLE == 0 {
+	if !session.Flags.Joinable {
 		new.SendChan <- &JoinSessionFailedEvent{
 			Reason: "Session is already running.",
 		}
 		return
 	}
+
+	log.Println("Player", new.NickName, "joined session", session.Id)
 
 	new.Session = session
 	session.Players[new] = true
@@ -140,6 +143,13 @@ type NotifyTimeout struct {
 	timestamp time.Time
 }
 
+type NotifyPlayerJoined struct {
+}
+
+type NotifyPlayerLeft struct {
+	// PlayerMessage.Player is not in the session anymore!
+}
+
 func (session *Session) PumpEvents(timeout chan time.Time) *PlayerMessage {
 
 	for len(session.Players) > 0 {
@@ -150,21 +160,23 @@ func (session *Session) PumpEvents(timeout chan time.Time) *PlayerMessage {
 		case new := <-session.JoinChan:
 			session.AddPlayer(new)
 
+			return &PlayerMessage{
+				Message: &NotifyPlayerJoined{},
+				Player:  new,
+			}
+
 		case old := <-session.LeaveChan:
 
-			// TODO(fqu): Handle dropping players out of active session!
-			// In the Lobby, it's totally fine to join/leave all the time
-
-			log.Println("Player leaves", old)
+			log.Println("Player", old.NickName, "left session", session.Id)
 			delete(session.Players, old)
 
 			session.BroadcastPlayers(nil, old)
 
-			// case <- ticker.C:
-			// 	player.ws.SetWriteDeadline(time.Now().Add(writeWait))
-			// 	if err := player.ws.WriteMessage(websocket.PingMessage, nil); err != nil {
-			// 		return
-			// 	}
+			return &PlayerMessage{
+				Message: &NotifyPlayerLeft{},
+				Player:  old,
+			}
+
 		case t := <-timeout:
 			return &PlayerMessage{
 				Player:  nil,
@@ -213,6 +225,10 @@ func (session *Session) Run() {
 				switch msg := pmsg.Message.(type) {
 				// case *Timeout:
 				// 	break
+
+				case *NotifyTimeout:
+
+					log.Println("message timeout received")
 
 				// Forward painting actions
 				case *SetPaintingCommand:
