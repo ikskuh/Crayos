@@ -114,7 +114,7 @@ function onMouseUp(e) {
   mx = -1000;
   my = -1000;
   drawPainterCanvas();
-  console.log(JSON.stringify(painterPaths));
+  sendSetPaintingCommand(painterPaths);
 }
 
 function onMouseEnter(e) {

@@ -60,7 +60,6 @@ function hideSection(id) {
 }
 
 function showSection(id) {
-  console.log("showSection", id);
   document.getElementById(id).style.display = "flow";
 }
 
@@ -114,13 +113,11 @@ function onSocketReceive(event) {
       break;
     case EventId.ChangeGameView:
       if (data.paintingBackdrop) {
-        console.log("ChangeGameView paintingBackdrop", data.paintingBackdrop);
         setBackground(data.paintingBackdrop);
       }
       setPaintingPrompt(data.paintingPrompt);
 
       if (data.view == GameView.promptselection) {
-        console.log("ChangeGameView prompts", data.voteOptions);
         setPromptOptions(data.voteOptions);
         setPromptSelectionEnabled(true);
         setVoteOptions([]);
@@ -141,6 +138,7 @@ function onSocketReceive(event) {
       setTimerSecondsLeft(data.secondsLeft);
       break;
     case EventId.ChangeToolModifier:
+      activateChaosEffect(data.modifier);
       break;
     case EventId.PaintingChanged:
       setPainting(data.paths);

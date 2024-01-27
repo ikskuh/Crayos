@@ -48,8 +48,9 @@
     top: 233px;
     width: 328px;
     height: 737px;
-    background-color: #fd5a46;
-    border-radius: 20px;
+    /* background-color: #fd5a46; */
+    /* border-radius: 20px; */
+    background-image: url('img/toolbox.png');
 }
 
 .toolbox button {
