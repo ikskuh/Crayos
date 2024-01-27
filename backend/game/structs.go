@@ -105,7 +105,7 @@ const (
 	GAME_VIEW_ARTSTUDIO_ACTIVE GameView = "artstudio-active"
 	GAME_VIEW_ARTSTUDIO_STICKER GameView = "artstudio-sticker"
 	GAME_VIEW_GALLERY GameView = "gallery"
-	GAME_VIEW_PODIUM GameView = "podium"
+	GAME_VIEW_ANNOUNCER GameView = "announcer"
 )
 var ALL_GAME_VIEW_ITEMS = []GameView{
 	"title",
@@ -115,7 +115,7 @@ var ALL_GAME_VIEW_ITEMS = []GameView{
 	"artstudio-active",
 	"artstudio-sticker",
 	"gallery",
-	"podium",
+	"announcer",
 }
 
 type Effect string
@@ -211,6 +211,7 @@ type Painting struct {
 	Graphics Graphics `json:"graphics"`
 	Backdrop Backdrop `json:"backdrop"`
 	Stickers []Sticker `json:"stickers"`
+	Winner bool `json:"winner"`
 }
 
 type ChangeGameViewEvent struct {
@@ -219,6 +220,7 @@ type ChangeGameViewEvent struct {
 	Results []Painting `json:"results"`
 	VotePrompt string `json:"votePrompt"`
 	VoteOptions []string `json:"voteOptions"`
+	Announcer string `json:"announcer"`
 }
 
 type TimerChangedEvent struct {

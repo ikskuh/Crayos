@@ -33,7 +33,7 @@ function initSocket() {
   {
     let urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has("local")) {
-      socketUrl = "ws://192.168.37.247:8080/ws";
+      socketUrl = "ws://localhost:8080/ws";
     }
   }
 

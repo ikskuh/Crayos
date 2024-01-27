@@ -30,7 +30,7 @@ const GameView = {
     artstudioActive : 'artstudio-active',
     artstudioSticker : 'artstudio-sticker',
     gallery : 'gallery',
-    podium : 'podium',
+    announcer : 'announcer',
 };
 
 // Enum:

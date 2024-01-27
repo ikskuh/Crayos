@@ -3,6 +3,7 @@ package game
 import (
 	_ "embed"
 	"strings"
+	"time"
 )
 
 const (
@@ -17,12 +18,19 @@ const (
 
 	/// Time how long a "trol
 	GAME_TROLL_EFFECT_DURATION_MS = 5000
+
+	/// Timeout for generic announcements
+	ANNOUNCE_GENERIC_TIMEOUT time.Duration = 5 * time.Second
 )
 
 const (
-	VOTE_PROMPT_PROMPT   string = "Select a prompt"
-	VOTE_PROMPT_EFFECT   string = "Select a trolling effect"
-	VOTE_PROMPT_SHOWCASE string = "Gaze upon this masterpiece"
+	TEXT_VOTE_PROMPT   string = "Select a prompt"
+	TEXT_VOTE_EFFECT   string = "Select a trolling effect"
+	TEXT_VOTE_SHOWCASE string = "Gaze upon this masterpiece"
+
+	TEXT_ANNOUNCE_YOU_ARE_TROLL   string = "Chose an image that should be drawn"
+	TEXT_ANNOUNCE_YOU_ARE_PAINTER string = "You are the painter. Brace yourself!"
+	TEXT_ANNOUNCE_WINNER          string = "And the winner is..."
 )
 
 //go:embed drawing_prompts_the_other_kind_of_drawcalls.txt

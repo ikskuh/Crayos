@@ -113,7 +113,7 @@ const GameView = {
     artstudioActive : 'artstudio-active',
     artstudioSticker : 'artstudio-sticker',
     gallery : 'gallery',
-    podium : 'podium',
+    announcer : 'announcer',
 };
 
 // Enum:
@@ -442,6 +442,7 @@ function deserialize(msg)
         log('  results: ', JSON.stringify(obj.results))
         log('  votePrompt: ', JSON.stringify(obj.votePrompt))
         log('  voteOptions: ', JSON.stringify(obj.voteOptions))
+        log('  announcer: ', JSON.stringify(obj.announcer))
           log();
         break;
     case 'timer-changed-event':

@@ -18,6 +18,7 @@ class Graphics:
 GO_TYPES: dict[type,str] = {
     int: "int",
     str: "string",
+    bool: "bool",
     float : "float32",
     Any: "interface{}",
     None | str : "*string",
@@ -98,7 +99,7 @@ class GameView(Enum):
     artstudioActive = "artstudio-active" # (C)
     artstudioSticker = "artstudio-sticker" # (A) + Sticker Mode
     gallery = "gallery"
-    podium = "podium" # Show winner 
+    announcer = "announcer"  # Shows text instead of canvas
 
 @api_enum
 class Effect(Enum):
@@ -176,7 +177,7 @@ class Painting:
     graphics: Graphics # the current painting data
     backdrop: Backdrop # the ID of the backdrop 
     stickers: list[Sticker] # the current list of stickers that should be shown
-
+    winner: bool # the painting is the winner
 
 @api_event
 class ChangeGameViewEvent:
@@ -188,6 +189,8 @@ class ChangeGameViewEvent:
 
     votePrompt: str # artstudioGeneric: the prompt that is shown when 
     voteOptions: list[str] # promptselection, artstudioGeneric: list of options that the player can vote for.
+
+    announcer: str # the text shown on the announcer screen
 
 @api_event
 class TimerChangedEvent:
