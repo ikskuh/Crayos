@@ -209,7 +209,7 @@ func (session *Session) Run() {
 		// show lobby
 		playersReady := false
 		playersReadyMap := make(map[*Player]bool)
-		for len(session.Players) < 2 && !playersReady {
+		for len(session.Players) < 2 || !playersReady {
 			pmsg := session.PumpEvents(no_timeout)
 			if pmsg == nil {
 				return
