@@ -488,23 +488,38 @@ func (session *Session) Run() {
 						switch msg := pmsg.Message.(type) {
 
 						case *NotifyTimeout:
-
 							total_time_left -= 1
 							next_troll_event -= 1
 							session.Broadcast(&TimerChangedEvent{
 								SecondsLeft: total_time_left,
 							})
 
+						case *VoteCommand:
+							if pmsg.Player == trolls[0] {
+								// TODO(fqu): validate that msg.Option is actually a legal vote!
+								active_painter.Send(&ChangeToolModifierEvent{
+									Modifier: Effect(msg.Option),
+								})
+								trolls[0].Send(troll_view) // reset troll to regular view, hide the vote options
+							} else {
+								log.Println("someone else tried to harm the painter. BAD BOY!")
+							}
+
 						case *SetPaintingCommand:
-							// Keep the state up to date with the painted image:
-							troll_view.Painting = msg.Path
-							painter_view.Painting = msg.Path
+							if pmsg.Player == active_painter {
 
-							// Forward painting actions when the user changes the image.
-							session.BroadcastExcept(&PaintingChangedEvent{
-								Path: msg.Path,
-							}, pmsg.Player)
+								// Keep the state up to date with the painted image:
+								troll_view.Painting = msg.Path
+								painter_view.Painting = msg.Path
 
+								// Forward painting actions when the user changes the image.
+								session.BroadcastExcept(&PaintingChangedEvent{
+									Path: msg.Path,
+								}, pmsg.Player)
+
+							} else {
+								log.Println("someone else tried to paint. BAD BOY!")
+							}
 						}
 					}
 				}
