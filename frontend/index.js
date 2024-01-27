@@ -112,10 +112,13 @@ function onSocketReceive(event) {
     case EventId.Kicked:
       break;
     case EventId.ChangeGameView:
-      if (data.paintingBackdrop) {
-        setBackground(data.paintingBackdrop);
+      if (data.painting.backdrop) {
+        setBackground(data.painting.backdrop);
       }
-      setPaintingPrompt(data.paintingPrompt);
+      if (data.painting.graphics) {
+        setPainting(data.painting.graphics);
+      }
+      setPaintingPrompt(data.painting.prompt);
 
       if (data.view == GameView.promptselection) {
         setPromptOptions(data.voteOptions);
