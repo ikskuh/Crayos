@@ -24,13 +24,9 @@ const GameView = {
     title : 'title',
     lobby : 'lobby',
     promptselection : 'promptselection',
-    artstudioEmpty : 'artstudio-empty',
+    artstudioGeneric : 'artstudio-empty',
     artstudioActive : 'artstudio-active',
-    exhibition : 'exhibition',
-    exhibitionVoting : 'exhibition-voting',
-    exhibitionStickering : 'exhibition-stickering',
-    showcase : 'showcase',
-    gallery : 'gallery',
+    artstudioSticker : 'artstudio-sticker',
 };
 
 // Enum:
