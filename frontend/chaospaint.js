@@ -27,8 +27,14 @@ const paths = [];
 let mx = -100;
 let my = -100;
 
-const backgroundUrls = ["img/graveyard.png"];
+const backgroundUrls = [
+  "img/arctic.png",
+  "img/graveyard.png",
+  "img/pirate_ship.png",
+  "img/theater_stage1.png"
+];
 const backgrounds = [];
+let selectedBackground = 0;
 
 function loadBackgrounds() {
   for (let i = 0; i < backgroundUrls.length; i++) {
@@ -98,6 +104,8 @@ function initPainter() {
   selectTool("pencil");
   paths.splice(0, paths.length);
 
+  selectedBackground = Math.floor(Math.random() * backgrounds.length);
+
   timerNumberElem.innerText = 60;
   const timerInterval = setInterval(() => {
     timerNumberElem.innerText--;
@@ -109,7 +117,7 @@ function initPainter() {
 
 function drawCanvas() {
   const ctx = canvas.getContext("2d");
-  ctx.drawImage(backgrounds[0], 0, 0, canvas.width, canvas.height);
+  ctx.drawImage(backgrounds[selectedBackground], 0, 0, canvas.width, canvas.height);
 
   ctx.lineWidth = lineWidth;
   ctx.lineCap = "round";
