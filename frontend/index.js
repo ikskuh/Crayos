@@ -6,13 +6,13 @@ let sessionID = NoSession;
 
 let serverSideDisconnect = false;
 
-let nicknames = ["nickname", "", "", ""];
+let players = ["", "", "", ""];     // Player[0] is always local player
+let localPlayer = "nickname"
 const gamestates = ["title", "connecting", "connection_failed", "lobby", "painer", "viewer", "troll", "voting", "winner"];
 let currentGamestate = "connecting";
 
 function init() {
     initSocket();
-    initPainter();
 }
 
 function initSocket() {
@@ -59,7 +59,9 @@ function onSocketReceive(event) {
             setView(data.view);
             break;
         case "players-changed-event":
-            
+            for (let i = 0; i < data.players.length; i++) {
+                players[i] = data.players[i];
+            }
             break;
         case "enter-session-event":
             sessionID = data.session;

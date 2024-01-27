@@ -1,8 +1,8 @@
 function createGame() {
-    nicknames[0] = document.getElementById("nicknameInput").value;
+    localPlayer = document.getElementById("nicknameInput").value;
     socket.send(JSON.stringify({
         type: "create-session-command",
-        nickname: nicknames[0]
+        nickname: localPlayer
     }));
 }
 

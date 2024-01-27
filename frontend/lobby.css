@@ -9,7 +9,10 @@ input#player1 {
     width: 553px;
     height: 113px;
 
-    background-color: rgba(240,240,240,0)
+    background-color: rgba(240,240,240,0);
+    color: black;
+    text-align: center;
+    font-size: 50px;
 }
 
 input#player2 {
@@ -19,7 +22,10 @@ input#player2 {
     width: 553px;
     height: 113px;
 
-    background-color: rgba(240,240,240,0)
+    background-color: rgba(240,240,240,0);
+    color: black;
+    text-align: center;
+    font-size: 50px;
 }
 
 input#player3 {
@@ -29,7 +35,10 @@ input#player3 {
     width: 553px;
     height: 113px;
 
-    background-color: rgba(240,240,240,0)
+    background-color: rgba(240,240,240,0);
+    color: black;
+    text-align: center;
+    font-size: 50px;
 }
 
 input#player4 {
@@ -39,7 +48,10 @@ input#player4 {
     width: 553px;
     height: 113px;
 
-    background-color: rgba(240,240,240,0)
+    background-color: rgba(240,240,240,0);
+    color: black;
+    text-align: center;
+    font-size: 50px;
 }
 
 button#ready {
