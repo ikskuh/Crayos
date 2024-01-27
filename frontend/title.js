@@ -7,5 +7,16 @@ function createGame() {
 }
 
 function joinGame() {
+    let urlParams = new URLSearchParams(queryString);
+    if (urlParams.has("session")) {
+        sessionID = urlParams.get("session");
+        
+    }
+    else {
+        setView("link_required");
+    }
+}
 
+function btnBackToLobby() {
+    setView("title");
 }

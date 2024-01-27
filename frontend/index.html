@@ -29,12 +29,18 @@
                 <button type="button" id="reconnect" onclick="btnReconnect()">Reconnect</button>
             </div>
         </section>
+        <section id="link_required">
+            <div class="info_box">
+                <div>If you want to join a lobby you need the join-link from your friends!</div>
+                <button type="button" id="back_to_lobby" onclick="btnBackToLobby()">To Menu</button>
+            </div>
+        </section>
         <section id="lobby">
             <input type="text" id="player1" value="Player 1" disabled></input>
             <input type="text" id="player2" value="Player 2" disabled></input>
             <input type="text" id="player3" value="Player 3" disabled></input>
             <input type="text" id="player4" value="Player 4" disabled></input>
-            <button type="button" id="ready">  </button>
+            <button type="button" id="ready" onclick="readyClicked()">Ready</button>
         </section>
         <section id="painter">
             <<h1 style="font-size: 100px; font-family: Comic Sans MS;">Hallo Canvas</h1>

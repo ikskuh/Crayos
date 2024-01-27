@@ -4,10 +4,12 @@ const Open = 1;
 let socket;
 let sessionID = NoSession;
 
-let serverSideDisconnect = false;
+let serverSideDisconnect = false;   // If this is true the client won't try to reconnect
 
-let players = ["", "", "", ""];     // Player[0] is always local player
+let players = ["", "", "", ""];
 let localPlayer = "nickname"
+let localIsReady = false;
+
 const gamestates = ["title", "connecting", "connection_failed", "lobby", "painer", "viewer", "troll", "voting", "winner"];
 let currentGamestate = "connecting";
 
@@ -70,6 +72,7 @@ function onSocketReceive(event) {
             for (let i = 0; i < data.players.length; i++) {
                 players[i] = data.players[i];
             }
+            updateLobby();
             break;
         case "enter-session-event":
             sessionID = data.session;

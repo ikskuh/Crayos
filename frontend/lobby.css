@@ -13,6 +13,10 @@ input#player1 {
     color: black;
     text-align: center;
     font-size: 50px;
+
+    border-color: green;
+    border-width: 10px;
+    border-style: none;
 }
 
 input#player2 {
@@ -61,5 +65,8 @@ button#ready {
     width: 553px;
     height: 113px;
 
-    background-color: rgba(240,240,240,0)
+    background-color: rgba(240,240,240,0);
+    color: black;
+    text-align: center;
+    font-size: 50px;
 }
