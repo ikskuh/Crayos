@@ -3,7 +3,13 @@
     margin: 0;
 }
 
+@font-face {
+    font-family: Fedoka One;
+    src: url('fonts/FredokaOne-Regular.ttf');
+}
+
 body {
+    font-family: Fedoka One, sans-serif;
     background-color: #FFC567;
     user-select: none;
 }

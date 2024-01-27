@@ -69,6 +69,10 @@ function initPainter() {
     }
     drawCanvas();
   };
+  canvas.onmouseup = (e) => {
+    // TODO: send paths to server
+    console.log(JSON.stringify(paths));
+  };
   canvas.onmouseenter = (e) => {
     if (e.buttons & 1) {
       mx = e.offsetX;
@@ -97,7 +101,7 @@ function initPainter() {
 
   initPalette();
   selectTool("pencil");
-  const paths = [];
+  paths.splice(0, paths.length);
 }
 
 function drawCanvas() {

@@ -1,13 +1,10 @@
-section#painter {
-    background-image: url('mockup/painter 2.png');
-}
-
 #toolbox {
     position: absolute;
     left: 78px;
     top: 233px;
     width: 328px;
     height: 737px;
+    background-color: #fd5a46;
 }
 
 #toolbox button {
@@ -40,16 +37,22 @@ section#painter {
 }
 
 #prompt {
-    font-family: Comic Sans MS, Comic Sans, cursive;
     position: absolute;
-    left: 474px;
+    left: 453px;
     top: 70px;
-    width: 1337px;
+    width: 1385px;
     height: 116px;
-    font-size: 76px;
-    text-align: center;
-    vertical-align: middle;
     color: white;
+    background-image: url('img/prompt_box.png');
+}
+#prompt-text {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 60px;
+    text-wrap: nowrap;
+    text-align: center;
 }
 
 #canvas {
