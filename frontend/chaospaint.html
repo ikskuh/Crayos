@@ -12,20 +12,20 @@
     <div id="wrapper">
       <section id="painter">
         <div id="timer">
-          <p>Time left:<br /><span id="timer-number">60</span></p>
+          <p>Time left:<br /><span id="timer-number"></span></p>
         </div>
         <div id="prompt">
           <p id="prompt-text">T-Rex trying to paint its toenails</p>
         </div>
         <div id="toolbox">
-            <button id="pencil" onclick="selectTool('pencil')" style="display: none;" />
-            <button id="eraser" onclick="selectTool('eraser')" style="display: none;" />
-            <button id="drunk" onclick="onChaosEffect('drunk')" />
-            <button id="flashlight" onclick="onChaosEffect('flashlight')" />
-            <button id="flip" onclick="onChaosEffect('flip')" />
-            <button id="lock_pen" onclick="onChaosEffect('lock_pen')" />
-            <button id="swap_tool" onclick="onChaosEffect('swap_tool')" />
-          <canvas id="palette" width="264" height="360" style="display: none;"></canvas>
+          <button id="pencil" onclick="selectTool('pencil')" style="display: none" />
+          <button id="eraser" onclick="selectTool('eraser')" style="display: none" />
+          <button id="drunk" onclick="activateChaosEffect('drunk')" />
+          <button id="flashlight" onclick="activateChaosEffect('flashlight')" />
+          <button id="flip" onclick="activateChaosEffect('flip')" />
+          <button id="lock_pencil" onclick="activateChaosEffect('lock_pencil')" />
+          <button id="swap_tool" onclick="activateChaosEffect('swap_tool')" />
+          <canvas id="palette" width="264" height="360" style="display: none"></canvas>
         </div>
         <canvas id="canvas" width="1385" height="737"></canvas>
       </section>

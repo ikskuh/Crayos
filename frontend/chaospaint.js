@@ -11,6 +11,7 @@ const eraserRadius = 40;
 const TOOL_PENCIL = "pencil";
 const TOOL_ERASER = "eraser";
 const EFFECT_COOLDOWN_MS = 10000;
+const TIMER_SECONDS = 90;
 
 let selectedTool = TOOL_PENCIL;
 
@@ -30,12 +31,7 @@ const paths = [];
 let mx = -1000;
 let my = -1000;
 
-const backgroundUrls = [
-  "img/arctic.png",
-  "img/graveyard.png",
-  "img/pirate_ship.png",
-  "img/theater_stage1.png"
-];
+const backgroundUrls = ["img/arctic.png", "img/graveyard.png", "img/pirate_ship.png", "img/theater_stage1.png"];
 const backgrounds = [];
 let selectedBackground = 0;
 
@@ -62,7 +58,7 @@ function initPainter() {
   canvas.onmousemove = (e) => {
     mx = e.offsetX;
     my = e.offsetY;
-    if (e.buttons & 1) {
+    if (e.buttons & 1 || chaosEffect == Effect.lock_pencil) {
       const point = { x: mx, y: my };
       if (selectedTool == TOOL_PENCIL) {
         pencilContinuePath(point);
@@ -100,14 +96,14 @@ function initPainter() {
 
   selectedBackground = Math.floor(Math.random() * backgrounds.length);
 
-  timerNumberElem.innerText = 60;
+  // countdown
+  timerNumberElem.innerText = TIMER_SECONDS;
   const timerInterval = setInterval(() => {
     timerNumberElem.innerText--;
     if (timerNumberElem.innerText == 0) {
       clearInterval(timerInterval);
     }
   }, 1000);
-
 }
 
 function drawCanvas() {
@@ -180,6 +176,8 @@ function activateChaosEffect(effect) {
     canvas.classList.add(Effect.flip);
   } else if (chaosEffect == Effect.drunk) {
     canvas.classList.add(Effect.drunk);
+  } else if (chaosEffect == Effect.swap_tool) {
+    swapTools();
   }
 
   drawCanvas();
@@ -191,6 +189,8 @@ function deactivateChaosEffect(effect) {
     canvas.classList.remove(Effect.flip);
   } else if (effect == Effect.drunk) {
     canvas.classList.remove(Effect.drunk);
+  } else if (chaosEffect == Effect.swap_tool) {
+    swapTools();
   }
 
   chaosEffect = null;
@@ -210,11 +210,23 @@ function selectTool(tool) {
   }
 }
 
+function swapTools() {
+  if (selectedTool == TOOL_PENCIL) {
+    selectTool(TOOL_ERASER);
+  } else if (selectedTool == TOOL_ERASER) {
+    selectTool(TOOL_PENCIL);
+  }
+}
+
 function pencilBeginPath(point) {
   paths.push({ color: palette[selectedColor], points: [point] });
 }
 
 function pencilContinuePath(point) {
+  if (paths.length == 0) {
+    pencilBeginPath(point);
+    return;
+  }
   const currentPath = paths[paths.length - 1];
   const lastPoint = currentPath.points[currentPath.points.length - 1];
   if (distanceSquared(lastPoint, point) > distanceThreshold * distanceThreshold) {
