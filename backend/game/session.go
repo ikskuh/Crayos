@@ -85,9 +85,9 @@ func (session *Session) Destroy() {
 func (session *Session) AddPlayer(new *Player) {
 
 	if !session.Flags.Joinable {
-		new.SendChan <- &JoinSessionFailedEvent{
+		new.Send(&JoinSessionFailedEvent{
 			Reason: "Session is already running.",
-		}
+		})
 		return
 	}
 
@@ -96,28 +96,28 @@ func (session *Session) AddPlayer(new *Player) {
 	new.Session = session
 	session.Players[new] = true
 
-	new.SendChan <- &EnterSessionEvent{
+	new.Send(&EnterSessionEvent{
 		SessionId: session.Id,
-	}
+	})
 
 	session.BroadcastPlayers(new, nil)
 
-	new.SendChan <- &ChangeGameViewEvent{
+	new.Send(&ChangeGameViewEvent{
 		View: GAME_VIEW_LOBBY,
-	}
+	})
 
 }
 
 func (session *Session) Broadcast(msg Message) {
 	for player := range session.Players {
-		player.SendChan <- msg
+		player.Send(msg)
 	}
 }
 
 func (session *Session) BroadcastExcept(msg Message, except *Player) {
 	for player := range session.Players {
 		if player != except {
-			player.SendChan <- msg
+			player.Send(msg)
 		}
 	}
 }
@@ -151,11 +151,23 @@ type NotifyTimeout struct {
 	timestamp time.Time
 }
 
+func (_ *NotifyTimeout) GetJsonType() string {
+	return ""
+}
+
 type NotifyPlayerJoined struct {
+}
+
+func (_ *NotifyPlayerJoined) GetJsonType() string {
+	return ""
 }
 
 type NotifyPlayerLeft struct {
 	// PlayerMessage.Player is not in the session anymore!
+}
+
+func (_ *NotifyPlayerLeft) GetJsonType() string {
+	return ""
 }
 
 func (session *Session) PumpEvents(timeout <-chan time.Time) *PlayerMessage {
@@ -327,11 +339,11 @@ func (session *Session) Run() {
 					for _, player := range players {
 						switch player_role[player] {
 						case ROLE_PAINTER:
-							log.Println("painter", player.NickName, painter_view)
-							player.SendChan <- painter_view
+							log.Println("set view (painter)", player.NickName, painter_view)
+							player.Send(painter_view)
 						case ROLE_TROLL:
-							log.Println("troll", player.NickName, troll_view)
-							player.SendChan <- troll_view
+							log.Println("set view (troll)", player.NickName, troll_view)
+							player.Send(troll_view)
 						}
 					}
 				}
@@ -359,7 +371,7 @@ func (session *Session) Run() {
 							prompt_voted.add(pmsg.Player)
 
 							// Hide the options for the troll that voted:
-							pmsg.Player.SendChan <- &troll_view
+							pmsg.Player.Send(troll_view)
 
 							// TODO(fqu): add vote to election
 						}
@@ -417,32 +429,56 @@ func (session *Session) Run() {
 
 				// Phase 3:
 				log.Println(session.Id, "Trolls now select stickers")
-				for {
+				for false {
 					//
 				}
 
 				// Phase 4:
 				log.Println(session.Id, "Players can now gaze upon the art")
-				for {
+				for false {
 					//
 				}
 			}
 		}
 
 		// Phase 5:
-		log.Println(session.Id, "All rounds done, show the gallery")
+		{
+			log.Println(session.Id, "All rounds done, show the gallery")
 
-		for {
-			//
+			timeLeft := false
+			players_ready := createPlayerSetFromMap(session.Players, nil)
+			for timeLeft && players_ready.any(false) {
+				log.Println("Ready")
+			}
+
 		}
 
 		// Phase 6:
-		log.Println(session.Id, "Showcase the winner")
+		{
+			log.Println(session.Id, "Showcase the winner")
 
-		for {
-			//
+			// TODO(philippwendel) Setup NotifyTimeout
+			timeLeft := true
+			players_ready := createPlayerSetFromMap(session.Players, nil)
+			for timeLeft && players_ready.any(false) {
+				pmsg := session.PumpEvents(no_timeout)
+				if pmsg == nil {
+					return
+				}
+
+				switch msg := pmsg.Message.(type) {
+				case *UserCommand:
+					switch msg.Action {
+					case USER_ACTION_CONTINUE_GAME:
+						players_ready.add(pmsg.Player)
+					}
+				case *NotifyTimeout:
+					timeLeft = false
+				}
+				broadcastPlayerReadyState(session, players_ready)
+			}
+
 		}
-
 	}
 }
 
@@ -503,22 +539,21 @@ func (set *playerSet) remove(p *Player) {
 	set.items[p].value = false
 }
 
-func (set *playerSet) all() bool {
+func (set *playerSet) any(predicate bool) bool {
 	for _, item := range set.items {
-		if !item.value {
-			return false
+		if item.value == predicate {
+			return true
 		}
 	}
-	return true
+	return false
+}
+
+func (set *playerSet) all() bool {
+	return !set.any(false)
 }
 
 func (set *playerSet) none() bool {
-	for _, item := range set.items {
-		if item.value {
-			return false
-		}
-	}
-	return true
+	return !set.any(true)
 }
 
 func (set *playerSet) allTrolls() bool {

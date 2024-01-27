@@ -24,7 +24,7 @@ const GameView = {
     title : 'title',
     lobby : 'lobby',
     promptselection : 'promptselection',
-    artstudioGeneric : 'artstudio-empty',
+    artstudioGeneric : 'artstudio-generic',
     artstudioActive : 'artstudio-active',
     artstudioSticker : 'artstudio-sticker',
     gallery : 'gallery',
