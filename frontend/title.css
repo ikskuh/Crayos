@@ -22,7 +22,7 @@ button#create {
     background-color: rgba(240,240,240,0)
 }
 
-input#nickname {
+input#nicknameInput {
     position: absolute;
     top: 666px;
     left: 752px;
