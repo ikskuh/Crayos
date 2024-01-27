@@ -7,7 +7,7 @@ let sessionID = NoSession;
 let serverSideDisconnect = false;   // If this is true the client won't try to reconnect
 
 let players = ["", "", "", ""];
-let localPlayer = "nickname"
+let localPlayer = "nickname";
 let localIsReady = false;
 
 let currentGamestate = "connecting";
@@ -85,7 +85,11 @@ function onSocketReceive(event) {
         case "join-session-failed-event":
             setView("link_invalid");
             break;
-        
-
+        case "kicked-event":
+            break;
+        case "change-tool-modifier-event":
+            break;
+        case "painting-changed-event":
+            break;
     }
 }
