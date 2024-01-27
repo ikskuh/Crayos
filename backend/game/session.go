@@ -563,9 +563,16 @@ func (session *Session) Run() {
 			// Phase 4:
 			{
 				log.Println(session.Id, "Players can now gaze upon the art")
-				round_end_timer := time.NewTimer(GAME_ROUND_TIME_S)
+				round_end_timer := time.NewTimer(GALLERY_ROUND_TIME_S)
 				timeLeft := true
 				players_ready := createPlayerSetFromMap(session.Players, nil)
+
+				changeBoth(func(view *ChangeGameViewEvent) {
+					view.View = GAME_VIEW_ARTSTUDIO_GENERIC
+					view.VotePrompt = VOTE_PROMPT_SHOWCASE
+					view.VoteOptions = []string{}
+				})
+
 				for timeLeft && players_ready.any(false) {
 					pmsg := session.PumpEvents(round_end_timer.C)
 					if pmsg == nil {
