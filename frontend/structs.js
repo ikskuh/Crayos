@@ -46,7 +46,7 @@ function sendJoinSessionCommand(nickName, sessionId)
 {
     socket.send(JSON.stringify({
         type : CommandId.JoinSession,
-        nickName : nickName,   // str
+        nickName : nickName, // str
         sessionId : sessionId, // str
     }));
 }
@@ -83,8 +83,8 @@ function sendPlaceStickerCommand(sticker, x, y)
     socket.send(JSON.stringify({
         type : CommandId.PlaceSticker,
         sticker : sticker, // str
-        x : x,             // float
-        y : y,             // float
+        x : x, // float
+        y : y, // float
     }));
 }
 
@@ -96,3 +96,4 @@ function sendSetPaintingCommand(path)
         path : path, // Any
     }));
 }
+
