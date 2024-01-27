@@ -103,6 +103,14 @@ func (session *Session) Broadcast(msg Message) {
 	}
 }
 
+func (session *Session) BroadcastExcept(msg Message, except *Player) {
+	for player := range session.Players {
+		if player != except {
+			player.SendChan <- msg
+		}
+	}
+}
+
 func (session *Session) BroadcastPlayers(added_player *Player, removed_player *Player) {
 	nicknames := make([]string, len(session.Players))
 
@@ -205,6 +213,13 @@ func (session *Session) Run() {
 				switch msg := pmsg.Message.(type) {
 				// case *Timeout:
 				// 	break
+
+				// Forward painting actions
+				case *SetPaintingCommand:
+					session.BroadcastExcept(&PaintingChangedEvent{
+						Path: msg.Path,
+					}, pmsg.Player)
+
 				default:
 					_ = msg
 				}
