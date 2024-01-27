@@ -61,6 +61,9 @@ func CreatePlayer(ws *websocket.Conn) *Player {
 }
 
 func (player *Player) Send(msg Message) {
+	if player.closed {
+		return
+	}
 	encoded_msg, err := SerializeMessage(msg)
 	if err != nil {
 		log.Fatalln("failed to serialize message for client: ", err, msg)

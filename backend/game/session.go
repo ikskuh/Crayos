@@ -231,6 +231,11 @@ func broadcastPlayerReadyState(s *Session, m playerSet) {
 	})
 }
 
+type gameRoundResult struct {
+	painting    Painting
+	totalPoints int
+}
+
 func (session *Session) Run() {
 	random_source := rand.New(rand.NewSource(time.Now().UnixNano()))
 
@@ -273,307 +278,314 @@ func (session *Session) Run() {
 
 		log.Println(session.Id, "Start game")
 
+		// Create a list of players:
+		players := make([]*Player, len(session.Players))
 		{
-			// Create a list of players:
-			players := make([]*Player, len(session.Players))
-			{
-				i := 0
-				for p := range session.Players {
-					players[i] = p
-					i += 1
-				}
-			}
-
-			// create random player order which we will use this round:
-			random_source.Shuffle(len(players), func(i, j int) {
-				players[i], players[j] = players[j], players[i]
-			})
-
-			// Each player gets their turn:
-			for index, active_painter := range players {
-
-				log.Println(session.Id, "Start round", index+1)
-
-				// Assign roles:
-				player_role := make(map[*Player]Role)
-				for _, player := range players {
-					if player == active_painter {
-						player_role[player] = ROLE_PAINTER
-					} else {
-						player_role[player] = ROLE_TROLL
-					}
-				}
-
-				// Select one random background:
-
-				backdrop := ALL_BACKDROP_ITEMS[random_source.Intn(len(ALL_BACKDROP_ITEMS))]
-
-				prompts := make([]string, len(AVAILABLE_PROMPTS))
-				copy(prompts, AVAILABLE_PROMPTS)
-				random_source.Shuffle(len(prompts), func(i, j int) {
-					prompts[i], prompts[j] = prompts[j], prompts[i]
-				})
-				prompts = prompts[0:3]
-
-				log.Println("selected backdrop:", backdrop)
-				log.Println("selected prompts: ", prompts)
-
-				// Create prototypes for the views:
-				troll_view := &ChangeGameViewEvent{
-					View: GAME_VIEW_PROMPTSELECTION,
-
-					Painting:         nil,
-					PaintingBackdrop: backdrop,
-					PaintingPrompt:   "",
-					PaintingStickers: []Sticker{},
-
-					VotePrompt:  VOTE_PROMPT_PROMPT,
-					VoteOptions: prompts,
-				}
-				painter_view := &ChangeGameViewEvent{
-					View: GAME_VIEW_ARTSTUDIO_GENERIC,
-
-					Painting:         nil,
-					PaintingBackdrop: backdrop,
-					PaintingPrompt:   "",
-					PaintingStickers: []Sticker{},
-
-					VotePrompt:  "",
-					VoteOptions: []string{},
-				}
-
-				// local function to update the roles:
-				updateViews := func() {
-					for _, player := range players {
-						switch player_role[player] {
-						case ROLE_PAINTER:
-							// log.Println("send view (painter)", player.NickName, painter_view)
-							player.Send(painter_view)
-						case ROLE_TROLL:
-							// log.Println("send view (troll)", player.NickName, troll_view)
-							player.Send(troll_view)
-						}
-					}
-				}
-
-				changeBoth := func(handler func(view *ChangeGameViewEvent)) {
-					handler(troll_view)
-					handler(painter_view)
-				}
-
-				// Now update the views for the players
-				updateViews()
-
-				// Prepare message for trolls to go into "wait for others" state
-				troll_view.View = GAME_VIEW_ARTSTUDIO_GENERIC
-				troll_view.VoteOptions = []string{}
-
-				// Phase 1: Trolls vote for a prompt
-				log.Println(session.Id, "Prompt voting for trolls starts")
-				var selected_painting_prompt string
-				{
-					prompt_voted := createPlayerSetFromList(players, active_painter)
-
-					votes := make([]float32, len(prompts))
-
-					for !prompt_voted.allTrolls() {
-						pmsg := session.PumpEvents(no_timeout)
-						if pmsg == nil {
-							return
-						}
-
-						switch msg := pmsg.Message.(type) {
-						case *VoteCommand:
-							if pmsg.Player != active_painter {
-
-								log.Println("Player ", pmsg.Player.NickName, "voted for", msg)
-
-								index := -1
-								for i, val := range prompts {
-									if msg.Option == val {
-										index = i
-									}
-								}
-
-								if index >= 0 {
-									votes[index] += 0.95 + 0.01*random_source.Float32()
-
-									prompt_voted.add(pmsg.Player)
-
-									// Hide the options for the troll that voted:
-									pmsg.Player.Send(troll_view)
-
-								} else {
-									log.Println("troll tried to vote illegaly. BAD BOY")
-
-								}
-
-							} else {
-								log.Println("painter tried to vote. BAD BOY")
-							}
-						}
-					}
-
-					best_prompt_index := 0
-					best_prompt_level := votes[0]
-
-					for index, level := range votes {
-						if level >= best_prompt_level {
-							best_prompt_index = index
-							best_prompt_level = level
-						}
-					}
-
-					selected_painting_prompt = prompts[best_prompt_index]
-
-					log.Println("Prompt", selected_painting_prompt, "won with", best_prompt_level, "votes")
-				}
-
-				changeBoth(func(view *ChangeGameViewEvent) {
-					view.VotePrompt = ""
-					view.PaintingPrompt = selected_painting_prompt
-				})
-
-				troll_view.View = GAME_VIEW_ARTSTUDIO_GENERIC
-				painter_view.View = GAME_VIEW_ARTSTUDIO_ACTIVE
-
-				// TODO(fqu): Implement round robin trolling
-
-				updateViews()
-
-				// Phase 2:
-				log.Println(session.Id, "Painter is now being tortured")
-				{
-					// Setup troll order, current troll is always the first one
-					trolls := make([]*Player, len(players)-1)
-
-					{
-						i := 0
-						for _, player := range players {
-							if player == active_painter {
-								continue
-							}
-							trolls[i] = player
-							i += 1
-						}
-
-						// shuffle troll order:
-						random_source.Shuffle(len(trolls), func(i, j int) {
-							trolls[i], trolls[j] = trolls[j], trolls[i]
-						})
-					}
-
-					next_troll_event := 0
-					troll_did_effect := false
-
-					// Setup session timing:
-					total_time_left := GAME_ROUND_TIME_S
-					session.Broadcast(&TimerChangedEvent{
-						SecondsLeft: total_time_left,
-					})
-
-					second_ticker := time.NewTicker(1 * time.Second)
-					for total_time_left > 0 {
-
-						if next_troll_event <= 0 {
-
-							trolls[0].Send(troll_view) // troll view is "generic empty" here
-
-							// select next troll by doing round-robin scheduling:
-							trolls = append(trolls[1:], trolls[0])
-
-							vote_effect_view := *troll_view
-
-							vote_effect_view.VotePrompt = VOTE_PROMPT_EFFECT
-							vote_effect_view.VoteOptions = *(*[]string)(unsafe.Pointer(&ALL_EFFECT_ITEMS))
-
-							trolls[0].Send(&vote_effect_view) // troll view is "generic empty" here
-							troll_did_effect = false
-
-							next_troll_event = GAME_TROLL_EFFECT_COOLDOWN_S
-						}
-
-						pmsg := session.PumpEvents(second_ticker.C)
-						if pmsg == nil {
-							return
-						}
-
-						switch msg := pmsg.Message.(type) {
-
-						case *NotifyTimeout:
-							total_time_left -= 1
-							next_troll_event -= 1
-							session.Broadcast(&TimerChangedEvent{
-								SecondsLeft: total_time_left,
-							})
-
-						case *VoteCommand:
-							if pmsg.Player == trolls[0] && !troll_did_effect {
-								// TODO(fqu): validate that msg.Option is actually a legal vote!
-								active_painter.Send(&ChangeToolModifierEvent{
-									Modifier: Effect(msg.Option),
-								})
-								trolls[0].Send(troll_view) // reset troll to regular view, hide the vote options
-								troll_did_effect = true
-							} else {
-								log.Println("someone else tried to harm the painter. BAD BOY!")
-							}
-
-						case *SetPaintingCommand:
-							if pmsg.Player == active_painter {
-
-								// Keep the state up to date with the painted image:
-								troll_view.Painting = msg.Path
-								painter_view.Painting = msg.Path
-
-								// Forward painting actions when the user changes the image.
-								session.BroadcastExcept(&PaintingChangedEvent{
-									Path: msg.Path,
-								}, pmsg.Player)
-
-							} else {
-								log.Println("someone else tried to paint. BAD BOY!")
-							}
-						}
-					}
-				}
-
-				// Phase 3:
-				{
-					log.Println(session.Id, "Trolls now select stickers")
-					for false {
-						//
-					}
-				}
-
-				// Phase 4:
-				{
-					log.Println(session.Id, "Players can now gaze upon the art")
-					round_end_timer := time.NewTimer(GAME_ROUND_TIME_S)
-					timeLeft := true
-					players_ready := createPlayerSetFromMap(session.Players, nil)
-					for timeLeft && players_ready.any(false) {
-						pmsg := session.PumpEvents(round_end_timer.C)
-						if pmsg == nil {
-							return
-						}
-
-						switch msg := pmsg.Message.(type) {
-						case *UserCommand:
-							switch msg.Action {
-							case USER_ACTION_CONTINUE_GAME:
-								players_ready.add(pmsg.Player)
-							}
-						case *VoteCommand:
-
-						case *NotifyTimeout:
-							timeLeft = false
-						}
-						broadcastPlayerReadyState(session, players_ready)
-					}
-				}
+			i := 0
+			for p := range session.Players {
+				players[i] = p
+				i += 1
 			}
 		}
+
+		// create random player order which we will use this round:
+		random_source.Shuffle(len(players), func(i, j int) {
+			players[i], players[j] = players[j], players[i]
+		})
+
+		results := make([]gameRoundResult, len(players))
+
+		// Each player gets their turn:
+		for index, active_painter := range players {
+
+			log.Println(session.Id, "Start round", index+1)
+
+			// Assign roles:
+			player_role := make(map[*Player]Role)
+			for _, player := range players {
+				if player == active_painter {
+					player_role[player] = ROLE_PAINTER
+				} else {
+					player_role[player] = ROLE_TROLL
+				}
+			}
+
+			// Select one random background:
+
+			backdrop := ALL_BACKDROP_ITEMS[random_source.Intn(len(ALL_BACKDROP_ITEMS))]
+
+			prompts := make([]string, len(AVAILABLE_PROMPTS))
+			copy(prompts, AVAILABLE_PROMPTS)
+			random_source.Shuffle(len(prompts), func(i, j int) {
+				prompts[i], prompts[j] = prompts[j], prompts[i]
+			})
+			prompts = prompts[0:3]
+
+			log.Println("selected backdrop:", backdrop)
+			log.Println("selected prompts: ", prompts)
+
+			// Create prototypes for the views:
+			troll_view := &ChangeGameViewEvent{
+				View: GAME_VIEW_PROMPTSELECTION,
+
+				Painting: Painting{
+					Graphics: nil,
+					Backdrop: backdrop,
+					Prompt:   "",
+					Stickers: []Sticker{},
+				},
+
+				VotePrompt:  VOTE_PROMPT_PROMPT,
+				VoteOptions: prompts,
+			}
+			painter_view := &ChangeGameViewEvent{
+				View: GAME_VIEW_ARTSTUDIO_GENERIC,
+
+				Painting: Painting{
+					Graphics: nil,
+					Backdrop: backdrop,
+					Prompt:   "",
+					Stickers: []Sticker{},
+				},
+
+				VotePrompt:  "",
+				VoteOptions: []string{},
+			}
+
+			// local function to update the roles:
+			updateViews := func() {
+				for _, player := range players {
+					switch player_role[player] {
+					case ROLE_PAINTER:
+						// log.Println("send view (painter)", player.NickName, painter_view)
+						player.Send(painter_view)
+					case ROLE_TROLL:
+						// log.Println("send view (troll)", player.NickName, troll_view)
+						player.Send(troll_view)
+					}
+				}
+			}
+
+			changeBoth := func(handler func(view *ChangeGameViewEvent)) {
+				handler(troll_view)
+				handler(painter_view)
+			}
+
+			// Now update the views for the players
+			updateViews()
+
+			// Prepare message for trolls to go into "wait for others" state
+			troll_view.View = GAME_VIEW_ARTSTUDIO_GENERIC
+			troll_view.VoteOptions = []string{}
+
+			// Phase 1: Trolls vote for a prompt
+			log.Println(session.Id, "Prompt voting for trolls starts")
+			var selected_painting_prompt string
+			{
+				prompt_voted := createPlayerSetFromList(players, active_painter)
+
+				votes := make([]float32, len(prompts))
+
+				for !prompt_voted.allTrolls() {
+					pmsg := session.PumpEvents(no_timeout)
+					if pmsg == nil {
+						return
+					}
+
+					switch msg := pmsg.Message.(type) {
+					case *VoteCommand:
+						if pmsg.Player != active_painter {
+
+							log.Println("Player ", pmsg.Player.NickName, "voted for", msg)
+
+							index := -1
+							for i, val := range prompts {
+								if msg.Option == val {
+									index = i
+								}
+							}
+
+							if index >= 0 {
+								votes[index] += 0.95 + 0.01*random_source.Float32()
+
+								prompt_voted.add(pmsg.Player)
+
+								// Hide the options for the troll that voted:
+								pmsg.Player.Send(troll_view)
+
+							} else {
+								log.Println("troll tried to vote illegaly. BAD BOY")
+
+							}
+
+						} else {
+							log.Println("painter tried to vote. BAD BOY")
+						}
+					}
+				}
+
+				best_prompt_index := 0
+				best_prompt_level := votes[0]
+
+				for index, level := range votes {
+					if level >= best_prompt_level {
+						best_prompt_index = index
+						best_prompt_level = level
+					}
+				}
+
+				selected_painting_prompt = prompts[best_prompt_index]
+
+				log.Println("Prompt", selected_painting_prompt, "won with", best_prompt_level, "votes")
+			}
+
+			changeBoth(func(view *ChangeGameViewEvent) {
+				view.VotePrompt = ""
+				view.Painting.Prompt = selected_painting_prompt
+			})
+
+			troll_view.View = GAME_VIEW_ARTSTUDIO_GENERIC
+			painter_view.View = GAME_VIEW_ARTSTUDIO_ACTIVE
+
+			updateViews()
+
+			// Phase 2:
+			log.Println(session.Id, "Painter is now being tortured")
+			{
+				// Setup troll order, current troll is always the first one
+				trolls := make([]*Player, len(players)-1)
+
+				{
+					i := 0
+					for _, player := range players {
+						if player == active_painter {
+							continue
+						}
+						trolls[i] = player
+						i += 1
+					}
+
+					// shuffle troll order:
+					random_source.Shuffle(len(trolls), func(i, j int) {
+						trolls[i], trolls[j] = trolls[j], trolls[i]
+					})
+				}
+
+				next_troll_event := 0
+				troll_did_effect := false
+
+				// Setup session timing:
+				total_time_left := GAME_ROUND_TIME_S
+				session.Broadcast(&TimerChangedEvent{
+					SecondsLeft: total_time_left,
+				})
+
+				second_ticker := time.NewTicker(1 * time.Second)
+				for total_time_left > 0 {
+
+					if next_troll_event <= 0 {
+
+						trolls[0].Send(troll_view) // troll view is "generic empty" here
+
+						// select next troll by doing round-robin scheduling:
+						trolls = append(trolls[1:], trolls[0])
+
+						vote_effect_view := *troll_view
+
+						vote_effect_view.VotePrompt = VOTE_PROMPT_EFFECT
+						vote_effect_view.VoteOptions = *(*[]string)(unsafe.Pointer(&ALL_EFFECT_ITEMS))
+
+						trolls[0].Send(&vote_effect_view) // troll view is "generic empty" here
+						troll_did_effect = false
+
+						next_troll_event = GAME_TROLL_EFFECT_COOLDOWN_S
+					}
+
+					pmsg := session.PumpEvents(second_ticker.C)
+					if pmsg == nil {
+						return
+					}
+
+					switch msg := pmsg.Message.(type) {
+
+					case *NotifyTimeout:
+						total_time_left -= 1
+						next_troll_event -= 1
+						session.Broadcast(&TimerChangedEvent{
+							SecondsLeft: total_time_left,
+						})
+
+					case *VoteCommand:
+						if pmsg.Player == trolls[0] && !troll_did_effect {
+							// TODO(fqu): validate that msg.Option is actually a legal vote!
+							active_painter.Send(&ChangeToolModifierEvent{
+								Modifier: Effect(msg.Option),
+							})
+							trolls[0].Send(troll_view) // reset troll to regular view, hide the vote options
+							troll_did_effect = true
+						} else {
+							log.Println("someone else tried to harm the painter. BAD BOY!")
+						}
+
+					case *SetPaintingCommand:
+						if pmsg.Player == active_painter {
+
+							// Keep the state up to date with the painted image:
+							troll_view.Painting.Graphics = msg.Path
+							painter_view.Painting.Graphics = msg.Path
+
+							// Forward painting actions when the user changes the image.
+							session.BroadcastExcept(&PaintingChangedEvent{
+								Path: msg.Path,
+							}, pmsg.Player)
+
+						} else {
+							log.Println("someone else tried to paint. BAD BOY!")
+						}
+					}
+				}
+			}
+
+			// Phase 3:
+			{
+				log.Println(session.Id, "Trolls now select stickers")
+				for false {
+					//
+				}
+			}
+
+			// Store the result of that round
+			results[index] = gameRoundResult{
+				painting:    painter_view.Painting,
+				totalPoints: 0,
+			}
+
+			// Phase 4:
+			{
+				log.Println(session.Id, "Players can now gaze upon the art")
+				round_end_timer := time.NewTimer(GAME_ROUND_TIME_S)
+				timeLeft := true
+				players_ready := createPlayerSetFromMap(session.Players, nil)
+				for timeLeft && players_ready.any(false) {
+					pmsg := session.PumpEvents(round_end_timer.C)
+					if pmsg == nil {
+						return
+					}
+
+					switch msg := pmsg.Message.(type) {
+					case *UserCommand:
+						switch msg.Action {
+						case USER_ACTION_CONTINUE_GAME:
+							players_ready.add(pmsg.Player)
+						}
+
+					case *NotifyTimeout:
+						timeLeft = false
+					}
+					broadcastPlayerReadyState(session, players_ready)
+				}
+			}
+		} // end of inner loop over players
 
 		// Phase 5:
 		{
@@ -583,7 +595,7 @@ func (session *Session) Run() {
 				View: GAME_VIEW_GALLERY,
 			})
 
-			round_end_timer := time.NewTimer(GAME_ROUND_TIME_S)
+			round_end_timer := time.NewTimer(GALLERY_ROUND_TIME_S)
 			timeLeft := true
 			players_ready := createPlayerSetFromMap(session.Players, nil)
 			for timeLeft && players_ready.any(false) {
@@ -598,7 +610,6 @@ func (session *Session) Run() {
 					case USER_ACTION_CONTINUE_GAME:
 						players_ready.add(pmsg.Player)
 					}
-				case *VoteCommand:
 
 				case *NotifyTimeout:
 					timeLeft = false
@@ -619,11 +630,11 @@ func (session *Session) Run() {
 				// PaintingPrompt: "The winner is" + winner.name
 
 				//// Unchanged stuff
-				//paintingBackdrop: Backdrop # artstudio*: the ID of the backdrop
-				//paintingStickers: list[Sticker] # artstudio*: the current list of stickers that should be shown
+				// paintingBackdrop: Backdrop # artstudio*: the ID of the backdrop
+				// paintingStickers: list[Sticker] # artstudio*: the current list of stickers that should be shown
 
-				//votePrompt: str # artstudioGeneric: the prompt that is shown when
-				//voteOptions: list[str] # promptselection, artstudioGeneric: list of options that the player can vote for.
+				// votePrompt: str # artstudioGeneric: the prompt that is shown when
+				// voteOptions: list[str] # promptselection, artstudioGeneric: list of options that the player can vote for.
 			})
 
 			round_end_timer := time.NewTimer(GAME_ROUND_TIME_S)

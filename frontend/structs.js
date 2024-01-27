@@ -18,6 +18,7 @@ const EventId = {
     PaintingChanged : 'painting-changed-event',
     PlayersChanged : 'players-changed-event',
     PlayerReadyChanged : 'player-ready-changed-event',
+    PopUp : 'pop-up-event',
 };
 
 // Enum:
@@ -117,7 +118,7 @@ function sendSetPaintingCommand(path)
 {
     socket.send(JSON.stringify({
         type : CommandId.SetPainting,
-        path : path, // Any
+        path : path, // Graphics
     }));
 }
 

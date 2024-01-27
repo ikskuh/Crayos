@@ -9,6 +9,9 @@ const (
 	// Length of a drawing round in seconds
 	GAME_ROUND_TIME_S = 20 // 90
 
+	// Timeout for the 
+	GALLERY_ROUND_TIME_S = 30
+
 	/// Time of a "trolling" time slice
 	GAME_TROLL_EFFECT_COOLDOWN_S = 10
 )

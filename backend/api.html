@@ -101,6 +101,7 @@ const EventId = {
     PaintingChanged : 'painting-changed-event',
     PlayersChanged : 'players-changed-event',
     PlayerReadyChanged : 'player-ready-changed-event',
+    PopUp : 'pop-up-event',
 };
 
 // Enum:
@@ -200,7 +201,7 @@ function sendSetPaintingCommand(path)
 {
     socket.send(JSON.stringify({
         type : CommandId.SetPainting,
-        path : path, // Any
+        path : path, // Graphics
     }));
 }
 
@@ -263,9 +264,6 @@ function sendSetPaintingCommand(path)
 
             log('ChangeGameViewEvent to ', JSON.stringify(evt.view));
             log('  painting: ', JSON.stringify(evt.painting));
-            log('  paintingPrompt: ', JSON.stringify(evt.paintingPrompt));
-            log('  paintingBackdrop: ', JSON.stringify(evt.paintingBackdrop));
-            log('  paintingStickers: ', JSON.stringify(evt.paintingStickers));
             if (evt.voteOptions && evt.voteOptions.length > 0) {
                 log('  vote:');
                 for(const option of evt.voteOptions) {
@@ -399,7 +397,7 @@ function autoSendSetPaintingCommand()
     let path = document.getElementById("SetPaintingCommand-arg-path").value;
     let cmd_struct = JSON.stringify({
         type : 'set-painting-command',
-        path : path, // Any
+        path : path, // Graphics
     });
     console.log('Sending', cmd_struct);
     socket.send(cmd_struct);
@@ -439,9 +437,7 @@ function deserialize(msg)
         log('event: ChangeGameViewEvent');
         log('  view: ', JSON.stringify(obj.view))
         log('  painting: ', JSON.stringify(obj.painting))
-        log('  paintingPrompt: ', JSON.stringify(obj.paintingPrompt))
-        log('  paintingBackdrop: ', JSON.stringify(obj.paintingBackdrop))
-        log('  paintingStickers: ', JSON.stringify(obj.paintingStickers))
+        log('  results: ', JSON.stringify(obj.results))
         log('  votePrompt: ', JSON.stringify(obj.votePrompt))
         log('  voteOptions: ', JSON.stringify(obj.voteOptions))
           log();
@@ -486,6 +482,14 @@ function deserialize(msg)
         }
         log('event: PlayerReadyChangedEvent');
         log('  players: ', JSON.stringify(obj.players))
+          log();
+        break;
+    case 'pop-up-event':
+        if(handlePopUp(obj)) {
+            return;
+        }
+        log('event: PopUpEvent');
+        log('  message: ', JSON.stringify(obj.message))
           log();
         break;
     default:

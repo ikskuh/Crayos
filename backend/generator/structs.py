@@ -12,6 +12,9 @@ GO_MODULE = SCRIPT_ROOT / ".." / "game" / "structs.go"
 JS_MODULE = SCRIPT_ROOT / ".." / ".." / "frontend" / "structs.js"
 API_MODULE = SCRIPT_ROOT / ".." / "api.html"
 
+class Graphics:
+    pass 
+    
 GO_TYPES: dict[type,str] = {
     int: "int",
     str: "string",
@@ -20,7 +23,8 @@ GO_TYPES: dict[type,str] = {
     None | str : "*string",
     list[str]: "[]string",
     None | list[str]: "[]string",
-    dict[str, bool]: "map[string]bool"
+    dict[str, bool]: "map[string]bool",
+    Graphics: "Graphics",
 }
 
 assert Optional[str] == None | str 
@@ -33,6 +37,7 @@ class ApiDirection(Enum):
 
     def is_top_level(self) -> bool:
         return  (self == ApiDirection.event) or (self == ApiDirection.command)
+
 
 @dataclass
 class ApiType:
@@ -76,7 +81,7 @@ def api_enum(cls: type):
     assert cls.__name__ not in type_registry
     type_registry[cls.__name__] = ApiType(dir=ApiDirection.enum, pytype=cls)
     register_custom_type(cls.__name__, cls ) # all enums are serialized as integers in go
-    return cls 
+    return cls
 
 @api_struct
 class Sticker:
@@ -148,7 +153,7 @@ class PlaceStickerCommand:
 
 @api_command
 class SetPaintingCommand:
-    path: Any 
+    path: Graphics 
 
 
 @api_event
@@ -163,14 +168,21 @@ class JoinSessionFailedEvent:
 class KickedEvent:
     reason: str
 
+@api_struct
+class Painting:
+    prompt: str # shows the current drawing prompt
+    graphics: Graphics # the current painting data
+    backdrop: Backdrop # the ID of the backdrop 
+    stickers: list[Sticker] # the current list of stickers that should be shown
+
+
 @api_event
 class ChangeGameViewEvent:
     view: GameView # what view the frontend should show
 
-    painting: Any # artstudio*: the current painting data
-    paintingPrompt: str # artstudio*: shows the current drawing prompt
-    paintingBackdrop: Backdrop # artstudio*: the ID of the backdrop 
-    paintingStickers: list[Sticker] # artstudio*: the current list of stickers that should be shown
+    painting: Painting # artstudio*: the current painting data
+
+    results: list[Painting] # gallery: contains all winning images
 
     votePrompt: str # artstudioGeneric: the prompt that is shown when 
     voteOptions: list[str] # promptselection, artstudioGeneric: list of options that the player can vote for.
@@ -185,7 +197,7 @@ class ChangeToolModifierEvent:
 
 @api_event
 class PaintingChangedEvent:
-    path: Any # the new painting
+    path: Graphics # the new painting
 
 @api_event
 class PlayersChangedEvent:
@@ -196,6 +208,11 @@ class PlayersChangedEvent:
 @api_event
 class PlayerReadyChangedEvent:
     players: dict[str,bool] # contains a map from nick to "is ready"
+
+@api_event
+class PopUpEvent:
+    message: str
+
 
 ###############################################################################
 
@@ -558,9 +575,6 @@ table#status tr:nth-child(2) td {
 
             log('ChangeGameViewEvent to ', JSON.stringify(evt.view));
             log('  painting: ', JSON.stringify(evt.painting));
-            log('  paintingPrompt: ', JSON.stringify(evt.paintingPrompt));
-            log('  paintingBackdrop: ', JSON.stringify(evt.paintingBackdrop));
-            log('  paintingStickers: ', JSON.stringify(evt.paintingStickers));
             if (evt.voteOptions && evt.voteOptions.length > 0) {
                 log('  vote:');
                 for(const option of evt.voteOptions) {
@@ -637,7 +651,7 @@ table#status tr:nth-child(2) td {
                     lineout("    ", field, " = Number(", field, ");")
                 elif hint == str:
                     pass
-                elif hint == Any:
+                elif hint == Any or hint == Graphics:
                     pass 
                 elif issubclass(hint, Enum):
                     pass  # enums are strings

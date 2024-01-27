@@ -7,6 +7,8 @@ type Message interface {
 	FixNils() Message
 }
 
+type Graphics interface{}
+
 func SerializeMessage(msg Message) ([]byte, error) {
 
 	msg = msg.FixNils()

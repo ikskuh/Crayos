@@ -22,6 +22,7 @@ const (
 	PAINTING_CHANGED_EVENT_TAG = "painting-changed-event"
 	PLAYERS_CHANGED_EVENT_TAG = "players-changed-event"
 	PLAYER_READY_CHANGED_EVENT_TAG = "player-ready-changed-event"
+	POP_UP_EVENT_TAG = "pop-up-event"
 )
 
 func DeserializeMessage(data []byte) (Message, error) {
@@ -74,6 +75,8 @@ func DeserializeMessage(data []byte) (Message, error) {
 		out = &PlayersChangedEvent{}
 	case PLAYER_READY_CHANGED_EVENT_TAG:
 		out = &PlayerReadyChangedEvent{}
+	case POP_UP_EVENT_TAG:
+		out = &PopUpEvent{}
 
 	default:
 		return nil, errors.New("Invalid type")
@@ -184,7 +187,7 @@ type PlaceStickerCommand struct {
 }
 
 type SetPaintingCommand struct {
-	Path interface{} `json:"path"`
+	Path Graphics `json:"path"`
 }
 
 type EnterSessionEvent struct {
@@ -199,12 +202,17 @@ type KickedEvent struct {
 	Reason string `json:"reason"`
 }
 
+type Painting struct {
+	Prompt string `json:"prompt"`
+	Graphics Graphics `json:"graphics"`
+	Backdrop Backdrop `json:"backdrop"`
+	Stickers []Sticker `json:"stickers"`
+}
+
 type ChangeGameViewEvent struct {
 	View GameView `json:"view"`
-	Painting interface{} `json:"painting"`
-	PaintingPrompt string `json:"paintingPrompt"`
-	PaintingBackdrop Backdrop `json:"paintingBackdrop"`
-	PaintingStickers []Sticker `json:"paintingStickers"`
+	Painting Painting `json:"painting"`
+	Results []Painting `json:"results"`
 	VotePrompt string `json:"votePrompt"`
 	VoteOptions []string `json:"voteOptions"`
 }
@@ -218,7 +226,7 @@ type ChangeToolModifierEvent struct {
 }
 
 type PaintingChangedEvent struct {
-	Path interface{} `json:"path"`
+	Path Graphics `json:"path"`
 }
 
 type PlayersChangedEvent struct {
@@ -229,6 +237,10 @@ type PlayersChangedEvent struct {
 
 type PlayerReadyChangedEvent struct {
 	Players map[string]bool `json:"players"`
+}
+
+type PopUpEvent struct {
+	Message string `json:"message"`
 }
 
 
@@ -317,8 +329,8 @@ func (item *ChangeGameViewEvent) GetJsonType() string {
 }
 func (item *ChangeGameViewEvent) FixNils() Message {
 	copy := *item
-	if copy.PaintingStickers == nil {
-		copy.PaintingStickers = []Sticker{}
+	if copy.Results == nil {
+		copy.Results = []Painting{}
 	}
 	if copy.VoteOptions == nil {
 		copy.VoteOptions = []string{}
@@ -369,6 +381,14 @@ func (item *PlayerReadyChangedEvent) FixNils() Message {
 	if copy.Players == nil {
 		copy.Players = map[string]bool{}
 	}
+	return &copy
+}
+
+func (item *PopUpEvent) GetJsonType() string {
+	return "pop-up-event"
+}
+func (item *PopUpEvent) FixNils() Message {
+	copy := *item
 	return &copy
 }
 
