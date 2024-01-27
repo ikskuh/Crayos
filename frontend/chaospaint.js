@@ -94,14 +94,6 @@ function initPainter() {
     drawCanvas();
   };
 
-  const resize = (event) => {
-    const wrapper = document.getElementById("wrapper");
-    const scale = Math.min(window.innerWidth / width, window.innerHeight / height);
-    wrapper.style.transform = "translate(-50%, -50%) scale(" + scale + ")";
-  };
-  resize();
-  window.addEventListener("resize", resize);
-
   initPalette();
   selectTool("pencil");
   paths.splice(0, paths.length);
