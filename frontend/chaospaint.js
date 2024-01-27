@@ -1,5 +1,6 @@
 let canvas;
 let paletteElem;
+let timerNumberElem;
 
 // CONSTANTS
 const width = 1920;
@@ -43,6 +44,7 @@ function loadBackgrounds() {
 function initPainter() {
   document.getElementById("painter").style.display = "block";
   canvas = document.getElementById("canvas");
+  timerNumberElem = document.getElementById("timer-number");
 
   loadBackgrounds();
 
@@ -103,6 +105,14 @@ function initPainter() {
   initPalette();
   selectTool("pencil");
   paths.splice(0, paths.length);
+
+  timerNumberElem.innerText = 60;
+  const timerInterval = setInterval(() => {
+    timerNumberElem.innerText--;
+    if (timerNumberElem.innerText == 0) {
+      clearInterval(timerInterval);
+    }
+  }, 1000);
 }
 
 function drawCanvas() {
