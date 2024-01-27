@@ -1,4 +1,4 @@
-let canvas;
+let painterCanvas;
 let paletteElem;
 let timerNumberElem;
 
@@ -39,12 +39,13 @@ let chaosEffect = null;
 
 function initPainter() {
   document.getElementById("painter").style.display = "block";
-  canvas = document.getElementById("canvas");
-  timerNumberElem = document.getElementById("timer-number");
+
+  painterCanvas = document.getElementById("painter-canvas");
+  timerNumberElem = document.getElementById("painter-timer-number");
 
   loadBackgrounds();
 
-  canvas.onmousedown = (e) => {
+  painterCanvas.onmousedown = (e) => {
     mx = e.offsetX;
     my = e.offsetY;
     const point = { x: mx, y: my };
@@ -53,9 +54,9 @@ function initPainter() {
     } else if (selectedTool == TOOL_ERASER) {
       eraserDeleteAt(point);
     }
-    drawCanvas();
+    drawPainterCanvas();
   };
-  canvas.onmousemove = (e) => {
+  painterCanvas.onmousemove = (e) => {
     mx = e.offsetX;
     my = e.offsetY;
     if (e.buttons & 1 || chaosEffect == Effect.lock_pencil) {
@@ -66,13 +67,13 @@ function initPainter() {
         eraserDeleteAt(point);
       }
     }
-    drawCanvas();
+    drawPainterCanvas();
   };
-  canvas.onmouseup = (e) => {
+  painterCanvas.onmouseup = (e) => {
     // TODO: send paths to server
     console.log(JSON.stringify(paths));
   };
-  canvas.onmouseenter = (e) => {
+  painterCanvas.onmouseenter = (e) => {
     if (e.buttons & 1) {
       mx = e.offsetX;
       my = e.offsetY;
@@ -84,10 +85,10 @@ function initPainter() {
       }
     }
   };
-  canvas.onmouseleave = (e) => {
+  painterCanvas.onmouseleave = (e) => {
     mx = -1000;
     my = -1000;
-    drawCanvas();
+    drawPainterCanvas();
   };
 
   initPalette();
@@ -106,9 +107,9 @@ function initPainter() {
   }, 1000);
 }
 
-function drawCanvas() {
-  const ctx = canvas.getContext("2d");
-  ctx.drawImage(backgrounds[selectedBackground], 0, 0, canvas.width, canvas.height);
+function drawPainterCanvas() {
+  const ctx = painterCanvas.getContext("2d");
+  ctx.drawImage(backgrounds[selectedBackground], 0, 0, painterCanvas.width, painterCanvas.height);
 
   ctx.lineWidth = lineWidth;
   ctx.lineCap = "round";
@@ -156,7 +157,7 @@ function drawCanvas() {
   // chaos effect
   if (chaosEffect == Effect.flashlight) {
     ctx.beginPath();
-    ctx.rect(0, 0, canvas.width, canvas.height);
+    ctx.rect(0, 0, painterCanvas.width, painterCanvas.height);
     ctx.arc(mx, my, 200, 2 * Math.PI, 0);
     ctx.fillStyle = "#000";
     ctx.fill("evenodd");
@@ -173,28 +174,28 @@ function activateChaosEffect(effect) {
   }, EFFECT_COOLDOWN_MS);
 
   if (chaosEffect == Effect.flip) {
-    canvas.classList.add(Effect.flip);
+    painterCanvas.classList.add(Effect.flip);
   } else if (chaosEffect == Effect.drunk) {
-    canvas.classList.add(Effect.drunk);
+    painterCanvas.classList.add(Effect.drunk);
   } else if (chaosEffect == Effect.swap_tool) {
     swapTools();
   }
 
-  drawCanvas();
+  drawPainterCanvas();
 }
 
 function deactivateChaosEffect(effect) {
   console.log("deactivate chaos effect: " + effect);
   if (effect == Effect.flip) {
-    canvas.classList.remove(Effect.flip);
+    painterCanvas.classList.remove(Effect.flip);
   } else if (effect == Effect.drunk) {
-    canvas.classList.remove(Effect.drunk);
+    painterCanvas.classList.remove(Effect.drunk);
   } else if (chaosEffect == Effect.swap_tool) {
     swapTools();
   }
 
   chaosEffect = null;
-  drawCanvas();
+  drawPainterCanvas();
 }
 
 // TOOLS
@@ -299,7 +300,7 @@ function loadBackgrounds() {
     const img = new Image();
     img.src = backgroundUrls[i];
     img.onload = () => {
-      drawCanvas();
+      drawPainterCanvas();
     };
     backgrounds.push(img);
   }

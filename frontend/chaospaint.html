@@ -11,13 +11,13 @@
   <body onload="init();">
     <div id="wrapper">
       <section id="painter">
-        <div id="timer">
-          <p>Time left:<br /><span id="timer-number"></span></p>
+        <div class="timer">
+          <p>Time left:<br /><span id="painter-timer-number"></span></p>
         </div>
-        <div id="prompt">
-          <p id="prompt-text">T-Rex trying to paint its toenails</p>
+        <div class="prompt">
+          <p id="painter-prompt-text">T-Rex trying to paint its toenails</p>
         </div>
-        <div id="toolbox">
+        <div class="toolbox">
           <button id="pencil" onclick="selectTool('pencil')" style="display: none" />
           <button id="eraser" onclick="selectTool('eraser')" style="display: none" />
           <button id="drunk" onclick="activateChaosEffect('drunk')" />
@@ -27,7 +27,7 @@
           <button id="swap_tool" onclick="activateChaosEffect('swap_tool')" />
           <canvas id="palette" width="264" height="360" style="display: none"></canvas>
         </div>
-        <canvas id="canvas" width="1385" height="737"></canvas>
+        <canvas id="painter-canvas" width="1385" height="737"></canvas>
       </section>
     </div>
   </body>

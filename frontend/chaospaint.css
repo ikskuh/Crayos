@@ -1,4 +1,4 @@
-#timer {
+.timer {
     position: absolute;
     left: 78px;
     top: 70px;
@@ -9,7 +9,7 @@
     color: #000;
 }
 
-#prompt {
+.prompt {
     position: absolute;
     left: 453px;
     top: 70px;
@@ -18,7 +18,7 @@
     color: white;
     background-image: url('img/prompt_box.png');
 }
-#prompt-text {
+.prompt p {
     position: absolute;
     left: 50%;
     top: 50%;
@@ -28,7 +28,7 @@
     text-align: center;
 }
 
-#toolbox {
+.toolbox {
     position: absolute;
     left: 78px;
     top: 233px;
@@ -38,7 +38,7 @@
     border-radius: 20px;
 }
 
-#toolbox button {
+.toolbox button {
     border: none;
     border-radius: 20px;
     width: 260px;
@@ -46,43 +46,43 @@
     margin-left: 32px;
     margin-top: 32px;
 }
-#toolbox button.selected {
+.toolbox button.selected {
     border: 4px solid black;
     height: 108px;
 }
-#toolbox button:active {
+.toolbox button:active {
     border: 4px solid black;
     height: 108px;
 }
-#toolbox button#pencil {
+.toolbox button#pencil {
     background-image: url('img/pencil.png');
 }
-#toolbox button#eraser {
+.toolbox button#eraser {
     background-image: url('img/eraser.png');
 }
-#toolbox button#drunk {
+.toolbox button#drunk {
     background-image: url('img/drunk.png');
 }
-#toolbox button#flashlight {
+.toolbox button#flashlight {
     background-image: url('img/flashlight.png');
 }
-#toolbox button#flip {
+.toolbox button#flip {
     background-image: url('img/flip.png');
 }
-#toolbox button#lock_pencil {
+.toolbox button#lock_pencil {
     background-image: url('img/lock_pencil.png');
 }
-#toolbox button#swap_tool {
+.toolbox button#swap_tool {
     background-image: url('img/swap_tool.png');
 }
 
-#toolbox #palette {
+.toolbox #palette {
     position: absolute;
     left: 30px;
     top: 326px;
 }
 
-#canvas {
+#painter-canvas {
     position: absolute;
     left: 453px;
     top: 233px;
@@ -92,11 +92,11 @@
     transition: all 1s;
 }
 
-#canvas.flip {
+#painter-canvas.flip {
     transform: perspective(2000px) rotateY(180deg);
 }
 
-#canvas.drunk {
+#painter-canvas.drunk {
     animation: drunk 4s ease-in-out infinite;
 }
 
