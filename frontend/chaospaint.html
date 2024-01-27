@@ -10,10 +10,12 @@
   <body onload="init();">
     <div id="wrapper">
         <section id="painter">
-            <h1 style="font-size: 100px; font-family: Comic Sans MS;">Hallo Canvas</h1>
+            <div id="prompt">
+                <p id="prompt-text">T-Rex trying to paint its toenails</p>
+            </div>
             <div id="toolbox">
-                <button id="pencil"></button>
-                <button id="eraser"></button>
+                <button id="pencil" onclick="selectTool('pencil')"></button>
+                <button id="eraser" onclick="selectTool('eraser')"></button>
                 <canvas id="palette" width="264" height="360"></canvas>
             </div>
             <canvas id="canvas" width="1385" height="737"></canvas>

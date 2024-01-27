@@ -4,6 +4,7 @@
     <title>API</title>
       <script type="text/javascript">
         var conn;
+        var session = "0xc00005a540";
   
         window.onload = function () {
           if (window["WebSocket"]) {
@@ -13,18 +14,25 @@
             };
             conn.onmessage = function (evt) {
               console.log("Recieved: " + evt.data);
+              // TODO(philippwendel) retrieve session after createSession call, currently session needs to be set over console
             };
           } else console.log("Your browser does not support WebSockets.");
         };
 
-        function send(str) {
-          console.log("Sending:" + str);
-          conn.send(str);
+        function createSession() {
+          conn.send(JSON.stringify({  "type": "create-session-command" }))
+        }
+        function joinSession() {
+          conn.send(JSON.stringify({  "type": "join-session-command", "session": session, "nickname": "xq" }))
+        }
+        function reconnect() {
+          conn = new WebSocket("ws://" + document.location.host + "/ws");
         }
     </script>
   </head>
   <body>
-    <button onClick="send('asdf')">Button</button> 
-    <button onClick="send('asdf')">Button</button> 
+    <button onClick="reconnect()">Reconnect ws</button> 
+    <button onClick="createSession()">Create session</button> 
+    <button onClick="joinSession()">Join session</button> 
   </body>
 </html>
