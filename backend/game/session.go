@@ -156,11 +156,19 @@ func (_ *NotifyTimeout) GetJsonType() string {
 	return ""
 }
 
+func (self *NotifyTimeout) FixNils() Message {
+	return self
+}
+
 type NotifyPlayerJoined struct {
 }
 
 func (_ *NotifyPlayerJoined) GetJsonType() string {
 	return ""
+}
+
+func (self *NotifyPlayerJoined) FixNils() Message {
+	return self
 }
 
 type NotifyPlayerLeft struct {
@@ -169,6 +177,10 @@ type NotifyPlayerLeft struct {
 
 func (_ *NotifyPlayerLeft) GetJsonType() string {
 	return ""
+}
+
+func (self *NotifyPlayerLeft) FixNils() Message {
+	return self
 }
 
 func (session *Session) PumpEvents(timeout <-chan time.Time) *PlayerMessage {

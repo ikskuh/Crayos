@@ -24,26 +24,6 @@ const (
 	PLAYER_READY_CHANGED_EVENT_TAG = "player-ready-changed-event"
 )
 
-
-func SerializeMessage(msg Message) ([]byte, error) {
-
-	temp, err := json.Marshal(msg)
-	if err != nil {
-		return nil, err
-	}
-
-	var dummy map[string]interface{}
-
-	err = json.Unmarshal(temp, &dummy)
-	if err != nil {
-		return nil, err
-	}
-
-    dummy["type"] = msg.GetJsonType()
-
-	return json.Marshal(dummy)
-}
-
 func DeserializeMessage(data []byte) (Message, error) {
 
 	var raw_map map[string]interface{} // must be an object
@@ -255,64 +235,140 @@ type PlayerReadyChangedEvent struct {
 func (item *CreateSessionCommand) GetJsonType() string {
 	return "create-session-command"
 }
+func (item *CreateSessionCommand) FixNils() Message {
+	copy := *item
+	return &copy
+}
 
 func (item *JoinSessionCommand) GetJsonType() string {
 	return "join-session-command"
+}
+func (item *JoinSessionCommand) FixNils() Message {
+	copy := *item
+	return &copy
 }
 
 func (item *LeaveSessionCommand) GetJsonType() string {
 	return "leave-session-command"
 }
+func (item *LeaveSessionCommand) FixNils() Message {
+	copy := *item
+	return &copy
+}
 
 func (item *UserCommand) GetJsonType() string {
 	return "user-command"
+}
+func (item *UserCommand) FixNils() Message {
+	copy := *item
+	return &copy
 }
 
 func (item *VoteCommand) GetJsonType() string {
 	return "vote-command"
 }
+func (item *VoteCommand) FixNils() Message {
+	copy := *item
+	return &copy
+}
 
 func (item *PlaceStickerCommand) GetJsonType() string {
 	return "place-sticker-command"
+}
+func (item *PlaceStickerCommand) FixNils() Message {
+	copy := *item
+	return &copy
 }
 
 func (item *SetPaintingCommand) GetJsonType() string {
 	return "set-painting-command"
 }
+func (item *SetPaintingCommand) FixNils() Message {
+	copy := *item
+	return &copy
+}
 
 func (item *EnterSessionEvent) GetJsonType() string {
 	return "enter-session-event"
+}
+func (item *EnterSessionEvent) FixNils() Message {
+	copy := *item
+	return &copy
 }
 
 func (item *JoinSessionFailedEvent) GetJsonType() string {
 	return "join-session-failed-event"
 }
+func (item *JoinSessionFailedEvent) FixNils() Message {
+	copy := *item
+	return &copy
+}
 
 func (item *KickedEvent) GetJsonType() string {
 	return "kicked-event"
+}
+func (item *KickedEvent) FixNils() Message {
+	copy := *item
+	return &copy
 }
 
 func (item *ChangeGameViewEvent) GetJsonType() string {
 	return "change-game-view-event"
 }
+func (item *ChangeGameViewEvent) FixNils() Message {
+	copy := *item
+	if copy.PaintingStickers == nil {
+		copy.PaintingStickers = []Sticker{}
+	}
+	if copy.VoteOptions == nil {
+		copy.VoteOptions = []string{}
+	}
+	return &copy
+}
 
 func (item *TimerChangedEvent) GetJsonType() string {
 	return "timer-changed-event"
+}
+func (item *TimerChangedEvent) FixNils() Message {
+	copy := *item
+	return &copy
 }
 
 func (item *ChangeToolModifierEvent) GetJsonType() string {
 	return "change-tool-modifier-event"
 }
+func (item *ChangeToolModifierEvent) FixNils() Message {
+	copy := *item
+	return &copy
+}
 
 func (item *PaintingChangedEvent) GetJsonType() string {
 	return "painting-changed-event"
+}
+func (item *PaintingChangedEvent) FixNils() Message {
+	copy := *item
+	return &copy
 }
 
 func (item *PlayersChangedEvent) GetJsonType() string {
 	return "players-changed-event"
 }
+func (item *PlayersChangedEvent) FixNils() Message {
+	copy := *item
+	if copy.Players == nil {
+		copy.Players = []string{}
+	}
+	return &copy
+}
 
 func (item *PlayerReadyChangedEvent) GetJsonType() string {
 	return "player-ready-changed-event"
+}
+func (item *PlayerReadyChangedEvent) FixNils() Message {
+	copy := *item
+	if copy.Players == nil {
+		copy.Players = map[string]bool{}
+	}
+	return &copy
 }
 
