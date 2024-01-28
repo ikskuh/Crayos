@@ -61,7 +61,7 @@ const (
 	TEXT_POPUP_START_TROLLING   string = "Start trolling!"
 	TEXT_POPUP_MISSED_TROLLING  string = "You sleepyhead!"
 	TEXT_POPUP_START_STICKERING string = "Let's make a mess!"
-	TEXT_POPUP_STOP_STICKERING  string = "Enough of that!"
+	TEXT_POPUP_STOP_STICKERING  string = "The results are in!"
 	TEXT_POPUP_TIMES_UP         string = "Someone's sleepy!"
 
 	// Vote Prompts:

@@ -310,6 +310,16 @@ func (session *Session) Announce(text string, duration time.Duration) {
 	time.Sleep(duration)
 }
 
+// Takes `count` random elements from `source` based on `rng`.
+func nElementsFrom(rng *rand.Rand, source []string, count int) []string {
+	items := make([]string, len(source))
+	copy(items, source)
+	rng.Shuffle(len(items), func(i, j int) {
+		items[i], items[j] = items[j], items[i]
+	})
+	return items[0:count]
+}
+
 func (session *Session) Run() {
 	random_source := rand.New(rand.NewSource(time.Now().UnixNano()))
 
@@ -444,12 +454,7 @@ func (session *Session) Run() {
 
 				backdrop := ALL_BACKDROP_ITEMS[random_source.Intn(len(ALL_BACKDROP_ITEMS))]
 
-				prompts := make([]string, len(AVAILABLE_PROMPTS))
-				copy(prompts, AVAILABLE_PROMPTS)
-				random_source.Shuffle(len(prompts), func(i, j int) {
-					prompts[i], prompts[j] = prompts[j], prompts[i]
-				})
-				prompts = prompts[0:3]
+				prompts := nElementsFrom(random_source, AVAILABLE_PROMPTS, 3)
 
 				session.ServerPrint("selected backdrop:", backdrop)
 				session.ServerPrint("selected prompts: ", prompts)
@@ -716,18 +721,23 @@ func (session *Session) Run() {
 					painter_view.View = GAME_VIEW_ARTSTUDIO_GENERIC
 					painter_view.RemoveVote()
 
+					active_painter.Send(painter_view)
+
+					// Manually initialize all trolls, as each troll has their own
+					// prompt items.
 					troll_view.View = GAME_VIEW_ARTSTUDIO_STICKER
-					troll_view.SetVote(TEXT_VOTE_STICKERING, []string{
-						"banana-peel",
-						"blood-splash",
-						"creeper",
-						"pile-of-poop",
-						"tardis",
-					})
+					for _, player := range players {
+						if player_role[player] == ROLE_TROLL {
+							troll_view.SetVote(
+								TEXT_VOTE_STICKERING,
+								nElementsFrom(random_source, ALL_STICKER_TAGS, 5),
+							)
+							player.Send(troll_view)
+						}
+					}
 
-					updateViews()
-
-					//
+					// Now that all trolls have their own stickers,
+					// we can now remove the vote again.
 					troll_view.RemoveVote()
 
 					mapped_stickers := make(map[*Player]*Sticker)
@@ -744,7 +754,6 @@ func (session *Session) Run() {
 						switch msg := pmsg.Message.(type) {
 						case *PlaceStickerCommand:
 							if pmsg.Player != active_painter {
-								log.Println("sticker!", msg)
 								sticker := Sticker{
 									Id: msg.Sticker,
 									X:  msg.X,
@@ -763,7 +772,6 @@ func (session *Session) Run() {
 								}
 
 								players_ready.add(pmsg.Player)
-								log.Println(players_ready.allTrollsSet())
 							} else {
 								session.ServerPrint("painted tried to sticker. BAD BOY!")
 							}
@@ -803,6 +811,8 @@ func (session *Session) Run() {
 					"",
 					TEXT_POPUP_STOP_STICKERING,
 				)
+
+				time.Sleep(TIME_GAME_RATING_SLACK)
 
 				// Phase 4:
 				session.DebugPrint(round_id, "Showcase the artwork")
@@ -847,6 +857,8 @@ func (session *Session) Run() {
 						})
 					}
 				}
+
+				time.Sleep(TIME_GAME_RATING_SLACK)
 			} // end of inner loop over players
 
 			// Phase 5:
