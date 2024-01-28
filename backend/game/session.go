@@ -201,7 +201,12 @@ func (self *NotifyPlayerLeft) FixNils() Message {
 	return self
 }
 
-func (session *Session) PumpEvents(timeout <-chan time.Time) *PlayerMessage {
+type gameTimer interface {
+	GetChannel() <-chan time.Time
+	NotifyTick()
+}
+
+func (session *Session) PumpEvents(timer gameTimer) *PlayerMessage {
 
 	for *meta.DEBUG_MODE || len(session.Players) > 0 {
 		select {
@@ -228,7 +233,8 @@ func (session *Session) PumpEvents(timeout <-chan time.Time) *PlayerMessage {
 				Player:  old,
 			}
 
-		case t := <-timeout:
+		case t := <-timer.GetChannel():
+			timer.NotifyTick()
 			return &PlayerMessage{
 				Player:  nil,
 				Message: &NotifyTimeout{timestamp: t},
@@ -299,14 +305,20 @@ func (session *Session) Run() {
 	session.ServerPrint("Started")
 	defer session.ServerPrint("Stopped")
 
-	no_timeout := make(chan time.Time) // pass when no timeout is required
+	no_timeout := &noTimeoutGameTimer{
+		channel: make(chan time.Time), // pass when no timeout is required
+	}
 
 	for *meta.DEBUG_MODE || len(session.Players) > 0 {
 
-		session.DebugPrint("Enter lobby")
-
 		// Lobby
+		session.DebugPrint("Enter lobby")
 		{
+			// Show lobby
+			session.Broadcast(&ChangeGameViewEvent{
+				View: GAME_VIEW_LOBBY,
+			})
+
 			players_ready := createPlayerSetFromMap(session.Players, nil)
 
 			for len(session.Players) < 2 || players_ready.any(false) {
@@ -468,9 +480,15 @@ func (session *Session) Run() {
 					prompt_voted := createPlayerSetFromList(players, active_painter)
 
 					votes := make([]float32, len(prompts))
+					for i := range votes {
+						// initialize votes with some basic noise so timeout can happen
+						votes[i] = 0.1 * random_source.Float32()
+					}
 
-					for !prompt_voted.allTrollsSet() {
-						pmsg := session.PumpEvents(no_timeout)
+					vote_end_timer := session.createTimer(GAME_TOPIC_VOTE_TIME_S)
+
+					for !vote_end_timer.TimedOut() && !prompt_voted.allTrollsSet() {
+						pmsg := session.PumpEvents(vote_end_timer)
 						if pmsg == nil {
 							return
 						}
@@ -558,13 +576,10 @@ func (session *Session) Run() {
 					troll_did_effect := false
 
 					// Setup session timing:
-					total_time_left := GAME_ROUND_TIME_S
-					session.Broadcast(&TimerChangedEvent{
-						SecondsLeft: total_time_left,
-					})
 
-					second_ticker := time.NewTicker(1 * time.Second)
-					for total_time_left > 0 {
+					round_end_timer := session.createTimer(GAME_ROUND_TIME_S)
+
+					for !round_end_timer.TimedOut() {
 
 						if next_troll_event <= 0 {
 
@@ -583,7 +598,7 @@ func (session *Session) Run() {
 							next_troll_event = GAME_TROLL_EFFECT_COOLDOWN_S
 						}
 
-						pmsg := session.PumpEvents(second_ticker.C)
+						pmsg := session.PumpEvents(round_end_timer)
 						if pmsg == nil {
 							return
 						}
@@ -591,11 +606,7 @@ func (session *Session) Run() {
 						switch msg := pmsg.Message.(type) {
 
 						case *NotifyTimeout:
-							total_time_left -= 1
 							next_troll_event -= 1
-							session.Broadcast(&TimerChangedEvent{
-								SecondsLeft: total_time_left,
-							})
 
 						case *VoteCommand:
 							if pmsg.Player == trolls[0] && !troll_did_effect {
@@ -627,6 +638,11 @@ func (session *Session) Run() {
 							}
 						}
 					}
+
+					// Hide timer:
+					session.Broadcast(&TimerChangedEvent{
+						SecondsLeft: -1,
+					})
 				}
 
 				updateViews()
@@ -640,13 +656,31 @@ func (session *Session) Run() {
 				// Phase 3:
 				session.DebugPrint(round_id, "Trolls now select stickers")
 				{
-
-					// TODO(fqu): Set stickering mode here
+					round_end_timer := session.createTimer(GALLERY_ROUND_TIME_S)
+					timeLeft := true
+					players_ready := createPlayerSetFromMap(session.Players, nil)
+					changeBoth(func(view *ChangeGameViewEvent) {
+						view.View = GAME_VIEW_ARTSTUDIO_STICKER
+					})
 
 					updateViews()
 
-					for false {
-						//
+					for timeLeft && !players_ready.allSet() {
+						pmsg := session.PumpEvents(round_end_timer)
+						if pmsg == nil {
+							return
+						}
+
+						switch msg := pmsg.Message.(type) {
+						case *PlaceStickerCommand:
+							session.Broadcast(&PlaceStickerCommand{
+								Sticker: msg.Sticker,
+								X:       msg.X,
+								Y:       msg.Y,
+							})
+						case *NotifyTimeout:
+							timeLeft = false
+						}
 					}
 				}
 
@@ -659,37 +693,38 @@ func (session *Session) Run() {
 				// Phase 4:
 				session.DebugPrint(round_id, "Showcase the artwork")
 				{
-					round_end_timer := time.NewTimer(GALLERY_ROUND_TIME_S)
-					timeLeft := true
+					round_end_timer := session.createTimer(GALLERY_ROUND_TIME_S)
 					players_ready := createPlayerSetFromMap(session.Players, nil)
 
 					changeBoth(func(view *ChangeGameViewEvent) {
 						view.View = GAME_VIEW_ARTSTUDIO_GENERIC
-						view.SetVote(TEXT_VOTE_SHOWCASE, []string{"eraser"})
+						view.SetVote(TEXT_VOTE_SHOWCASE, []string{"", "", "", "", "continue"})
 					})
 
 					updateViews()
 
-					for timeLeft && !players_ready.allSet() {
-						pmsg := session.PumpEvents(round_end_timer.C)
+					// Remove the vote so we can hide it if the player hits the button
+					changeBoth(func(view *ChangeGameViewEvent) {
+						view.RemoveVote()
+					})
+
+					for !round_end_timer.TimedOut() && !players_ready.allSet() {
+						pmsg := session.PumpEvents(round_end_timer)
 						if pmsg == nil {
 							return
 						}
 
 						switch msg := pmsg.Message.(type) {
-						case *UserCommand:
-							switch msg.Action {
-							case USER_ACTION_CONTINUE_GAME:
-								players_ready.add(pmsg.Player)
-							}
-
 						case *VoteCommand:
-							players_ready.add(pmsg.Player)
-
-						case *NotifyTimeout:
-							timeLeft = false
+							if msg.Option != "continue" {
+								session.ServerPrint("User sent bad continue option, BAD BOY")
+							} else {
+								players_ready.add(pmsg.Player)
+								pmsg.Player.Send(troll_view) // it doesn't matter, they should be equal
+							}
 						}
 					}
+					round_end_timer.Hide()
 				}
 			} // end of inner loop over players
 
@@ -717,11 +752,13 @@ func (session *Session) Run() {
 					})
 					session.Broadcast(&vote_view)
 
-					round_end_timer := time.NewTimer(GALLERY_ROUND_TIME_S)
-					timeLeft := true
+					// Hide the vote for later sending:
+					vote_view.RemoveVote()
+
+					round_end_timer := session.createTimer(GALLERY_ROUND_TIME_S)
 					players_ready := createPlayerSetFromMap(session.Players, nil)
-					for timeLeft && !players_ready.allSet() {
-						pmsg := session.PumpEvents(round_end_timer.C)
+					for !round_end_timer.TimedOut() && !players_ready.allSet() {
+						pmsg := session.PumpEvents(round_end_timer)
 						if pmsg == nil {
 							return
 						}
@@ -750,15 +787,15 @@ func (session *Session) Run() {
 
 								if ok {
 									players_ready.add(pmsg.Player)
+									pmsg.Player.Send(&vote_view)
 								}
 							} else {
 								session.ServerPrint("don't wont twice my friend. BAD BOY!")
 							}
 
-						case *NotifyTimeout:
-							timeLeft = false
 						}
 					}
+					round_end_timer.Hide()
 				}
 			}
 
@@ -776,7 +813,6 @@ func (session *Session) Run() {
 						best_painting_score = results[i].totalPoints
 						best_painting_index = i
 					}
-
 				}
 
 				results[best_painting_index].painting.Winner = true
@@ -786,8 +822,7 @@ func (session *Session) Run() {
 			session.DebugPrint("Showcase the winner")
 			{
 				view_cmd := ChangeGameViewEvent{
-					View: GAME_VIEW_GALLERY,
-
+					View:    GAME_VIEW_GALLERY,
 					Results: make([]Painting, len(results)),
 				}
 
@@ -798,11 +833,10 @@ func (session *Session) Run() {
 				// TODO set drawing of winner
 				session.Broadcast(&view_cmd)
 
-				round_end_timer := time.NewTimer(GAME_ROUND_TIME_S)
-				timeLeft := true
+				round_end_timer := session.createTimer(GAME_ROUND_TIME_S)
 				players_ready := createPlayerSetFromMap(session.Players, nil)
-				for timeLeft && players_ready.any(false) {
-					pmsg := session.PumpEvents(round_end_timer.C)
+				for !round_end_timer.TimedOut() && players_ready.any(false) {
+					pmsg := session.PumpEvents(round_end_timer)
 					if pmsg == nil {
 						return
 					}
@@ -810,13 +844,12 @@ func (session *Session) Run() {
 					switch msg := pmsg.Message.(type) {
 					case *UserCommand:
 						switch msg.Action {
-						case USER_ACTION_CONTINUE_GAME:
+						case USER_ACTION_LEAVE_GALLERY:
 							players_ready.add(pmsg.Player)
 						}
-					case *NotifyTimeout:
-						timeLeft = false
 					}
 				}
+				round_end_timer.Hide()
 			}
 
 			session.DebugPrint("Round done. Back to lobby!")
@@ -928,4 +961,55 @@ func (set *playerSet) removePlayer(p *Player) {
 
 func (set *playerSet) isSet(p *Player) bool {
 	return set.items[p].value
+}
+
+type autoGameTimer struct {
+	session *Session
+	ticker  *time.Ticker
+
+	timeLeft int
+}
+
+func (session *Session) createTimer(timeout_secs int) *autoGameTimer {
+	session.Broadcast(&TimerChangedEvent{
+		SecondsLeft: timeout_secs,
+	})
+	return &autoGameTimer{
+		session:  session,
+		ticker:   time.NewTicker(1 * time.Second),
+		timeLeft: timeout_secs,
+	}
+}
+
+func (timer *autoGameTimer) TimedOut() bool {
+	return timer.timeLeft <= 0
+}
+
+func (timer *autoGameTimer) NotifyTick() {
+	timer.timeLeft -= 1
+	timer.session.Broadcast(&TimerChangedEvent{
+		SecondsLeft: timer.timeLeft,
+	})
+}
+
+func (timer *autoGameTimer) Hide() {
+	timer.session.Broadcast(&TimerChangedEvent{
+		SecondsLeft: -1,
+	})
+}
+
+func (timer *autoGameTimer) GetChannel() <-chan time.Time {
+	return timer.ticker.C
+}
+
+type noTimeoutGameTimer struct {
+	channel <-chan time.Time
+}
+
+func (timer *noTimeoutGameTimer) GetChannel() <-chan time.Time {
+	return timer.channel
+}
+
+func (timer *noTimeoutGameTimer) NotifyTick() {
+
 }

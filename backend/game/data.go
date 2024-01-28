@@ -19,6 +19,9 @@ const (
 	/// Time how long a "trol
 	GAME_TROLL_EFFECT_DURATION_MS = 5000
 
+	// Time for voting
+	GAME_TOPIC_VOTE_TIME_S = 20
+
 	/// Timeout for generic announcements
 	ANNOUNCE_GENERIC_TIMEOUT time.Duration = 5 * time.Second
 )

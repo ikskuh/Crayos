@@ -29,6 +29,9 @@ GO_TYPES: dict[type,str] = {
     Graphics: "Graphics",
 }
 
+nick_names_string_array = open(os.path.join(os.path.dirname(__file__), "../game/nick_names.txt")).read().splitlines()
+nick_names_string = ', '.join(f'"{name}"' for name in nick_names_string_array)
+
 assert Optional[str] == None | str 
 
 class ApiDirection(Enum):
@@ -115,7 +118,8 @@ class Effect(Enum):
 class UserAction(Enum):
     setReady = "set-ready" # sets the player ready
     setNotReady = "set-not-ready" # sets the player to "not ready" in the lobby
-    continueGame = "continue" # the player wants to continue/leave the current screen
+
+    leaveGallery = "leave-gallery" # leave the gallery and return to the lobby
 
 @api_enum
 class Backdrop(Enum):
@@ -744,10 +748,6 @@ table#status tr:nth-child(2) td {
 
     lineout("""
             const nick_names = [""")
-    # nick_names_string = '''"xq", "manello", "captainhorst", "philippwendel", "dionymoth", "Alm4nditte"'''
-    # old_nick_names_str_array = open(os.path.join(os.path.dirname(__file__), "../game/old_nick_names.txt")).read().splitlines()
-    nick_names_string_array = open(os.path.join(os.path.dirname(__file__), "../game/nick_names.txt")).read().splitlines()
-    nick_names_string = ', '.join(f'"{name}"' for name in nick_names_string_array)
     lineout(f"""                {nick_names_string}""")
     lineout("""            ];
 
@@ -813,7 +813,6 @@ table#status tr:nth-child(2) td {
 
     pass 
 
-
 def main():
 
     # preprocess the classes
@@ -833,6 +832,9 @@ def main():
 
     with API_MODULE.open("w") as f:
         generate_debug_file(f)
+
+    with open(os.path.join(os.path.dirname(__file__), "../../frontend/nick_names.js"), 'w') as f:
+        f.write(f'''const nick_names = [ {nick_names_string} ];''')
 
 
 if __name__ == "__main__":

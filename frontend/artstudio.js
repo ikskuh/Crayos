@@ -71,7 +71,7 @@ function setPromptOptions(prompts) {
 function setVoteOptions(voteOptions) {
   for (let i = 0; i < 5; i++) {
     const button = document.getElementById("vote" + i);
-    if (i < voteOptions.length) {
+    if (voteOptions[i]) {
       button.style.display = "block";
       button.style.backgroundImage = "url('img/" + voteOptions[i] + ".png')";
       button.onclick = () => sendVoteCommand(voteOptions[i]);
@@ -86,7 +86,12 @@ function setPaintingPrompt(prompt) {
 }
 
 function setTimerSecondsLeft(secondsLeft) {
-  document.getElementById("painter-timer-number").innerText = secondsLeft;
+  if (secondsLeft < 0) {
+    document.getElementById("timer-text").style.display = "none";
+  } else {
+    document.getElementById("timer-text").style.display = "block";
+    document.getElementById("timer-number").innerText = secondsLeft;
+  }
 }
 
 function setPainting(graphics) {
