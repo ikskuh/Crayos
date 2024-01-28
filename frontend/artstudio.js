@@ -86,7 +86,12 @@ function setPaintingPrompt(prompt) {
 }
 
 function setTimerSecondsLeft(secondsLeft) {
-  document.getElementById("painter-timer-number").innerText = secondsLeft;
+  if (secondsLeft < 0) {
+    document.getElementById("timer-text").style.display = "none";
+  } else {
+    document.getElementById("timer-text").style.display = "block";
+    document.getElementById("timer-number").innerText = secondsLeft;
+  }
 }
 
 function setPainting(graphics) {
