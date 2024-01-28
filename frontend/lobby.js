@@ -55,14 +55,3 @@ function btnCopyId() {
     navigator.clipboard.writeText(sessionID);
     tempChangeBtnText("copyId", "ID Copied!", 2000);
 }
-
-function tempChangeBtnText(btnId, tempText, t) {
-    let btn = document.getElementById(btnId);
-    let oldText = btn.textContent;
-    btn.textContent = tempText;
-    setTimeout(resetBtnText, t, btn, oldText);
-}
-
-function resetBtnText(btn, resetText) {
-    btn.textContent = resetText;
-}

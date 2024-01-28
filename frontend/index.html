@@ -17,10 +17,17 @@
   <body onload="init();">
     <div id="wrapper">
       <section id="title">
-        <button type="button" id="join" class="genericUi" onclick="joinGame()">Join</button>
-        <button type="button" id="create" class="genericUi" onclick="createGame()">Create</button>
-        <input type="text" id="nicknameInput" value="nickname" />
-      </section>
+        <div id="titleUiWrap">
+            <div style="text-align: center;">
+                <button type="button" id="create" class="titleButtons genericUi" onclick="createGame()">Create</button>
+                <button type="button" id="join" class="titleButtons genericUi" onclick="joinGame()">Join</button>
+            </div>
+            <div style="text-align: center;">
+                <input type="text" class="titleInputs" id="nicknameInput" placeholder="Nickname" value=""/>
+                <input type="text" class="titleInputs" id="sessionIdInput" placeholder="Session ID" value=""/>
+            </div>
+        </div>
+    </section>
       <section id="connecting">
         <div class="info_box">
           <div>Connecting...</div>
@@ -32,7 +39,7 @@
           <button type="button" class="infoBoxBtn genericUi" onclick="btnReconnect()">Retry</button>
         </div>
       </section>
-      <section id="link_required">
+      <section id="id_required">
         <div class="info_box">
           <div>If you want to join a lobby you need the join-link from your friends!</div>
           <button type="button" class="infoBoxBtn genericUi" onclick="btnBackToLobby()">To Menu</button>
@@ -57,12 +64,12 @@
         <button type="button" id="ready" class="genericUi" onclick="readyClicked()">Ready</button>
         <div id="linkIdWrapper">
             <button type="button" id="joinLink" class="genericUi" onclick="btnCopyInvite()">Copy Invite Link</button>
-            <button type="button" id="copyId" class="genericUi" onclick="btnCopyId()">ID: </button>
+            <button type="button" id="copyId" class="genericUi">ID: </button>
         </div>
     </section>
       <section id="artstudio">
-        <div class="timer">
-          <p>Time left:<br /><span id="painter-timer-number"></span></p>
+        <div id="timer-text">
+          <p>Time left:<br /><span id="timer-number"></span></p>
         </div>
         <div class="prompt">
           <p id="painter-prompt-text"></p>

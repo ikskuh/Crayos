@@ -58,3 +58,18 @@ div.info_box {
     padding: 1rem;
     background: rgba(255, 255, 255, 0.2);
 }
+
+button.infoBoxBtn {
+    margin-top: 60px;
+    height: 90px;
+    width: 300px;
+
+    background-color: #FD5A46;
+
+    font-size: 30px;
+}
+
+button.infoBoxBtn:hover {
+    color: white;
+    transform: scale(0.95);
+}

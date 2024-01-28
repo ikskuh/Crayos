@@ -2,65 +2,42 @@ section#title {
     background-image: url('img/title.png');
 }
 
-#join {
+#titleUiWrap {
     position: absolute;
     top: 739px;
-    left: 176px;
-    width: 392px;
-    height: 85px;
+    left: 190px;
+    width: 1600px;
 
-    background-color: #FD5A46;
-    font-size: 50px;
+    display: flex;
+    justify-content: space-around;
 }
 
-#join:hover {
+.titleButtons {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    width: 392px;
+    height: 90px;
+
+    background-color: #FD5A46;
+    font-size: 65px;
+}
+
+.titleButtons:hover {
     color: white;
     transform: scale(0.95);
 }
 
-#create {
-    position: absolute;
-    top: 842px;
-    left: 176px;
-    width: 392px;
-    height: 85px;
+.titleInputs {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    width: 900px;
+    height: 90px;
 
-    background-color: #FD5A46;
-    font-size: 50px;
-}
-
-#create:hover {
-    color: white;
-    transform: scale(0.95);
-}
-
-#nicknameInput {
-    position: absolute;
-    top: 739px;
-    left: 752px;
-    width: 993px;
-    height: 181px;
-
-    font-size: 140px;
+    font-size: 65px;
     background-color: white;
 
     color: black;
     text-align: center;
     border: none;
     border-radius: 25px;
-}
-
-button.infoBoxBtn {
-    margin-top: 60px;
-    height: 90px;
-    width: 300px;
-
-    background-color: #FD5A46;
-
-    font-size: 30px;
-}
-
-button.infoBoxBtn:hover {
-    color: white;
-    transform: scale(0.95);
 }
