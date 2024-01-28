@@ -8,7 +8,8 @@ import (
 
 const (
 	// Maximum number of players per session
-	LIMIT_MAX_PLAYERS int = 4
+	LIMIT_MAX_PLAYERS      int = 4
+	LIMIT_MAX_NICKNAME_LEN int = 20
 )
 
 const (
@@ -48,6 +49,10 @@ const (
 
 const (
 	// Error messages:
+	TEXT_ERROR_NICK_EMPTY     string = "Empty nick not allowed"
+	TEXT_ERROR_NICK_TOO_LONG  string = "Nickname too long!"
+	TEXT_ERROR_SESSION_EMPTY  string = "Empty session id not allowed"
+	TEXT_ERROR_BAD_SESSION    string = "Session does not exist"
 	TEXT_ERROR_SESSION_ONLINE string = "Session is already running."
 	TEXT_ERROR_SESSION_FULL   string = "Lobby is already full."
 
@@ -55,8 +60,9 @@ const (
 	TEXT_POPUP_START_PAINTING   string = "Start painting!"
 	TEXT_POPUP_STOP_PAINTING    string = "Times up!"
 	TEXT_POPUP_START_TROLLING   string = "Start trolling!"
+	TEXT_POPUP_MISSED_TROLLING  string = "You sleepyhead!"
 	TEXT_POPUP_START_STICKERING string = "Let's make a mess!"
-	TEXT_POPUP_STOP_TROLLING    string = "Enough of that!"
+	TEXT_POPUP_STOP_STICKERING  string = "Enough of that!"
 	TEXT_POPUP_TIMES_UP         string = "Someone's sleepy!"
 
 	// Vote Prompts:

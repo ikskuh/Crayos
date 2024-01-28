@@ -586,7 +586,7 @@ func (session *Session) Run() {
 
 				splitPopUp(
 					TEXT_POPUP_START_PAINTING,
-					TEXT_POPUP_START_TROLLING,
+					"",
 				)
 
 				// Phase 2:
@@ -612,7 +612,7 @@ func (session *Session) Run() {
 					}
 
 					next_troll_event := 0
-					troll_did_effect := false
+					troll_did_effect := true // first "troll" always did the effect, so they don't receive a weird warning about being a sleephead
 
 					// Setup session timing:
 
@@ -624,6 +624,13 @@ func (session *Session) Run() {
 
 							trolls[0].Send(troll_view) // troll view is "generic empty" here
 
+							if !troll_did_effect {
+								trolls[0].Send(&PopUpEvent{
+									Message:  TEXT_POPUP_MISSED_TROLLING,
+									Duration: TIME_POPUP_DURATION_MS,
+								})
+							}
+
 							// select next troll by doing round-robin scheduling:
 							trolls = append(trolls[1:], trolls[0])
 
@@ -632,6 +639,10 @@ func (session *Session) Run() {
 							vote_effect_view.SetVote(TEXT_VOTE_EFFECT, *(*[]string)(unsafe.Pointer(&ALL_EFFECT_ITEMS)))
 
 							trolls[0].Send(&vote_effect_view) // troll view is "generic empty" here
+							trolls[0].Send(&PopUpEvent{
+								Message:  TEXT_POPUP_START_TROLLING,
+								Duration: TIME_POPUP_DURATION_MS,
+							})
 							troll_did_effect = false
 
 							next_troll_event = TIME_GAME_NEXT_TROLLEFFECT_S
@@ -739,7 +750,7 @@ func (session *Session) Run() {
 
 				splitPopUp(
 					"",
-					TEXT_POPUP_STOP_TROLLING,
+					TEXT_POPUP_STOP_STICKERING,
 				)
 
 				// Phase 4:
