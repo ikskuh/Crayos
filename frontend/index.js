@@ -129,6 +129,7 @@ function onSocketReceive(event) {
       setView("link_invalid");
       break;
     case EventId.Kicked:
+      alert(data.reason);
       break;
     case EventId.ChangeGameView:
       if (data.painting.backdrop) {
@@ -184,6 +185,17 @@ function onSocketReceive(event) {
     case EventId.PlayerReadyChanged:
       updateLobby(data.players);
       break;
+
+    case EventId.DebugMessage:
+      document.getElementById('debug-overlay').innerText = data.message || "&nbsp;";
+      break;
+
+    case EventId.PopUp:
+      console.log("HANDLE POPUP:", data.message);
+      break;
+
+    default:
+      throw "unhandled message: " + JSON.stringify(data);
   }
 }
 

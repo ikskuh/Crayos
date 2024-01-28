@@ -54,6 +54,11 @@ div.info_box {
     border-radius: 25px;
 }
 
+#debug-overlay {
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.2);
+}
+
 button.infoBoxBtn {
     margin-top: 60px;
     height: 90px;

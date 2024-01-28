@@ -286,9 +286,13 @@ func (session *Session) DebugPrint(message ...any) {
 	log.Println(
 		fmt.Sprintf("Session[%s, %7d]: %s", session.Id, timestamp, formatted),
 	)
-	session.Broadcast(&DebugMessageEvent{
-		Message: fmt.Sprintf("%d: %s", timestamp, formatted),
-	})
+
+	if *meta.DEBUG_MODE {
+		// Send messages to clients in debug mode
+		session.Broadcast(&DebugMessageEvent{
+			Message: fmt.Sprintf("%d: %s", timestamp, formatted),
+		})
+	}
 }
 
 func (session *Session) Announce(text string, duration time.Duration) {
@@ -322,6 +326,9 @@ func (session *Session) Run() {
 			players_ready := createPlayerSetFromMap(session.Players, nil)
 
 			for len(session.Players) < 2 || players_ready.any(false) {
+
+				broadcastPlayerReadyState(session, players_ready)
+
 				pmsg := session.PumpEvents(no_timeout)
 				if pmsg == nil {
 					return
@@ -342,7 +349,6 @@ func (session *Session) Run() {
 					players_ready.removePlayer(pmsg.Player)
 
 				}
-				broadcastPlayerReadyState(session, players_ready)
 			}
 		}
 
@@ -550,6 +556,10 @@ func (session *Session) Run() {
 
 				updateViews()
 
+				active_painter.Send(&PopUpEvent{
+					Message: TEXT_POPUP_START_PAINTING,
+				})
+
 				// Phase 2:
 				session.DebugPrint(round_id, "Painter is now being tortured")
 				{
@@ -645,6 +655,10 @@ func (session *Session) Run() {
 					})
 				}
 
+				active_painter.Send(&PopUpEvent{
+					Message: TEXT_POPUP_TIMES_UP,
+				})
+
 				updateViews()
 
 				// Disable all active effects
@@ -659,9 +673,9 @@ func (session *Session) Run() {
 					round_end_timer := session.createTimer(GALLERY_ROUND_TIME_S)
 					timeLeft := true
 					players_ready := createPlayerSetFromMap(session.Players, nil)
-					changeBoth(func(view *ChangeGameViewEvent) {
-						view.View = GAME_VIEW_ARTSTUDIO_STICKER
-					})
+
+					troll_view.View = GAME_VIEW_ARTSTUDIO_STICKER
+					painter_view.View = GAME_VIEW_ARTSTUDIO_GENERIC
 
 					updateViews()
 

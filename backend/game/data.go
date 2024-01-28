@@ -27,6 +27,9 @@ const (
 )
 
 const (
+	TEXT_POPUP_START_PAINTING string = "Start painting!"
+	TEXT_POPUP_TIMES_UP       string = "Times up!"
+
 	TEXT_VOTE_PROMPT   string = "Select a prompt"
 	TEXT_VOTE_EFFECT   string = "Select a trolling effect"
 	TEXT_VOTE_SHOWCASE string = "Gaze upon this masterpiece"
