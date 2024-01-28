@@ -101,16 +101,23 @@ func (session *Session) Destroy() {
 	delete(sessions, session.Id)
 }
 
-func (session *Session) AddPlayer(new *Player) {
+func (session *Session) AddPlayer(new *Player) bool {
 
 	if !session.Flags.Joinable {
 		new.Send(&JoinSessionFailedEvent{
-			Reason: "Session is already running.",
+			Reason: TEXT_ERROR_SESSION_ONLINE,
 		})
-		return
+		return false
 	}
 
-	session.ServerPrint("Player", new.NickName, "joined")
+	if len(session.Players) > LIMIT_MAX_PLAYERS {
+		new.Send(&JoinSessionFailedEvent{
+			Reason: TEXT_ERROR_SESSION_FULL,
+		})
+		return false
+	}
+
+	session.ServerPrint("Player ", new.NickName, " joined")
 
 	new.Session = session
 	session.Players[new] = true
@@ -124,7 +131,7 @@ func (session *Session) AddPlayer(new *Player) {
 	new.Send(&ChangeGameViewEvent{
 		View: GAME_VIEW_LOBBY,
 	})
-
+	return true
 }
 
 func (session *Session) Broadcast(msg Message) {
@@ -214,16 +221,16 @@ func (session *Session) PumpEvents(timer gameTimer) *PlayerMessage {
 			return &pmsg
 
 		case new := <-session.JoinChan:
-			session.AddPlayer(new)
-
-			return &PlayerMessage{
-				Message: &NotifyPlayerJoined{},
-				Player:  new,
+			if session.AddPlayer(new) {
+				return &PlayerMessage{
+					Message: &NotifyPlayerJoined{},
+					Player:  new,
+				}
 			}
 
 		case old := <-session.LeaveChan:
 
-			session.ServerPrint("Player", old.NickName, "left")
+			session.ServerPrint("Player ", old.NickName, " left")
 			delete(session.Players, old)
 
 			session.BroadcastPlayers(nil, old)
@@ -318,13 +325,14 @@ func (session *Session) Run() {
 		// Lobby
 		session.DebugPrint("Enter lobby")
 		{
+			session.Flags.Joinable = true
+
 			// Show lobby
 			session.Broadcast(&ChangeGameViewEvent{
 				View: GAME_VIEW_LOBBY,
 			})
 
 			players_ready := createPlayerSetFromMap(session.Players, nil)
-
 			for len(session.Players) < 2 || players_ready.any(false) {
 
 				broadcastPlayerReadyState(session, players_ready)
@@ -350,6 +358,8 @@ func (session *Session) Run() {
 
 				}
 			}
+
+			session.Flags.Joinable = false
 		}
 
 		session.DebugPrint("Start game")
@@ -405,7 +415,7 @@ func (session *Session) Run() {
 							Announcer: text,
 						})
 					}
-					time.Sleep(ANNOUNCE_GENERIC_TIMEOUT)
+					time.Sleep(TIME_ANNOUNCE_GENERIC)
 				}
 
 				// Select one random background:
@@ -491,7 +501,7 @@ func (session *Session) Run() {
 						votes[i] = 0.1 * random_source.Float32()
 					}
 
-					vote_end_timer := session.createTimer(GAME_TOPIC_VOTE_TIME_S)
+					vote_end_timer := session.createTimer(TIME_GAME_PROMPTVOTE_S)
 
 					for !vote_end_timer.TimedOut() && !prompt_voted.allTrollsSet() {
 						pmsg := session.PumpEvents(vote_end_timer)
@@ -503,7 +513,7 @@ func (session *Session) Run() {
 						case *VoteCommand:
 							if pmsg.Player != active_painter {
 
-								session.ServerPrint("Player ", pmsg.Player.NickName, "voted for", msg)
+								session.ServerPrint("Player ", pmsg.Player.NickName, " voted for", msg)
 
 								index := -1
 								for i, val := range prompts {
@@ -587,7 +597,7 @@ func (session *Session) Run() {
 
 					// Setup session timing:
 
-					round_end_timer := session.createTimer(GAME_ROUND_TIME_S)
+					round_end_timer := session.createTimer(TIME_GAME_PAINTING_S)
 
 					for !round_end_timer.TimedOut() {
 
@@ -605,7 +615,7 @@ func (session *Session) Run() {
 							trolls[0].Send(&vote_effect_view) // troll view is "generic empty" here
 							troll_did_effect = false
 
-							next_troll_event = GAME_TROLL_EFFECT_COOLDOWN_S
+							next_troll_event = TIME_GAME_NEXT_TROLLEFFECT_S
 						}
 
 						pmsg := session.PumpEvents(round_end_timer)
@@ -623,7 +633,7 @@ func (session *Session) Run() {
 								// TODO(fqu): validate that msg.Option is actually a legal vote!
 								session.Broadcast(&ChangeToolModifierEvent{
 									Modifier: Effect(msg.Option),
-									Duration: GAME_TROLL_EFFECT_DURATION_MS,
+									Duration: TIME_GAME_TROLL_EFFECT_DURATION_MS,
 								})
 								trolls[0].Send(troll_view) // reset troll to regular view, hide the vote options
 								troll_did_effect = true
@@ -670,7 +680,7 @@ func (session *Session) Run() {
 				// Phase 3:
 				session.DebugPrint(round_id, "Trolls now select stickers")
 				{
-					round_end_timer := session.createTimer(GALLERY_ROUND_TIME_S)
+					round_end_timer := session.createTimer(TIME_GAME_STICKERING_S)
 					timeLeft := true
 					players_ready := createPlayerSetFromMap(session.Players, nil)
 
@@ -707,7 +717,7 @@ func (session *Session) Run() {
 				// Phase 4:
 				session.DebugPrint(round_id, "Showcase the artwork")
 				{
-					round_end_timer := session.createTimer(GALLERY_ROUND_TIME_S)
+					round_end_timer := session.createTimer(TIME_GAME_SHOWCASE_S)
 					players_ready := createPlayerSetFromMap(session.Players, nil)
 
 					changeBoth(func(view *ChangeGameViewEvent) {
@@ -742,7 +752,7 @@ func (session *Session) Run() {
 				}
 			} // end of inner loop over players
 
-			session.Announce("Vote for the winner now!", ANNOUNCE_GENERIC_TIMEOUT)
+			session.Announce("Vote for the winner now!", TIME_ANNOUNCE_GENERIC)
 
 			// Phase 5:
 			{
@@ -769,7 +779,7 @@ func (session *Session) Run() {
 					// Hide the vote for later sending:
 					vote_view.RemoveVote()
 
-					round_end_timer := session.createTimer(GALLERY_ROUND_TIME_S)
+					round_end_timer := session.createTimer(TIME_GAME_RATING_S)
 					players_ready := createPlayerSetFromMap(session.Players, nil)
 					for !round_end_timer.TimedOut() && !players_ready.allSet() {
 						pmsg := session.PumpEvents(round_end_timer)
@@ -813,7 +823,7 @@ func (session *Session) Run() {
 				}
 			}
 
-			session.Announce(TEXT_ANNOUNCE_WINNER, ANNOUNCE_GENERIC_TIMEOUT)
+			session.Announce(TEXT_ANNOUNCE_WINNER, TIME_ANNOUNCE_GENERIC)
 
 			// Determine winner:
 			{
@@ -847,7 +857,7 @@ func (session *Session) Run() {
 				// TODO set drawing of winner
 				session.Broadcast(&view_cmd)
 
-				round_end_timer := session.createTimer(GAME_ROUND_TIME_S)
+				round_end_timer := session.createTimer(TIME_GAME_GALLERY_S)
 				players_ready := createPlayerSetFromMap(session.Players, nil)
 				for !round_end_timer.TimedOut() && players_ready.any(false) {
 					pmsg := session.PumpEvents(round_end_timer)
