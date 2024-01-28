@@ -12,13 +12,7 @@ function createGame() {
 function joinGame() {
     getNickname();
     sessionID = document.getElementById("sessionIdInput").value;
-
-    if (sessionID != "") {
-        sendJoinSessionCommand(localPlayer, sessionID);
-    }
-    else {
-        setView("id_required");
-    }
+    sendJoinSessionCommand(localPlayer, sessionID);
 }
 
 function btnBackToLobby() {
