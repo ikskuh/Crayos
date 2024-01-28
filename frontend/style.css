@@ -38,9 +38,8 @@ div.info_box {
 
     background-color: #FFC567;
 
-    border-color: black;
-    border-style: solid;
-    border-width: 3px;
+    border: 3px solid black;
+    border-radius: 25px;
 
     text-align: center;
     padding: 40px;
@@ -60,16 +59,19 @@ div.info_box {
 }
 
 button.infoBoxBtn {
-    margin-top: 60px;
-    height: 90px;
-    width: 300px;
-
-    background-color: #FD5A46;
-
-    font-size: 30px;
-}
-
-button.infoBoxBtn:hover {
     color: white;
-    transform: scale(0.95);
+    margin-top: 60px;
+    height: 85px;
+    width: 392px;
+
+    font-size: 40px;
+
+    background-image: url('img/button.png');
+    border-radius: 0;
+}
+button.infoBoxBtn:hover {
+    background-image: url('img/button_hover.png');
+}
+button.infoBoxBtn:active {
+    background-image: url('img/button_pressed.png');
 }
