@@ -388,6 +388,10 @@ func (session *Session) Run() {
 
 				round_id := fmt.Sprintf("Round %d: ", index+1)
 
+				fmt_context := AnnouncementContext{
+					PainterName: active_painter.NickName,
+				}
+
 				session.DebugPrint(round_id, "Initialize")
 
 				// Assign roles:
@@ -452,8 +456,8 @@ func (session *Session) Run() {
 
 				// Tell them what's happening
 				splitAnnounce(
-					TEXT_ANNOUNCE_YOU_ARE_PAINTER,
-					TEXT_ANNOUNCE_YOU_ARE_TROLL,
+					TEXT_ANNOUNCE_YOU_ARE_PAINTER.Format(fmt_context),
+					TEXT_ANNOUNCE_YOU_ARE_TROLL.Format(fmt_context),
 				)
 
 				// Create prototypes for the views:
@@ -841,14 +845,18 @@ func (session *Session) Run() {
 				}
 			} // end of inner loop over players
 
-			session.Announce("Vote for the winner now!", TIME_ANNOUNCE_GENERIC)
-
 			// Phase 5:
 			{
 				// TODO: Loop through all results and let the players vote for the pictures
 
 				for index, result := range results {
 					round_id := fmt.Sprintf("Showcase %d: ", index+1)
+
+					fmt_context := AnnouncementContext{
+						PainterName: players[index].NickName,
+					}
+
+					session.Announce(TEXT_ANNOUNCE_VOTE_NOW.Format(fmt_context), TIME_ANNOUNCE_GENERIC)
 
 					session.DebugPrint(round_id, "Vote for image")
 
@@ -921,7 +929,9 @@ func (session *Session) Run() {
 				}
 			}
 
-			session.Announce(TEXT_ANNOUNCE_WINNER, TIME_ANNOUNCE_GENERIC)
+			session.Announce(TEXT_ANNOUNCE_WINNER.Format(AnnouncementContext{
+				PainterName: "<<<<NO YOU DONT!>>>>",
+			}), TIME_ANNOUNCE_GENERIC)
 
 			// Determine winner:
 			{
