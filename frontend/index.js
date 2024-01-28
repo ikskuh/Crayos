@@ -89,7 +89,8 @@ function setView(newView, data = undefined) {
         newView == "connection_failed" ||
         newView == "link_required" ||
         newView == "link_invalid" ||
-        newView == "announcer"
+        newView == "announcer" ||
+        newView == "server_error"
     ) {
         hideSection(currentView);
         currentView = newView;
@@ -126,7 +127,8 @@ function onSocketReceive(event) {
       sessionID = data.sessionId;
       break;
     case EventId.JoinSessionFailed:
-      setView("link_invalid");
+      setView("server_error");
+      document.getElementById("serverErrorText").textContent = data.reason;
       break;
     case EventId.Kicked:
       alert(data.reason);
