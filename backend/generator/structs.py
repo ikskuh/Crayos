@@ -32,7 +32,10 @@ GO_TYPES: dict[type,str] = {
 nick_names_string_array = open(os.path.join(os.path.dirname(__file__), "../game/nick_names.txt")).read().splitlines()
 nick_names_string = ', '.join(f'"{name}"' for name in nick_names_string_array)
 
-# sticker_filenames = [f.nam for f in os.listdir("files/") if os.path.isfile(os.path.join("files/", f)) ]
+img_path = os.path.join(os.path.dirname(__file__), "../../frontend/img")
+print(img_path)
+sticker_filenames = os.listdir(img_path) 
+print(sticker_filenames)
 
 assert Optional[str] == None | str 
 
