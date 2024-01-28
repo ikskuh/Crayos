@@ -659,9 +659,9 @@ func (session *Session) Run() {
 					round_end_timer := session.createTimer(GALLERY_ROUND_TIME_S)
 					timeLeft := true
 					players_ready := createPlayerSetFromMap(session.Players, nil)
-					changeBoth(func(view *ChangeGameViewEvent) {
-						view.View = GAME_VIEW_ARTSTUDIO_STICKER
-					})
+
+					troll_view.View = GAME_VIEW_ARTSTUDIO_STICKER
+					painter_view.View = GAME_VIEW_ARTSTUDIO_GENERIC
 
 					updateViews()
 
