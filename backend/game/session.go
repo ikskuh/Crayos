@@ -356,8 +356,8 @@ func (session *Session) Run() {
 							View:      GAME_VIEW_ANNOUNCER,
 							Announcer: text,
 						})
-						time.Sleep(ANNOUNCE_GENERIC_TIMEOUT)
 					}
+					time.Sleep(ANNOUNCE_GENERIC_TIMEOUT)
 				}
 
 				// Select one random background:
