@@ -28,13 +28,13 @@ var (
 	TIME_GAME_SHOWCASE_S = 15
 
 	// Duration of the picture rating in seconds
-	TIME_GAME_RATING_S = 20
+	TIME_GAME_RATING_S = 15
 
 	// Retains the image for 1 second after the last vote.
 	TIME_GAME_RATING_SLACK time.Duration = 1 * time.Second
 
 	// Duration of the gallery
-	TIME_GAME_GALLERY_S = 20
+	TIME_GAME_GALLERY_S = 60
 
 	/// Time how long a "troll" effect does last in milliseconds
 	TIME_GAME_TROLL_EFFECT_DURATION_MS = 5000
@@ -48,15 +48,15 @@ var (
 
 const (
 	// Error messages:
-	TEXT_ERROR_NICK_EMPTY     string = "Empty nick not allowed"
+	TEXT_ERROR_NICK_EMPTY     string = "Empty nick not allowed!"
 	TEXT_ERROR_NICK_TOO_LONG  string = "Nickname too long!"
-	TEXT_ERROR_SESSION_EMPTY  string = "Empty session id not allowed"
-	TEXT_ERROR_BAD_SESSION    string = "Session does not exist"
-	TEXT_ERROR_SESSION_ONLINE string = "Session is already running."
-	TEXT_ERROR_SESSION_FULL   string = "Lobby is already full."
+	TEXT_ERROR_SESSION_EMPTY  string = "Empty session id not allowed!"
+	TEXT_ERROR_BAD_SESSION    string = "Session does not exist!"
+	TEXT_ERROR_SESSION_ONLINE string = "Session is already running!"
+	TEXT_ERROR_SESSION_FULL   string = "Lobby is already full!"
 
 	// Popup messages:
-	TEXT_POPUP_START_PAINTING   string = "Start painting!"
+	TEXT_POPUP_START_PAINTING   string = "Start painting the prompt!"
 	TEXT_POPUP_STOP_PAINTING    string = "Times up!"
 	TEXT_POPUP_START_TROLLING   string = "Start trolling!"
 	TEXT_POPUP_MISSED_TROLLING  string = "You sleepyhead!"
@@ -69,12 +69,25 @@ const (
 	TEXT_VOTE_EFFECT     string = "Select a trolling effect"
 	TEXT_VOTE_SHOWCASE   string = "Gaze upon this masterpiece"
 	TEXT_VOTE_STICKERING string = "Place all the stickers!"
-
-	// Announcements:
-	TEXT_ANNOUNCE_YOU_ARE_TROLL   string = "Chose an image that should be drawn"
-	TEXT_ANNOUNCE_YOU_ARE_PAINTER string = "You are the painter. Brace yourself!"
-	TEXT_ANNOUNCE_WINNER          string = "And the winner is..."
 )
+
+type Announcement string
+
+const (
+	// Announcements:
+	TEXT_ANNOUNCE_YOU_ARE_TROLL   Announcement = "Vote for an image $painter should draw."
+	TEXT_ANNOUNCE_YOU_ARE_PAINTER Announcement = "You are the painter. Brace yourself!"
+	TEXT_ANNOUNCE_VOTE_NOW        Announcement = "Rate the picture $painter has drawn."
+	TEXT_ANNOUNCE_WINNER          Announcement = "And the winner is ..."
+)
+
+type AnnouncementContext struct {
+	PainterName string
+}
+
+func (anno Announcement) Format(ctx AnnouncementContext) string {
+	return strings.ReplaceAll(string(anno), "$painter", ctx.PainterName)
+}
 
 //go:embed drawing_prompts_the_other_kind_of_drawcalls.txt
 var fileData []byte
