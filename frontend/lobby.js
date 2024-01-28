@@ -29,6 +29,9 @@ function updateLobby(readyMap = undefined) {
     // Show invite link
     let hostUrl = location.protocol + '//' + location.host + location.pathname;
     inviteLink = hostUrl + "?session=" + sessionID;
+
+    // Show ID
+    document.getElementById("copyId").textContent = "ID: " + sessionID;
 }
 
 function readyClicked() {
@@ -45,10 +48,21 @@ function readyClicked() {
 
 function btnCopyInvite() {
     navigator.clipboard.writeText(inviteLink);
-    document.getElementById("joinLink").textContent ="Link Copied!";
-    setTimeout(resetLinkBtn, 2000);
+    tempChangeBtnText("joinLink", "Link Copied!", 2000);
 }
 
-function resetLinkBtn() {
-    document.getElementById("joinLink").textContent = "Copy Invite Link";
+function btnCopyId() {
+    navigator.clipboard.writeText(sessionID);
+    tempChangeBtnText("copyId", "ID Copied!", 2000);
+}
+
+function tempChangeBtnText(btnId, tempText, t) {
+    let btn = document.getElementById(btnId);
+    let oldText = btn.textContent;
+    btn.textContent = tempText;
+    setTimeout(resetBtnText, t, btn, oldText);
+}
+
+function resetBtnText(btn, resetText) {
+    btn.textContent = resetText;
 }

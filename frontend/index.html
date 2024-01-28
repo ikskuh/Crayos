@@ -55,8 +55,11 @@
         <input type="text" id="player3" class="genericUi" value="Player 3" disabled />
         <input type="text" id="player4" class="genericUi" value="Player 4" disabled />
         <button type="button" id="ready" class="genericUi" onclick="readyClicked()">Ready</button>
-        <button type="button" id="joinLink" class="genericUi" onclick="btnCopyInvite()">Copy Invite Link</button>
-      </section>
+        <div id="linkIdWrapper">
+            <button type="button" id="joinLink" class="genericUi" onclick="btnCopyInvite()">Copy Invite Link</button>
+            <button type="button" id="copyId" class="genericUi" onclick="btnCopyId()">ID: </button>
+        </div>
+    </section>
       <section id="artstudio">
         <div class="timer">
           <p>Time left:<br /><span id="painter-timer-number"></span></p>
