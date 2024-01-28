@@ -98,27 +98,8 @@
     cursor: none;
 }
 .drawing-canvas.flip {
-    animation: flip 4s ease-in-out infinite;
+    transform: perspective(2000px) rotateY(180deg);
 }
-
-@keyframes flip {
-    0% {
-        transform: translate(0px, 0px);
-    }
-    25% {
-        transform: perspective(2000px) rotateY(180deg);
-    }
-    50% {
-        transform: translate(0px, 0px);
-    }
-    75% {
-        transform: perspective(2000px) rotateY(180deg);
-    }
-    100% {
-        transform: translate(0px, 0px);
-    }
-}
-
 
 .drawing-canvas.drunk {
     animation: drunk 4s ease-in-out infinite;
