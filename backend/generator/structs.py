@@ -560,6 +560,12 @@ table#status tr:nth-child(2) td {
             logElement(btn);
         }
 
+        function handleDebugMessage(evt) {
+            console.log(evt.message);
+            log("DEBUG: ", evt.message);
+            return true;
+        }
+
         function handleEnterSession(evt) {
             sessionId = evt.sessionId;
             setStatus("sessionId", sessionId);

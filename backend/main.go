@@ -12,6 +12,7 @@ import (
 func main() {
 	flag.Parse()
 
+	meta.Setup()
 	server.Setup()
 
 	log.Println("Ready.")
