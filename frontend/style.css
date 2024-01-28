@@ -58,6 +58,8 @@ div.info_box {
 #debug-overlay {
     padding: 1rem;
     background: rgba(255, 255, 255, 0.2);
+
+    z-index: 10;
 }
 
 #popup {
@@ -102,9 +104,11 @@ button.infoBoxBtn {
     background-image: url('img/button.png');
     border-radius: 0;
 }
+
 button.infoBoxBtn:hover {
     background-image: url('img/button_hover.png');
 }
+
 button.infoBoxBtn:active {
     background-image: url('img/button_pressed.png');
 }

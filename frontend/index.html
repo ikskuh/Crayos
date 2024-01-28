@@ -52,13 +52,21 @@
         </div>
       </section>
       <section id="lobby">
-        <input type="text" id="player1" class="genericUi" value="Player 1" disabled />
-        <input type="text" id="player2" class="genericUi" value="Player 2" disabled />
-        <input type="text" id="player3" class="genericUi" value="Player 3" disabled />
-        <input type="text" id="player4" class="genericUi" value="Player 4" disabled />
-        <button type="button" id="ready" class="genericUi" onclick="readyClicked()">Ready</button>
+        <input type="text" id="player1" class="genericUi playerName" value="Player 1" disabled />
+        <input type="text" id="player2" class="genericUi playerName" value="Player 2" disabled />
+        <input type="text" id="player3" class="genericUi playerName" value="Player 3" disabled />
+        <input type="text" id="player4" class="genericUi playerName" value="Player 4" disabled />
+        <button type="button" id="ready" class="genericUi big-button" onclick="readyClicked()">Ready</button>
+        <ol id="lobbyRules">
+            <li>The trolls vote for a prompt.</li>
+            <li>The painter tries to draw the prompt.</li>
+            <li>The trolls manipulate the painter and create chaos.</li>
+            <li>The trolls mess up the scene once more with a random sticker.</li>
+            <li>Laugh about your artwork.</li>
+            <li>Next round, next painter.</li>
+        </ol>
         <div id="linkIdWrapper">
-            <button type="button" id="joinLink" class="genericUi" onclick="btnCopyInvite()">Copy Invite Link</button>
+            <button type="button" id="joinLink" class="genericUi titleButtons" onclick="btnCopyInvite()">Copy Invite Link</button>
             <input type="text" id="copyId" class="genericUi" disabled value="ID: "></input>
         </div>
     </section>

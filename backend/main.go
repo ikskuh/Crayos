@@ -12,8 +12,9 @@ import (
 func main() {
 	flag.Parse()
 
-	meta.Setup()
+	meta.Setup() // must be first
 	server.Setup()
+	game.Setup()
 
 	log.Println("Ready.")
 

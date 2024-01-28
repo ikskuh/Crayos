@@ -586,7 +586,7 @@ func (session *Session) Run() {
 
 				splitPopUp(
 					TEXT_POPUP_START_PAINTING,
-					TEXT_POPUP_START_TROLLING,
+					"",
 				)
 
 				// Phase 2:
@@ -612,7 +612,7 @@ func (session *Session) Run() {
 					}
 
 					next_troll_event := 0
-					troll_did_effect := false
+					troll_did_effect := true // first "troll" always did the effect, so they don't receive a weird warning about being a sleephead
 
 					// Setup session timing:
 
@@ -624,6 +624,13 @@ func (session *Session) Run() {
 
 							trolls[0].Send(troll_view) // troll view is "generic empty" here
 
+							if len(trolls) > 1 && !troll_did_effect {
+								trolls[0].Send(&PopUpEvent{
+									Message:  TEXT_POPUP_MISSED_TROLLING,
+									Duration: TIME_POPUP_DURATION_MS,
+								})
+							}
+
 							// select next troll by doing round-robin scheduling:
 							trolls = append(trolls[1:], trolls[0])
 
@@ -632,6 +639,10 @@ func (session *Session) Run() {
 							vote_effect_view.SetVote(TEXT_VOTE_EFFECT, *(*[]string)(unsafe.Pointer(&ALL_EFFECT_ITEMS)))
 
 							trolls[0].Send(&vote_effect_view) // troll view is "generic empty" here
+							trolls[0].Send(&PopUpEvent{
+								Message:  TEXT_POPUP_START_TROLLING,
+								Duration: TIME_POPUP_DURATION_MS,
+							})
 							troll_did_effect = false
 
 							next_troll_event = TIME_GAME_NEXT_TROLLEFFECT_S
@@ -697,14 +708,30 @@ func (session *Session) Run() {
 				// Phase 3:
 				session.DebugPrint(round_id, "Trolls now select stickers")
 				{
+					// Send stickers to display
+					// Get 5 stickers from list
+					session.Broadcast(&ChangeToolModifierEvent{
+						Modifier: "",
+						Duration: 0,
+					})
+
 					round_end_timer := session.createTimer(TIME_GAME_STICKERING_S)
 					players_ready := createPlayerSetFromMap(session.Players, nil)
 
 					// TODO(philippwendel) Check if more of view neeeds to be changed
-					troll_view.View = GAME_VIEW_ARTSTUDIO_STICKER
 					painter_view.View = GAME_VIEW_ARTSTUDIO_GENERIC
+					troll_view.View = GAME_VIEW_ARTSTUDIO_STICKER
+					troll_view.SetVote(TEXT_VOTE_STICKERING, []string{
+						"banana-peel",
+						"blood-splash",
+						"creeper",
+						"pile-of-poop",
+						"tardis",
+					})
 
 					updateViews()
+
+					mapped_stickers := make(map[*Player]*Sticker)
 
 					for !round_end_timer.TimedOut() && !players_ready.allSet() {
 						pmsg := session.PumpEvents(round_end_timer)
@@ -714,10 +741,15 @@ func (session *Session) Run() {
 
 						switch msg := pmsg.Message.(type) {
 						case *PlaceStickerCommand:
-							changeBoth(func(view *ChangeGameViewEvent) {
-								view.Painting.Stickers = append(view.Painting.Stickers, Sticker{Id: msg.Sticker, X: msg.X, Y: msg.Y})
-							})
-							updateViews()
+							if pmsg.Player != active_painter {
+								mapped_stickers[pmsg.Player] = &Sticker{
+									Id: msg.Sticker,
+									X:  msg.X,
+									Y:  msg.Y,
+								}
+							} else {
+								session.ServerPrint("painted tried to sticker. BAD BOY!")
+							}
 						}
 					}
 
@@ -729,6 +761,17 @@ func (session *Session) Run() {
 							Message: TEXT_POPUP_TIMES_UP,
 						})
 					}
+
+					// fetch and put all placed stickers:
+					{
+						sticker_list := make([]Sticker, 0)
+						for _, sticker := range mapped_stickers {
+							if sticker != nil {
+								sticker_list = append(sticker_list, *sticker)
+							}
+						}
+						painter_view.Painting.Stickers = sticker_list
+					}
 				}
 
 				// Store the result of that round
@@ -739,7 +782,7 @@ func (session *Session) Run() {
 
 				splitPopUp(
 					"",
-					TEXT_POPUP_STOP_TROLLING,
+					TEXT_POPUP_STOP_STICKERING,
 				)
 
 				// Phase 4:
@@ -896,6 +939,7 @@ func (session *Session) Run() {
 
 				for i := range view_cmd.Results {
 					view_cmd.Results[i] = results[i].painting
+					view_cmd.Results[i].Score = results[i].totalPoints
 				}
 
 				// TODO set drawing of winner

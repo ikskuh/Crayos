@@ -32,6 +32,11 @@ GO_TYPES: dict[type,str] = {
 nick_names_string_array = open(os.path.join(os.path.dirname(__file__), "../game/nick_names.txt")).read().splitlines()
 nick_names_string = ', '.join(f'"{name}"' for name in nick_names_string_array)
 
+img_path = os.path.join(os.path.dirname(__file__), "../../frontend/img")
+print(img_path)
+sticker_filenames = os.listdir(img_path) 
+print(sticker_filenames)
+
 assert Optional[str] == None | str 
 
 class ApiDirection(Enum):
@@ -183,6 +188,7 @@ class Painting:
     backdrop: Backdrop # the ID of the backdrop 
     stickers: list[Sticker] # the current list of stickers that should be shown
     winner: bool # the painting is the winner
+    score: int # the number of total points (1...5 per player)
 
 @api_event
 class ChangeGameViewEvent:
@@ -836,6 +842,7 @@ def main():
 
     with open(os.path.join(os.path.dirname(__file__), "../../frontend/nick_names.js"), 'w') as f:
         f.write(f'''const nick_names = [ {nick_names_string} ];''')
+
 
 
 if __name__ == "__main__":

@@ -102,9 +102,8 @@ func (player *Player) readPump() {
 	for {
 		_, raw_message, err := player.ws.ReadMessage()
 		if err != nil {
-			log.Println("error from websocket", err)
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				log.Printf("error: %v", err)
+				log.Printf("websocket error: %v", err)
 			}
 			break
 		}
@@ -128,29 +127,34 @@ func (player *Player) readPump() {
 		} else {
 			switch v := msg.(type) {
 			case *CreateSessionCommand:
-				if v.NickName != "" {
+				if v.NickName == "" {
+					player.Send(&JoinSessionFailedEvent{
+						Reason: TEXT_ERROR_NICK_EMPTY,
+					})
+				} else if len(v.NickName) > LIMIT_MAX_NICKNAME_LEN {
+					player.Send(&JoinSessionFailedEvent{
+						Reason: TEXT_ERROR_NICK_TOO_LONG,
+					})
+				} else {
 					player.NickName = v.NickName
-
-					log.Println("nick set:", v.NickName, player.NickName)
 
 					session := CreateSession(player)
 
 					_ = session
-
-				} else {
-					player.Send(&JoinSessionFailedEvent{
-						Reason: "Empty nick not allowed",
-					})
 				}
 
 			case *JoinSessionCommand:
 				if v.SessionId == "" {
 					player.Send(&JoinSessionFailedEvent{
-						Reason: "Empty session id not allowed",
+						Reason: TEXT_ERROR_SESSION_EMPTY,
 					})
 				} else if v.NickName == "" {
 					player.Send(&JoinSessionFailedEvent{
-						Reason: "Empty nick not allowed",
+						Reason: TEXT_ERROR_NICK_EMPTY,
+					})
+				} else if len(v.NickName) > LIMIT_MAX_NICKNAME_LEN {
+					player.Send(&JoinSessionFailedEvent{
+						Reason: TEXT_ERROR_NICK_TOO_LONG,
 					})
 				} else {
 					player.NickName = v.NickName
@@ -158,12 +162,11 @@ func (player *Player) readPump() {
 					session := FindSession(v.SessionId)
 
 					if session != nil {
-						log.Println("found session: ", session.Id)
 						session.JoinChan <- player
 					} else {
 						log.Println("didn't find session", v.SessionId)
 						player.Send(&JoinSessionFailedEvent{
-							Reason: "Session does not exist",
+							Reason: TEXT_ERROR_BAD_SESSION,
 						})
 					}
 				}

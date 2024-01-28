@@ -7,16 +7,16 @@ import (
 )
 
 const (
-	// Maximum number of players per session
-	LIMIT_MAX_PLAYERS int = 4
+	LIMIT_MAX_PLAYERS      int = 4  // Maximum number of players per session
+	LIMIT_MAX_NICKNAME_LEN int = 20 // Maximum number of "chars" in the player name
 )
 
-const (
+var (
 	// Duration for voting the prompt in seconds
 	TIME_GAME_PROMPTVOTE_S = 20
 
 	// Duration of a drawing round in seconds
-	TIME_GAME_PAINTING_S = 20 // 90
+	TIME_GAME_PAINTING_S = 90
 
 	/// Time of a "trolling" time slice in seconds
 	TIME_GAME_NEXT_TROLLEFFECT_S = 10
@@ -48,6 +48,10 @@ const (
 
 const (
 	// Error messages:
+	TEXT_ERROR_NICK_EMPTY     string = "Empty nick not allowed"
+	TEXT_ERROR_NICK_TOO_LONG  string = "Nickname too long!"
+	TEXT_ERROR_SESSION_EMPTY  string = "Empty session id not allowed"
+	TEXT_ERROR_BAD_SESSION    string = "Session does not exist"
 	TEXT_ERROR_SESSION_ONLINE string = "Session is already running."
 	TEXT_ERROR_SESSION_FULL   string = "Lobby is already full."
 
@@ -55,14 +59,16 @@ const (
 	TEXT_POPUP_START_PAINTING   string = "Start painting!"
 	TEXT_POPUP_STOP_PAINTING    string = "Times up!"
 	TEXT_POPUP_START_TROLLING   string = "Start trolling!"
+	TEXT_POPUP_MISSED_TROLLING  string = "You sleepyhead!"
 	TEXT_POPUP_START_STICKERING string = "Let's make a mess!"
-	TEXT_POPUP_STOP_TROLLING    string = "Enough of that!"
+	TEXT_POPUP_STOP_STICKERING  string = "Enough of that!"
 	TEXT_POPUP_TIMES_UP         string = "Someone's sleepy!"
 
 	// Vote Prompts:
-	TEXT_VOTE_PROMPT   string = "Select a prompt"
-	TEXT_VOTE_EFFECT   string = "Select a trolling effect"
-	TEXT_VOTE_SHOWCASE string = "Gaze upon this masterpiece"
+	TEXT_VOTE_PROMPT     string = "Select a prompt"
+	TEXT_VOTE_EFFECT     string = "Select a trolling effect"
+	TEXT_VOTE_SHOWCASE   string = "Gaze upon this masterpiece"
+	TEXT_VOTE_STICKERING string = "Place all the stickers!"
 
 	// Announcements:
 	TEXT_ANNOUNCE_YOU_ARE_TROLL   string = "Chose an image that should be drawn"

@@ -213,6 +213,7 @@ type Painting struct {
 	Backdrop Backdrop `json:"backdrop"`
 	Stickers []Sticker `json:"stickers"`
 	Winner bool `json:"winner"`
+	Score int `json:"score"`
 }
 
 type ChangeGameViewEvent struct {
