@@ -4,17 +4,14 @@ function initTitle() {
 }
 
 function createGame() {
-    localPlayer = document.getElementById("nicknameInput").value;
-    if (localPlayer == "")
-        localPlayer = "nickname";
-        
+    getNickname()
+    
     sendCreateSessionCommand(localPlayer);
 }
 
 function joinGame() {
-    localPlayer = document.getElementById("nicknameInput").value;
-    if (localPlayer == "")
-        localPlayer = "nickname";
+    getNickname();
+    sessionID = document.getElementById("sessionIdInput").value;
 
     if (sessionID != "") {
         sendJoinSessionCommand(localPlayer, sessionID);
@@ -37,4 +34,11 @@ function extractSessionId() {
     else {
         sessionID = "";
     }
+}
+
+// Checks if the nick is valid, otherwise defaults
+function getNickname() {
+    localPlayer = document.getElementById("nicknameInput").value;
+    if (localPlayer == "")
+        localPlayer = "nickname";
 }
