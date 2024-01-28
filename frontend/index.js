@@ -143,8 +143,7 @@ function onSocketReceive(event) {
       sessionID = data.sessionId;
       break;
     case EventId.JoinSessionFailed:
-      setView("gallery");
-      //setView("server_error");
+      setView("server_error");
       document.getElementById("serverErrorText").textContent = data.reason;
       break;
     case EventId.Kicked:
@@ -178,6 +177,11 @@ function onSocketReceive(event) {
         setPaintingToolsEnabled(true);
       } else {
         setPaintingToolsEnabled(false);
+      }
+
+      if (data.view == GameView.gallery) {
+        setGalleryCanvases(data.results)
+        setView(GameView.gallery);
       }
 
       if (data.announcer != "") {
