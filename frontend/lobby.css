@@ -2,85 +2,83 @@ section#lobby {
     background-image: url('mockup/lobby.png');
 }
 
-input#player1 {
+input.playerName {
+    color: white;
     position: absolute;
-    top: 314px;
-    left: 78px;
-    width: 553px;
+    width: 500px;
     height: 113px;
 
     font-size: 50px;
-    background-color: #FD5A46;
+    border-radius: 0;
+    background-color: transparent;
+    background-image: url('img/button_big.png');
+}
+input.playerName.ready {
+    background-image: url('img/button_big_green.png');
+}
+
+input#player1 {
+    top: 314px;
+    left: 78px;
 }
 
 input#player2 {
-    position: absolute;
     top: 445px;
     left: 78px;
-    width: 553px;
-    height: 113px;
-
-    font-size: 50px;
-    background-color: transparent;
 }
 
 input#player3 {
-    position: absolute;
     top: 576px;
     left: 78px;
-    width: 553px;
-    height: 113px;
-
-    font-size: 50px;
-    background-color: transparent;
 }
 
 input#player4 {
     position: absolute;
     top: 707px;
     left: 78px;
-    width: 553px;
-    height: 113px;
-
-    font-size: 50px;
-    background-color: transparent;
 }
 
 button#ready {
     position: absolute;
     top: 838px;
     left: 78px;
-    width: 553px;
+}
+
+button.big-button {
+    color: white;
+    width: 500px;
     height: 113px;
 
     font-size: 50px;
-    background-color: #FD5A46;
+    border-radius: 0;
+    background-color: transparent;
+    background-image: url('img/button_big.png');
 }
-
-button#ready:hover {
-    color: white;
-    transform: scale(0.95);
+button.big-button:hover {
+    background-image: url('img/button_big_hover.png');
+}
+button.big-button:active {
+    background-image: url('img/button_big_pressed.png');
+}
+button.big-button.ready {
+    background-image: url('img/button_big_green.png');
 }
 
 button#joinLink {
-    width: 500px;
-    height: 113px;
-
-    background-color: #FD5A46;
-    font-size: 30px;
-}
-
-button#joinLink:hover {
-    color: white;
-    transform: scale(0.95);
+    width: 392px;
+    height: 85px;
+    font-size: 40px;
+    margin-top: 0;
 }
 
 input#copyId {
-    width: 500px;
-    height: 113px;
+    width: 392px;
+    height: 85px;
+    border: 4px solid gray;
+    box-sizing: border-box;
 
-    background-color: #FD5A46;
-    font-size: 30px;
+    /* background-color: #FD5A46; */
+    font-size: 40px;
 }
 
 #linkIdWrapper {
