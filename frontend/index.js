@@ -203,8 +203,11 @@ function onSocketReceive(event) {
       updatePainting(data.graphics);
       break;
     case EventId.PlayersChanged:
-      for (let i = 0; i < data.players.length; i++) {
-        players[i] = data.players[i];
+      for (let i = 0; i < 4; i++) {
+        if (i < data.players.length)
+            players[i] = data.players[i];
+        else
+            players[i] = "";
       }
       updateLobby();
       break;
