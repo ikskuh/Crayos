@@ -63,24 +63,20 @@ button#ready:hover {
 }
 
 button#joinLink {
-    width: 500px;
-    height: 113px;
-
-    background-color: #FD5A46;
-    font-size: 30px;
-}
-
-button#joinLink:hover {
-    color: white;
-    transform: scale(0.95);
+    width: 392px;
+    height: 85px;
+    font-size: 40px;
+    margin-top: 0;
 }
 
 input#copyId {
-    width: 500px;
-    height: 113px;
+    width: 392px;
+    height: 85px;
+    border: 4px solid gray;
+    box-sizing: border-box;
 
-    background-color: #FD5A46;
-    font-size: 30px;
+    /* background-color: #FD5A46; */
+    font-size: 40px;
 }
 
 #linkIdWrapper {
