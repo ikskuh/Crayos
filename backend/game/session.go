@@ -656,12 +656,31 @@ func (session *Session) Run() {
 				// Phase 3:
 				session.DebugPrint(round_id, "Trolls now select stickers")
 				{
-					// TODO(fqu): Set stickering mode here
+					round_end_timer := session.createTimer(GALLERY_ROUND_TIME_S)
+					timeLeft := true
+					players_ready := createPlayerSetFromMap(session.Players, nil)
+					changeBoth(func(view *ChangeGameViewEvent) {
+						view.View = GAME_VIEW_ARTSTUDIO_STICKER
+					})
 
 					updateViews()
 
-					for false {
-						//
+					for timeLeft && !players_ready.allSet() {
+						pmsg := session.PumpEvents(round_end_timer)
+						if pmsg == nil {
+							return
+						}
+
+						switch msg := pmsg.Message.(type) {
+						case *PlaceStickerCommand:
+							session.Broadcast(&PlaceStickerCommand{
+								Sticker: msg.Sticker,
+								X:       msg.X,
+								Y:       msg.Y,
+							})
+						case *NotifyTimeout:
+							timeLeft = false
+						}
 					}
 				}
 
