@@ -31,7 +31,7 @@ function updateLobby(readyMap = undefined) {
     inviteLink = hostUrl + "?session=" + sessionID;
 
     // Show ID
-    document.getElementById("copyId").textContent = "ID: " + sessionID;
+    document.getElementById("copyId").value = "ID: " + sessionID;
 }
 
 function readyClicked() {

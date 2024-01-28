@@ -144,7 +144,15 @@ func (player *Player) readPump() {
 				}
 
 			case *JoinSessionCommand:
-				if v.NickName != "" {
+				if v.SessionId == "" {
+					player.Send(&JoinSessionFailedEvent{
+						Reason: "Empty session id not allowed",
+					})
+				} else if v.NickName == "" {
+					player.Send(&JoinSessionFailedEvent{
+						Reason: "Empty nick not allowed",
+					})
+				} else {
 					player.NickName = v.NickName
 
 					session := FindSession(v.SessionId)
@@ -158,10 +166,6 @@ func (player *Player) readPump() {
 							Reason: "Session does not exist",
 						})
 					}
-				} else {
-					player.Send(&JoinSessionFailedEvent{
-						Reason: "Empty nick not allowed",
-					})
 				}
 
 			default:

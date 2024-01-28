@@ -75,17 +75,12 @@ button#joinLink:hover {
     transform: scale(0.95);
 }
 
-button#copyId {
+input#copyId {
     width: 500px;
     height: 113px;
 
     background-color: #FD5A46;
     font-size: 30px;
-}
-
-button#copyId:hover {
-    color: white;
-    transform: scale(0.95);
 }
 
 #linkIdWrapper {

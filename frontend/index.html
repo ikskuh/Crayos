@@ -12,6 +12,7 @@
     <script src="lobby.js"></script>
     <script src="artstudio.js"></script>
     <script src="gallery.js"></script>
+    <script src="nick_names.js"></script>
   </head>
 
   <body onload="init();">
@@ -39,15 +40,9 @@
           <button type="button" class="infoBoxBtn genericUi" onclick="btnReconnect()">Retry</button>
         </div>
       </section>
-      <section id="id_required">
+      <section id="server_error">
         <div class="info_box">
-          <div>If you want to join a lobby you need the join-link from your friends!</div>
-          <button type="button" class="infoBoxBtn genericUi" onclick="btnBackToLobby()">To Menu</button>
-        </div>
-      </section>
-      <section id="link_invalid">
-        <div class="info_box">
-          <div>Your invite link is invalid!</div>
+          <div id="serverErrorText">ERROR PLACEHOLDER</div>
           <button type="button" class="infoBoxBtn genericUi" onclick="btnBackToLobby()">To Menu</button>
         </div>
       </section>
@@ -64,7 +59,7 @@
         <button type="button" id="ready" class="genericUi" onclick="readyClicked()">Ready</button>
         <div id="linkIdWrapper">
             <button type="button" id="joinLink" class="genericUi" onclick="btnCopyInvite()">Copy Invite Link</button>
-            <input type="text" id="copyId" class="genericUi" disabled>ID: </button>
+            <input type="text" id="copyId" class="genericUi" disabled value="ID: "></input>
         </div>
     </section>
       <section id="artstudio">
