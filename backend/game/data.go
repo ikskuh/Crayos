@@ -37,7 +37,7 @@ const (
 	TIME_GAME_TROLL_EFFECT_DURATION_MS = 5000
 
 	/// Timeout for generic announcements
-	TIME_ANNOUNCE_GENERIC time.Duration = 5 * time.Second
+	TIME_ANNOUNCE_GENERIC time.Duration = 3 * time.Second
 )
 
 const (
