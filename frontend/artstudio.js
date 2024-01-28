@@ -209,7 +209,7 @@ function drawPainterCanvas() {
     console.log("flashlight");
     ctx.beginPath();
     ctx.rect(0, 0, painterCanvas.width, painterCanvas.height);
-    ctx.arc(mx, my, 200, 2 * Math.PI, 0);
+    ctx.arc(mx, my, 50, 2 * Math.PI, 0);
     ctx.fillStyle = "#000";
     ctx.fill("evenodd");
   }
