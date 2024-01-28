@@ -418,6 +418,24 @@ func (session *Session) Run() {
 					time.Sleep(TIME_ANNOUNCE_GENERIC)
 				}
 
+				splitPopUp := func(painterText string, trollText string) {
+					for _, player := range players {
+						var text string
+						switch player_role[player] {
+						case ROLE_PAINTER:
+							text = painterText
+						case ROLE_TROLL:
+							text = trollText
+						}
+						if len(text) > 0 {
+							player.Send(&PopUpEvent{
+								Message:  text,
+								Duration: TIME_POPUP_DURATION_MS,
+							})
+						}
+					}
+				}
+
 				// Select one random background:
 
 				backdrop := ALL_BACKDROP_ITEMS[random_source.Intn(len(ALL_BACKDROP_ITEMS))]
@@ -566,9 +584,10 @@ func (session *Session) Run() {
 
 				updateViews()
 
-				active_painter.Send(&PopUpEvent{
-					Message: TEXT_POPUP_START_PAINTING,
-				})
+				splitPopUp(
+					TEXT_POPUP_START_PAINTING,
+					TEXT_POPUP_START_TROLLING,
+				)
 
 				// Phase 2:
 				session.DebugPrint(round_id, "Painter is now being tortured")
@@ -659,15 +678,13 @@ func (session *Session) Run() {
 						}
 					}
 
-					// Hide timer:
-					session.Broadcast(&TimerChangedEvent{
-						SecondsLeft: -1,
-					})
+					round_end_timer.Hide()
 				}
 
-				active_painter.Send(&PopUpEvent{
-					Message: TEXT_POPUP_TIMES_UP,
-				})
+				splitPopUp(
+					TEXT_POPUP_STOP_PAINTING,
+					TEXT_POPUP_START_STICKERING,
+				)
 
 				updateViews()
 
@@ -681,7 +698,6 @@ func (session *Session) Run() {
 				session.DebugPrint(round_id, "Trolls now select stickers")
 				{
 					round_end_timer := session.createTimer(TIME_GAME_STICKERING_S)
-					timeLeft := true
 					players_ready := createPlayerSetFromMap(session.Players, nil)
 
 					troll_view.View = GAME_VIEW_ARTSTUDIO_STICKER
@@ -689,7 +705,7 @@ func (session *Session) Run() {
 
 					updateViews()
 
-					for timeLeft && !players_ready.allSet() {
+					for !round_end_timer.TimedOut() && !players_ready.allSet() {
 						pmsg := session.PumpEvents(round_end_timer)
 						if pmsg == nil {
 							return
@@ -698,9 +714,16 @@ func (session *Session) Run() {
 						switch msg := pmsg.Message.(type) {
 						case *PlaceStickerCommand:
 							painter_view.Painting.Stickers = append(painter_view.Painting.Stickers, Sticker{Id: msg.Sticker, X: msg.X, Y: msg.Y})
-						case *NotifyTimeout:
-							timeLeft = false
 						}
+					}
+
+					round_end_timer.Hide()
+
+					if round_end_timer.TimedOut() {
+						// Notify all that someone was sleepy:
+						session.Broadcast(&PopUpEvent{
+							Message: TEXT_POPUP_TIMES_UP,
+						})
 					}
 				}
 
@@ -709,6 +732,11 @@ func (session *Session) Run() {
 					painting:    painter_view.Painting,
 					totalPoints: 0,
 				}
+
+				splitPopUp(
+					"",
+					TEXT_POPUP_STOP_TROLLING,
+				)
 
 				// Phase 4:
 				session.DebugPrint(round_id, "Showcase the artwork")
@@ -745,6 +773,13 @@ func (session *Session) Run() {
 						}
 					}
 					round_end_timer.Hide()
+
+					if round_end_timer.TimedOut() {
+						// Notify all that someone was sleepy:
+						session.Broadcast(&PopUpEvent{
+							Message: TEXT_POPUP_TIMES_UP,
+						})
+					}
 				}
 			} // end of inner loop over players
 
@@ -816,6 +851,15 @@ func (session *Session) Run() {
 						}
 					}
 					round_end_timer.Hide()
+
+					if round_end_timer.TimedOut() {
+						// Notify all that someone was sleepy:
+						session.Broadcast(&PopUpEvent{
+							Message: TEXT_POPUP_TIMES_UP,
+						})
+					}
+
+					time.Sleep(TIME_GAME_RATING_SLACK)
 				}
 			}
 
@@ -870,6 +914,13 @@ func (session *Session) Run() {
 					}
 				}
 				round_end_timer.Hide()
+
+				if round_end_timer.TimedOut() {
+					// Notify all that someone was sleepy:
+					session.Broadcast(&PopUpEvent{
+						Message: TEXT_POPUP_TIMES_UP,
+					})
+				}
 			}
 
 			session.DebugPrint("Round done. Back to lobby!")

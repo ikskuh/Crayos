@@ -30,6 +30,9 @@ const (
 	// Duration of the picture rating in seconds
 	TIME_GAME_RATING_S = 20
 
+	// Retains the image for 1 second after the last vote.
+	TIME_GAME_RATING_SLACK time.Duration = 1 * time.Second
+
 	// Duration of the gallery
 	TIME_GAME_GALLERY_S = 20
 
@@ -38,6 +41,9 @@ const (
 
 	/// Timeout for generic announcements
 	TIME_ANNOUNCE_GENERIC time.Duration = 3 * time.Second
+
+	/// Duration of a regular popup
+	TIME_POPUP_DURATION_MS = 1500
 )
 
 const (
@@ -46,8 +52,12 @@ const (
 	TEXT_ERROR_SESSION_FULL   string = "Lobby is already full."
 
 	// Popup messages:
-	TEXT_POPUP_START_PAINTING string = "Start painting!"
-	TEXT_POPUP_TIMES_UP       string = "Times up!"
+	TEXT_POPUP_START_PAINTING   string = "Start painting!"
+	TEXT_POPUP_STOP_PAINTING    string = "Times up!"
+	TEXT_POPUP_START_TROLLING   string = "Start trolling!"
+	TEXT_POPUP_START_STICKERING string = "Let's make a mess!"
+	TEXT_POPUP_STOP_TROLLING    string = "Enough of that!"
+	TEXT_POPUP_TIMES_UP         string = "Someone's sleepy!"
 
 	// Vote Prompts:
 	TEXT_VOTE_PROMPT   string = "Select a prompt"
