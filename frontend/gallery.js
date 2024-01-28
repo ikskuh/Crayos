@@ -4,9 +4,8 @@ function initGallery()
     {
         let galCanvas = document.getElementById("gallery" + i);
         let ctx = galCanvas.getContext("2d")
-        ctx.rect(0, 0, 1284, 736);
+        ctx.rect(0, 0, 1384, 736);
         ctx.fill();
-        galCanvas.style.width = "692px";
     }
 }
 
@@ -51,4 +50,8 @@ function drawWinnerBadge(canvas)
         canvas.GetContext("2d").drawImage(badge, 300, 300);
     };
     badge.src = "img/winner_badge.png";
+}
+
+function backToLobby() {
+    sendUserCommand(UserAction.leaveGallery);
 }
