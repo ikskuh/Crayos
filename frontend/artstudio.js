@@ -73,9 +73,26 @@ function setTimerSecondsLeft(secondsLeft) {
   document.getElementById("painter-timer-number").innerText = secondsLeft;
 }
 
-function setPainting(paths) {
-  painterPaths = paths;
+function setPainting(graphics) {
+  painterPaths = graphics.paths;
+  mx = graphics.mx;
+  my = graphics.my;
   drawPainterCanvas();
+}
+
+function clearPainting() {
+  painterPaths.splice(0, painterPaths.length);
+  mx = -1000;
+  my = -1000;
+  drawPainterCanvas();
+}
+
+function sendPainting() {
+  sendSetPaintingCommand({
+    paths: painterPaths,
+    mx: mx,
+    my: my,
+  });
 }
 
 function onMouseDown(e) {
@@ -108,7 +125,7 @@ function onMouseUp(e) {
   mx = -1000;
   my = -1000;
   drawPainterCanvas();
-  sendSetPaintingCommand(painterPaths);
+  sendPainting();
 }
 
 function onMouseEnter(e) {
@@ -149,11 +166,6 @@ function setInputEnabled(enabled) {
   }
 }
 
-function clearPainting() {
-  painterPaths.splice(0, painterPaths.length);
-  drawPainterCanvas();
-}
-
 function drawPainterCanvas() {
   const painterCanvas = document.getElementById("painter-canvas");
   const ctx = painterCanvas.getContext("2d");
@@ -175,6 +187,7 @@ function drawPainterCanvas() {
 
   // chaos effect
   if (chaosEffect == Effect.flashlight) {
+    console.log("flashlight");
     ctx.beginPath();
     ctx.rect(0, 0, painterCanvas.width, painterCanvas.height);
     ctx.arc(mx, my, 200, 2 * Math.PI, 0);

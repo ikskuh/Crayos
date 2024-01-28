@@ -103,7 +103,7 @@ class GameView(Enum):
 
 @api_enum
 class Effect(Enum):
-    none = "none"
+    # none = ""
     flashlight = "flashlight"
     drunk = "drunk"
     flip = "flip"
@@ -219,6 +219,9 @@ class PlayerReadyChangedEvent:
 class PopUpEvent:
     message: str
 
+@api_event
+class DebugMessageEvent:
+    message: str # Show this text as a debug overlay somewhere
 
 ###############################################################################
 
@@ -603,6 +606,11 @@ table#status tr:nth-child(2) td {
                         sendUserCommand(UserAction.setNotReady);
                     });
                     break;
+                case GameView.announcer:
+                    let msg = document.createElement("h1");
+                    msg.innerText = evt.announcer;
+                    logElement(msg);
+                    break;
             }
             
             return true;
@@ -736,7 +744,7 @@ table#status tr:nth-child(2) td {
 
             document.getElementById("CreateSessionCommand-arg-nickName").value = nick;
             document.getElementById("JoinSessionCommand-arg-nickName").value = nick;
-
+            document.getElementById('JoinSessionCommand-arg-sessionId').value = "0xDEADBEEF";
 
             reconnect();
         });

@@ -23,6 +23,7 @@ const (
 	PLAYERS_CHANGED_EVENT_TAG = "players-changed-event"
 	PLAYER_READY_CHANGED_EVENT_TAG = "player-ready-changed-event"
 	POP_UP_EVENT_TAG = "pop-up-event"
+	DEBUG_MESSAGE_EVENT_TAG = "debug-message-event"
 )
 
 func DeserializeMessage(data []byte) (Message, error) {
@@ -77,6 +78,8 @@ func DeserializeMessage(data []byte) (Message, error) {
 		out = &PlayerReadyChangedEvent{}
 	case POP_UP_EVENT_TAG:
 		out = &PopUpEvent{}
+	case DEBUG_MESSAGE_EVENT_TAG:
+		out = &DebugMessageEvent{}
 
 	default:
 		return nil, errors.New("Invalid type")
@@ -120,7 +123,6 @@ var ALL_GAME_VIEW_ITEMS = []GameView{
 
 type Effect string
 const (
-	EFFECT_NONE Effect = "none"
 	EFFECT_FLASHLIGHT Effect = "flashlight"
 	EFFECT_DRUNK Effect = "drunk"
 	EFFECT_FLIP Effect = "flip"
@@ -128,7 +130,6 @@ const (
 	EFFECT_LOCK_PENCIL Effect = "lock_pencil"
 )
 var ALL_EFFECT_ITEMS = []Effect{
-	"none",
 	"flashlight",
 	"drunk",
 	"flip",
@@ -247,6 +248,10 @@ type PlayerReadyChangedEvent struct {
 }
 
 type PopUpEvent struct {
+	Message string `json:"message"`
+}
+
+type DebugMessageEvent struct {
 	Message string `json:"message"`
 }
 
@@ -395,6 +400,14 @@ func (item *PopUpEvent) GetJsonType() string {
 	return "pop-up-event"
 }
 func (item *PopUpEvent) FixNils() Message {
+	copy := *item
+	return &copy
+}
+
+func (item *DebugMessageEvent) GetJsonType() string {
+	return "debug-message-event"
+}
+func (item *DebugMessageEvent) FixNils() Message {
 	copy := *item
 	return &copy
 }
