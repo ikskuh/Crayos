@@ -687,11 +687,7 @@ func (session *Session) Run() {
 
 						switch msg := pmsg.Message.(type) {
 						case *PlaceStickerCommand:
-							session.Broadcast(&PlaceStickerCommand{
-								Sticker: msg.Sticker,
-								X:       msg.X,
-								Y:       msg.Y,
-							})
+							painter_view.Painting.Stickers = append(painter_view.Painting.Stickers, Sticker{Id: msg.Sticker, X: msg.X, Y: msg.Y})
 						case *NotifyTimeout:
 							timeLeft = false
 						}
