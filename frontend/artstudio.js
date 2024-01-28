@@ -10,6 +10,8 @@ const TIMER_SECONDS = 90;
 
 let selectedTool = null;
 
+let stickerPreview = null;
+
 const palette = [
   "#FFF",
   "#e42932", // red
@@ -22,6 +24,7 @@ const palette = [
 ];
 let selectedColor = 7;
 
+let currentPainting;
 let painterPaths = [];
 let mx = -1000;
 let my = -1000;
@@ -68,18 +71,61 @@ function setPromptOptions(prompts) {
   }
 }
 
+function setActiveSticker(sticker_id) {
+
+  console.log("select sticker", sticker_id);
+  if (sticker_id) {
+    stickerPreview = {
+      sticker: sticker_id,
+      x: 0,
+      y: 0,
+    }
+    setInputEnabled(true);
+  }
+  else {
+    stickerPreview = null;
+  }
+}
+
 function setVoteOptions(voteOptions) {
+  let stickerMode =( currentView == GameView.artstudioSticker);
   let imagePath = "img/";
-  if (currentView == GameView.artstudioSticker) {
+  if (stickerMode) {
     imagePath = "img/stickers/";
   }
 
+  let buttons = []
   for (let i = 0; i < 5; i++) {
-    const button = document.getElementById("vote" + i);
+    buttons.push(document.getElementById("vote" + i));
+  }
+
+  setActiveSticker(null);
+  
+  for (let i = 0; i < 5; i++) {
+    const button = buttons[i];
     if (voteOptions[i]) {
+      const option = voteOptions[i];
       button.style.display = "block";
-      button.style.backgroundImage = "url('" + imagePath + voteOptions[i] + ".png')";
-      button.onclick = () => sendVoteCommand(voteOptions[i]);
+      button.style.backgroundImage = "url('" + imagePath + option + ".png')";
+
+      if(stickerMode) {
+        const self_index = i;
+        button.classList.add("sticker");
+        button.onclick = () => {
+          for (let j = 0; j < 5; j++) {
+            if(j == self_index) {
+              buttons[j].classList.add("selected");
+            } else {
+              buttons[j].classList.remove("selected");
+            }
+          }
+          setActiveSticker(option);
+        };
+
+      } else {
+        button.classList.remove("sticker");
+        button.onclick = () => sendVoteCommand(voteOptions[i]);
+      }
     } else {
       button.style.display = "none";
     }
@@ -98,15 +144,20 @@ function setTimerSecondsLeft(secondsLeft) {
     document.getElementById("timer-number").innerText = secondsLeft;
   }
 }
-
-function setPainting(graphics) {
-  painterPaths = graphics.paths;
+function updatePainting(graphics) {
+  painterPaths = graphics.paths || [];
   mx = graphics.mx;
   my = graphics.my;
   drawPainterCanvas();
 }
 
+function setPainting(painting) {
+  currentPainting = painting
+  updatePainting(painting.graphics)
+}
+
 function clearPainting() {
+  currentPainting = null;
   painterPaths.splice(0, painterPaths.length);
   mx = -1000;
   my = -1000;
@@ -130,6 +181,17 @@ function onMouseDown(e) {
   } else if (selectedTool == TOOL_ERASER) {
     eraserDeleteAt(point);
   }
+
+  if(stickerPreview) {
+    sendPlaceStickerCommand(
+      stickerPreview.sticker,
+      stickerPreview.x,
+      stickerPreview.y,
+    );
+    setActiveSticker(null);
+  }
+
+
   drawPainterCanvas();
 }
 
@@ -144,6 +206,12 @@ function onMouseMove(e) {
       eraserDeleteAt(point);
     }
   }
+
+  if(stickerPreview) {
+    stickerPreview.x = mx;
+    stickerPreview.y = my;
+  }
+
   drawPainterCanvas();
 }
 
@@ -190,6 +258,29 @@ function setInputEnabled(enabled) {
   }
 }
 
+let stickerCache = {}
+
+function getStickerImage(name) 
+{
+  let cached = stickerCache[name]
+  if (cached) {
+    return cached;
+  }
+  let sticker = {
+    img: new Image(),
+    ready: false,
+  }
+  sticker.img.onload = function() {
+    sticker.ready = true;
+    sticker.width = sticker.img.width * 0.7
+    sticker.height = sticker.img.height * 0.7
+    drawPainterCanvas();
+  };
+  sticker.img.src = "img/stickers/" + name + ".png";
+  stickerCache[name] = sticker;
+  return sticker;
+}
+
 function drawPainterCanvas() {
   const painterCanvas = document.getElementById("painter-canvas");
   const ctx = painterCanvas.getContext("2d");
@@ -218,6 +309,35 @@ function drawPainterCanvas() {
     ctx.fillStyle = "#000";
     ctx.fill("evenodd");
   }
+
+  if (currentPainting && currentPainting.stickers) {
+    for(const meta_sticker of currentPainting.stickers) {
+      const sticker = getStickerImage(meta_sticker.id)
+      if(sticker.ready) {
+        ctx.drawImage(
+          sticker.img,
+          meta_sticker.x - sticker.width / 2,
+          meta_sticker.y - sticker.height / 2,
+          sticker.width,
+          sticker.height,
+        )
+      }
+    }
+  }
+
+  if (stickerPreview) {
+    let sticker = getStickerImage(stickerPreview.sticker);
+    if(sticker.ready) {
+      ctx.drawImage(
+        sticker.img,
+        stickerPreview.x - sticker.width / 2,
+        stickerPreview.y - sticker.height / 2,
+        sticker.width,
+        sticker.height,
+      )
+    }
+  }
+  
 }
 
 // CHAOS EFFECTS

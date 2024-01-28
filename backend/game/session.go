@@ -712,9 +712,6 @@ func (session *Session) Run() {
 				// Phase 3:
 				session.DebugPrint(round_id, "Trolls now select stickers")
 				{
-					round_end_timer := session.createTimer(TIME_GAME_STICKERING_S)
-					players_ready := createPlayerSetFromMap(session.Players, nil)
-
 					// TODO(philippwendel) Check if more of view neeeds to be changed
 					painter_view.View = GAME_VIEW_ARTSTUDIO_GENERIC
 					painter_view.RemoveVote()
@@ -735,6 +732,9 @@ func (session *Session) Run() {
 
 					mapped_stickers := make(map[*Player]*Sticker)
 
+					round_end_timer := session.createTimer(TIME_GAME_STICKERING_S)
+					players_ready := createPlayerSetFromList(players, active_painter)
+
 					for !round_end_timer.TimedOut() && !players_ready.allTrollsSet() {
 						pmsg := session.PumpEvents(round_end_timer)
 						if pmsg == nil {
@@ -744,6 +744,7 @@ func (session *Session) Run() {
 						switch msg := pmsg.Message.(type) {
 						case *PlaceStickerCommand:
 							if pmsg.Player != active_painter {
+								log.Println("sticker!", msg)
 								sticker := Sticker{
 									Id: msg.Sticker,
 									X:  msg.X,
@@ -762,6 +763,7 @@ func (session *Session) Run() {
 								}
 
 								players_ready.add(pmsg.Player)
+								log.Println(players_ready.allTrollsSet())
 							} else {
 								session.ServerPrint("painted tried to sticker. BAD BOY!")
 							}
@@ -785,11 +787,13 @@ func (session *Session) Run() {
 								sticker_list = append(sticker_list, *sticker)
 							}
 						}
+						log.Println("stickers: ", sticker_list)
 						painter_view.Painting.Stickers = sticker_list
 					}
 				}
 
 				// Store the result of that round
+				troll_view.Painting = painter_view.Painting
 				results[index] = gameRoundResult{
 					painting:    painter_view.Painting,
 					totalPoints: 0,
