@@ -127,7 +127,8 @@ function onSocketReceive(event) {
       sessionID = data.sessionId;
       break;
     case EventId.JoinSessionFailed:
-      setView("server_error");
+      setView("gallery");
+      //setView("server_error");
       document.getElementById("serverErrorText").textContent = data.reason;
       break;
     case EventId.Kicked:

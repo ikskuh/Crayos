@@ -91,10 +91,13 @@
         </div>
       </section>
       <section id="gallery">
-            <canvas id="gallery1" width="1385" height="737"></canvas>
-            <canvas id="gallery2" width="1385" height="737"></canvas>
-            <canvas id="gallery3" width="1385" height="737"></canvas>
-            <canvas id="gallery4" width="1385" height="737"></canvas>
+            <div id="gallery-wraper">
+                <canvas class="gallery_item" id="gallery1" width="1385" height="737"></canvas>
+                <canvas class="gallery_item" id="gallery2" width="1385" height="737"></canvas>
+                <canvas class="gallery_item" id="gallery3" width="1385" height="737"></canvas>
+                <canvas class="gallery_item" id="gallery4" width="1385" height="737"></canvas>
+            </div>
+            <button id="backToLobby" class="genericUi" onclick="backToLobby()">To Lobby</button>
       </section>
     </div>
 
