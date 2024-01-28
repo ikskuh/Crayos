@@ -136,7 +136,11 @@ function setView(newView, data = undefined) {
 
 function onSocketReceive(event) {
   let data = JSON.parse(event.data);
-  console.log(data);
+  
+  // hide periodic timer events:
+  if (data.type != EventId.TimerChanged) {
+    console.log(data);
+  }
 
   switch (data.type) {
     case EventId.EnterSession:

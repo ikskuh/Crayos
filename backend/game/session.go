@@ -708,18 +708,13 @@ func (session *Session) Run() {
 				// Phase 3:
 				session.DebugPrint(round_id, "Trolls now select stickers")
 				{
-					// Send stickers to display
-					// Get 5 stickers from list
-					session.Broadcast(&ChangeToolModifierEvent{
-						Modifier: "",
-						Duration: 0,
-					})
-
 					round_end_timer := session.createTimer(TIME_GAME_STICKERING_S)
 					players_ready := createPlayerSetFromMap(session.Players, nil)
 
 					// TODO(philippwendel) Check if more of view neeeds to be changed
 					painter_view.View = GAME_VIEW_ARTSTUDIO_GENERIC
+					painter_view.RemoveVote()
+
 					troll_view.View = GAME_VIEW_ARTSTUDIO_STICKER
 					troll_view.SetVote(TEXT_VOTE_STICKERING, []string{
 						"banana-peel",
@@ -731,9 +726,12 @@ func (session *Session) Run() {
 
 					updateViews()
 
+					//
+					troll_view.RemoveVote()
+
 					mapped_stickers := make(map[*Player]*Sticker)
 
-					for !round_end_timer.TimedOut() && !players_ready.allSet() {
+					for !round_end_timer.TimedOut() && !players_ready.allTrollsSet() {
 						pmsg := session.PumpEvents(round_end_timer)
 						if pmsg == nil {
 							return
@@ -742,11 +740,24 @@ func (session *Session) Run() {
 						switch msg := pmsg.Message.(type) {
 						case *PlaceStickerCommand:
 							if pmsg.Player != active_painter {
-								mapped_stickers[pmsg.Player] = &Sticker{
+								sticker := Sticker{
 									Id: msg.Sticker,
 									X:  msg.X,
 									Y:  msg.Y,
 								}
+								mapped_stickers[pmsg.Player] = &sticker
+
+								// hide the stickering options for the troll, but
+								// show them their own sticker:
+								{
+									personal_stickered_view := *painter_view
+									personal_stickered_view.Painting.Stickers = []Sticker{
+										sticker,
+									}
+									pmsg.Player.Send(&personal_stickered_view)
+								}
+
+								players_ready.add(pmsg.Player)
 							} else {
 								session.ServerPrint("painted tried to sticker. BAD BOY!")
 							}
@@ -947,7 +958,7 @@ func (session *Session) Run() {
 
 				round_end_timer := session.createTimer(TIME_GAME_GALLERY_S)
 				players_ready := createPlayerSetFromMap(session.Players, nil)
-				for !round_end_timer.TimedOut() && players_ready.any(false) {
+				for !round_end_timer.TimedOut() && !players_ready.allSet() {
 					pmsg := session.PumpEvents(round_end_timer)
 					if pmsg == nil {
 						return
