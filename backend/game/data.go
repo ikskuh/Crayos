@@ -8,17 +8,16 @@ import (
 )
 
 const (
-	// Maximum number of players per session
-	LIMIT_MAX_PLAYERS      int = 4
-	LIMIT_MAX_NICKNAME_LEN int = 20
+	LIMIT_MAX_PLAYERS      int = 4  // Maximum number of players per session
+	LIMIT_MAX_NICKNAME_LEN int = 20 // Maximum number of "chars" in the player name
 )
 
-const (
+var (
 	// Duration for voting the prompt in seconds
 	TIME_GAME_PROMPTVOTE_S = 20
 
 	// Duration of a drawing round in seconds
-	TIME_GAME_PAINTING_S = 20 // 90
+	TIME_GAME_PAINTING_S = 90
 
 	/// Time of a "trolling" time slice in seconds
 	TIME_GAME_NEXT_TROLLEFFECT_S = 10
@@ -84,7 +83,6 @@ var AVAILABLE_PROMPTS = strings.Split(string(fileData), "\n")
 func getStickerStringsArray() []string {
 	// game -> backend -> root -> frontend -> img
 	// TODO wait for path to images, currently local folder
-	//go:embed *
 	var fs embed.FS
 
 	filenames, err := fs.ReadDir("files")
@@ -97,4 +95,5 @@ func getStickerStringsArray() []string {
 	for _, file := range filenames {
 		filenamesSlice = append(filenamesSlice, file.Name())
 	}
+	return nil
 }
