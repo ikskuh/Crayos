@@ -149,8 +149,9 @@ function setInputEnabled(enabled) {
   }
 }
 
-function resetPainting() {
+function clearPainting() {
   painterPaths.splice(0, painterPaths.length);
+  drawPainterCanvas();
 }
 
 function drawPainterCanvas() {
