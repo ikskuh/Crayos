@@ -141,6 +141,10 @@ function onSocketReceive(event) {
       }
       setPaintingPrompt(data.painting.prompt);
 
+      if (data.view == GameView.title) {
+        initTitle();
+      }
+
       if (data.view == GameView.promptselection) {
         setPromptOptions(data.voteOptions);
         setPromptSelectionEnabled(true);
@@ -232,4 +236,16 @@ function drawPainting(canvas, paths) {
       ctx.stroke();
     }
   }
+}
+
+// Temporarily changes the text of a button for time t
+function tempChangeBtnText(btnId, tempText, t) {
+    let btn = document.getElementById(btnId);
+    let oldText = btn.textContent;
+    btn.textContent = tempText;
+    setTimeout(resetBtnText, t, btn, oldText);
+}
+// Belongs to tempChangeBtnText
+function resetBtnText(btn, resetText) {
+    btn.textContent = resetText;
 }
