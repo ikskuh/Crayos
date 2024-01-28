@@ -32,6 +32,8 @@ GO_TYPES: dict[type,str] = {
 nick_names_string_array = open(os.path.join(os.path.dirname(__file__), "../game/nick_names.txt")).read().splitlines()
 nick_names_string = ', '.join(f'"{name}"' for name in nick_names_string_array)
 
+# sticker_filenames = [f.nam for f in os.listdir("files/") if os.path.isfile(os.path.join("files/", f)) ]
+
 assert Optional[str] == None | str 
 
 class ApiDirection(Enum):
@@ -836,6 +838,7 @@ def main():
 
     with open(os.path.join(os.path.dirname(__file__), "../../frontend/nick_names.js"), 'w') as f:
         f.write(f'''const nick_names = [ {nick_names_string} ];''')
+
 
 
 if __name__ == "__main__":
