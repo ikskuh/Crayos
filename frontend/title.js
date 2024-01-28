@@ -1,6 +1,7 @@
 function initTitle() {
     extractSessionId();
     document.getElementById("sessionIdInput").value = sessionID;
+    document.getElementById("nicknameInput").placeholder = nick_names[Math.floor(Math.random() * nick_names.length)];
 }
 
 function createGame() {
@@ -12,13 +13,7 @@ function createGame() {
 function joinGame() {
     getNickname();
     sessionID = document.getElementById("sessionIdInput").value;
-
-    if (sessionID != "") {
-        sendJoinSessionCommand(localPlayer, sessionID);
-    }
-    else {
-        setView("id_required");
-    }
+    sendJoinSessionCommand(localPlayer, sessionID);
 }
 
 function btnBackToLobby() {
@@ -38,7 +33,8 @@ function extractSessionId() {
 
 // Checks if the nick is valid, otherwise defaults
 function getNickname() {
-    localPlayer = document.getElementById("nicknameInput").value;
+    const nicknameInput = document.getElementById("nicknameInput");
+    localPlayer = nicknameInput.value;
     if (localPlayer == "")
-        localPlayer = "nickname";
+        localPlayer = nicknameInput.placeholder;
 }
