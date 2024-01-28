@@ -1,27 +1,46 @@
 #gallery1 { 
+    width: 694px;
     top: 104px;
     left: 222px;
 }
 
 #gallery2 {
+    width: 694px;
     top: 104px;
     left: 1006px;
 }
 
 #gallery3 {
+    width: 694px;
     top: 519px;
     left: 222px;
 }
 
 #gallery4 {
+    width: 694px;
     top: 519px;
     left: 1006px;
 }
 
 #gallery {
     position: absolute;
+    text-align: center;
 }
 
 #gallery canvas {
     position: absolute;
+}
+
+#backToLobby {
+    position: relative;
+    top: 925px;
+    width: 392px;
+    height: 90px;
+
+    background-color: #FD5A46;
+    font-size: 65px;
+}
+
+#backToLobby:hover {
+    color: white;
 }

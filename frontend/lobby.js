@@ -7,23 +7,26 @@ function updateLobby(readyMap = undefined) {
         playerInfo.value = players[i];
         if (readyMap != undefined) {
             if (readyMap[players[i]] == true) {
-                playerInfo.style.backgroundColor = "green";
+                playerInfo.classList.add("ready");
+                playerInfo.style.display = "block";
             }
             else {
-                if (players[i] == "")
-                    playerInfo.style.backgroundColor = "transparent";
-                else
-                    playerInfo.style.backgroundColor = "#FD5A46";
+                if (players[i] == "") {
+                    playerInfo.style.display = "none";
+                } else {
+                    playerInfo.classList.remove("ready");
+                    playerInfo.style.display = "block";
+                }
             }
         }
     }
 
     // Local ready button
     if (localIsReady == true) {
-        document.getElementById("ready").style.backgroundColor = "green";
+        document.getElementById("ready").classList.add("ready");
     }
     else {
-        document.getElementById("ready").style.backgroundColor = "#FD5A46";
+        document.getElementById("ready").classList.remove("ready");
     }
 
     // Show invite link

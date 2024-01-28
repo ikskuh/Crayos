@@ -52,13 +52,13 @@
         </div>
       </section>
       <section id="lobby">
-        <input type="text" id="player1" class="genericUi" value="Player 1" disabled />
-        <input type="text" id="player2" class="genericUi" value="Player 2" disabled />
-        <input type="text" id="player3" class="genericUi" value="Player 3" disabled />
-        <input type="text" id="player4" class="genericUi" value="Player 4" disabled />
-        <button type="button" id="ready" class="genericUi" onclick="readyClicked()">Ready</button>
+        <input type="text" id="player1" class="genericUi playerName" value="Player 1" disabled />
+        <input type="text" id="player2" class="genericUi playerName" value="Player 2" disabled />
+        <input type="text" id="player3" class="genericUi playerName" value="Player 3" disabled />
+        <input type="text" id="player4" class="genericUi playerName" value="Player 4" disabled />
+        <button type="button" id="ready" class="genericUi big-button" onclick="readyClicked()">Ready</button>
         <div id="linkIdWrapper">
-            <button type="button" id="joinLink" class="genericUi" onclick="btnCopyInvite()">Copy Invite Link</button>
+            <button type="button" id="joinLink" class="genericUi titleButtons" onclick="btnCopyInvite()">Copy Invite Link</button>
             <input type="text" id="copyId" class="genericUi" disabled value="ID: "></input>
         </div>
     </section>
@@ -91,11 +91,15 @@
         </div>
       </section>
       <section id="gallery">
-            <canvas id="gallery1" width="1385" height="737"></canvas>
-            <canvas id="gallery2" width="1385" height="737"></canvas>
-            <canvas id="gallery3" width="1385" height="737"></canvas>
-            <canvas id="gallery4" width="1385" height="737"></canvas>
+            <div id="gallery-wraper">
+                <canvas class="gallery_item" id="gallery1" width="1385" height="737"></canvas>
+                <canvas class="gallery_item" id="gallery2" width="1385" height="737"></canvas>
+                <canvas class="gallery_item" id="gallery3" width="1385" height="737"></canvas>
+                <canvas class="gallery_item" id="gallery4" width="1385" height="737"></canvas>
+            </div>
+            <button id="backToLobby" class="genericUi" onclick="backToLobby()">To Lobby</button>
       </section>
+      <div id="popup" class="dummy"></div>
     </div>
 
     <!-- Resources -->

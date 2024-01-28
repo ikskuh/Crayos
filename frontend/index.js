@@ -80,6 +80,22 @@ function showSection(id) {
   document.getElementById(id).style.display = "flow";
 }
 
+let global_popup_timeout 
+
+function showPopUp(message, duration) {
+  let popup = document.getElementById("popup");
+  popup.classList.add("visible");
+  popup.innerText = message;
+
+  if(global_popup_timeout ) {
+    clearTimeout(global_popup_timeout )
+  }
+  global_popup_timeout  = setTimeout(() => {
+     popup.classList.remove("visible");
+  }, duration || 1500);
+}
+
+
 function setView(newView, data = undefined) {
     if (
         newView == GameView.title ||
@@ -127,7 +143,8 @@ function onSocketReceive(event) {
       sessionID = data.sessionId;
       break;
     case EventId.JoinSessionFailed:
-      setView("server_error");
+      setView("gallery");
+      //setView("server_error");
       document.getElementById("serverErrorText").textContent = data.reason;
       break;
     case EventId.Kicked:
@@ -198,13 +215,14 @@ function onSocketReceive(event) {
       break;
 
     case EventId.PopUp:
-      console.log("HANDLE POPUP:", data.message);
+      showPopUp(data.message, data.duration);
       break;
 
     default:
       throw "unhandled message: " + JSON.stringify(data);
   }
 }
+
 
 function loadBackgrounds() {
   backgrounds["arctic"] = document.getElementById("background-arctic");

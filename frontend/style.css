@@ -21,6 +21,8 @@ div#wrapper {
     transform: translate(-50%, -50%);
     width: 1920px;
     height: 1080px;
+
+    overflow: hidden;
 }
 
 section {
@@ -38,9 +40,8 @@ div.info_box {
 
     background-color: #FFC567;
 
-    border-color: black;
-    border-style: solid;
-    border-width: 3px;
+    border: 3px solid black;
+    border-radius: 25px;
 
     text-align: center;
     padding: 40px;
@@ -59,17 +60,51 @@ div.info_box {
     background: rgba(255, 255, 255, 0.2);
 }
 
-button.infoBoxBtn {
-    margin-top: 60px;
-    height: 90px;
-    width: 300px;
+#popup {
+    position: absolute;
+    bottom: -216px;
+    left: 949px;
+    width: 328px;
+    height: 216px;
 
-    background-color: #FD5A46;
+    background: url(img/popup_wrapper.png);
+    background-size: 100%;
 
-    font-size: 30px;
+    transition: bottom 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+
+    padding: 15px;
+    box-sizing: border-box;
+    font-size: 32px;
+
+    /* word wrap with text overflow hidden */
+    text-wrap: wrap;
+    overflow: hidden;
+
+    /* center text */
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
 }
 
-button.infoBoxBtn:hover {
+#popup.visible {
+    bottom: 342px;
+}
+
+button.infoBoxBtn {
     color: white;
-    transform: scale(0.95);
+    margin-top: 60px;
+    height: 85px;
+    width: 392px;
+
+    font-size: 50px;
+
+    background-image: url('img/button.png');
+    border-radius: 0;
+}
+button.infoBoxBtn:hover {
+    background-image: url('img/button_hover.png');
+}
+button.infoBoxBtn:active {
+    background-image: url('img/button_pressed.png');
 }

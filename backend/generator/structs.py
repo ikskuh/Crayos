@@ -222,7 +222,8 @@ class PlayerReadyChangedEvent:
 
 @api_event
 class PopUpEvent:
-    message: str
+    message: str # displayed in the popup
+    duration: int # in milliseconds, if 0, default is used
 
 @api_event
 class DebugMessageEvent:
