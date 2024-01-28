@@ -22,7 +22,7 @@ const palette = [
 ];
 let selectedColor = 7;
 
-const painterPaths = [];
+let painterPaths = [];
 let mx = -1000;
 let my = -1000;
 
