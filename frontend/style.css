@@ -60,6 +60,11 @@ div.info_box {
     background: rgba(255, 255, 255, 0.2);
 
     z-index: 10;
+    display: none;
+}
+
+#debug-overlay.visible {
+    display: block;
 }
 
 #popup {

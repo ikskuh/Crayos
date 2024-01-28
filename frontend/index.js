@@ -154,7 +154,7 @@ function onSocketReceive(event) {
         setBackground(data.painting.backdrop);
       }
       if (data.painting.graphics) {
-        setPainting(data.painting.graphics);
+        setPainting(data.painting);
       } else {
         clearPainting();
       }
@@ -200,7 +200,7 @@ function onSocketReceive(event) {
       }
       break;
     case EventId.PaintingChanged:
-      setPainting(data.graphics);
+      updatePainting(data.graphics);
       break;
     case EventId.PlayersChanged:
       for (let i = 0; i < data.players.length; i++) {
@@ -213,7 +213,9 @@ function onSocketReceive(event) {
       break;
 
     case EventId.DebugMessage:
-      document.getElementById('debug-overlay').innerText = data.message || "&nbsp;";
+      let overlay = document.getElementById('debug-overlay');
+      overlay.classList.add("visible");
+      overlay.innerText = data.message || "&nbsp;";
       break;
 
     case EventId.PopUp:
