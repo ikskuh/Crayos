@@ -680,6 +680,13 @@ func (session *Session) Run() {
 				// Phase 3:
 				session.DebugPrint(round_id, "Trolls now select stickers")
 				{
+					// Send stickers to display
+					// Get 5 stickers from list
+					session.Broadcast(&ChangeToolModifierEvent{
+						Modifier: "",
+						Duration: 0,
+					})
+
 					round_end_timer := session.createTimer(TIME_GAME_STICKERING_S)
 					timeLeft := true
 					players_ready := createPlayerSetFromMap(session.Players, nil)
