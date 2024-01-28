@@ -35,23 +35,16 @@ function init() {
 }
 
 function initSocket() {
-  let wsproto = "ws:";
-  if ( window.location.protocol == "https:" ){
-    wsproto = "wss:"
-  }
-
-  console.log(window.location.protocol, wsproto);
-
-  let socketUrl = wsproto + "//" + window.location.hostname + "/ws";
+  let socketUrl = "ws://192.168.37.247:8090/ws";
   {
     let urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has("local")) {
-      socketUrl = wsproto + "//localhost:8080/ws";
+      socketUrl = "ws://localhost:8080/ws";
     } else if (urlParams.has("host")) {
-      socketUrl = wsproto + "//192.168.37.247:8090/ws";
+      socketUrl = "ws://" + window.location.hostname + ":8080/ws";
+      console.log("socket url: " + socketUrl);
     }
   }
-  console.log("socket url: " + socketUrl);
 
   document.getElementById("connecting").style.display = "flow";
   socket = new WebSocket(socketUrl);

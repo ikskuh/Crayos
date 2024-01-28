@@ -8,25 +8,28 @@ function setGalleryCanvases(results)
     {
         let galCanvas = document.getElementById("gallery" + (i+1));
         drawPainting(galCanvas, results[i].graphics.paths, results[i].backdrop);
-        //drawFinalStars(galCanvas, 1);
+        drawFinalPoints(galCanvas, results[i].score);
 
         if (results[i].winner)
             drawWinnerBadge(galCanvas);
     }
 }
 
-function drawFinalStars(canvas, points)
+function drawFinalPoints(canvas, points)
 {
+    // Draw Star
     let star = new Image;
-    let starCnt = round(points);
+    let pointsDisplayed = points.toFixed(1);
+    const ctx = canvas.getContext("2d");
     star.onload = function() {
-        const ctx = canvas.getContext("2d");
-        for (let i = 0; i < points; i++)
-        {
-            ctx.drawImage(star, 50 * i, 500);
-        }
+        ctx.drawImage(star, 37, 500, 37, 500);
     };
     star.src = "img/star.png"
+
+    // Draw Number
+    ctx.font = "50px serif";
+    ctx.textAlign = "center";
+    ctx.fillText(pointsDisplayed, 69, 250);
 }
 
 function drawWinnerBadge(canvas)
