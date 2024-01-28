@@ -11,7 +11,7 @@ SCRIPT_ROOT = Path(__file__).parent
 
 GO_MODULE = SCRIPT_ROOT / ".." / "game" / "structs.go"
 JS_MODULE = SCRIPT_ROOT / ".." / ".." / "frontend" / "structs.js"
-API_MODULE = SCRIPT_ROOT / ".." / "api.html"
+API_MODULE = SCRIPT_ROOT / ".." / "server" / "api.html"
 
 class Graphics:
     pass 

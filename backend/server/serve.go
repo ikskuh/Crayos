@@ -1,6 +1,8 @@
 package server
 
 import (
+	"bytes"
+	_ "embed"
 	"log"
 	"net/http"
 	"time"
@@ -11,8 +13,11 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+//go:embed "api.html"
+var WWW_API_CONTENT []byte
+
 func serveApi(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "api.html")
+	http.ServeContent(w, r, "", time.Now(), bytes.NewReader(WWW_API_CONTENT))
 }
 
 func serveHome(w http.ResponseWriter, r *http.Request) {
@@ -50,7 +55,7 @@ func acceptPlayerWebsocket(w http.ResponseWriter, r *http.Request) {
 var server *http.Server
 
 func Setup() {
-	http.HandleFunc("/", serveHome)
+	http.HandleFunc("/", serveApi)
 	http.HandleFunc("/api", serveApi)
 	http.HandleFunc("/ws", acceptPlayerWebsocket)
 

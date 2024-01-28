@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>API</title>
+    <style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    position: absolute;
+    margin: 0;
+    padding: 1rem;
+    
+    width: 100%;
+    height: 100%;
+}
+
+table#status {
+    border-collapse: collapse;
+    border: 1px solid black;
+}
+
+table#status tr {
+    border: 1px solid black;    
+}
+
+table#status tr td {
+    border: 1px solid black;
+    padding: 5px;
+}
+
+table#status tr:nth-child(1) {
+    background-color: #DDD;
+}
+
+table#status tr:nth-child(2) td {
+    font-family: monospace;
+}
+
+.commands {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.commands .command {
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+}
+
+.commands .command button {
+    width: 12rem;
+}
+
+#log {
+    border: 1px solid black;
+    padding: 5px;
+    flex: 1;
+    resize: none;
+    overflow: scroll;
+    font-family: monospace;
+}
+
+#log p {
+    margin: 0;
+    padding: 0;
+    white-space: pre;
+}
+
+#log button {
+    margin: 2px;
+    padding: 3px;
+}
+
+    </style>
+    <script type="text/javascript">
+        var socket;
+    
+const CommandId = {
+    CreateSession : 'create-session-command',
+    JoinSession : 'join-session-command',
+    LeaveSession : 'leave-session-command',
+    User : 'user-command',
+    Vote : 'vote-command',
+    PlaceSticker : 'place-sticker-command',
+    SetPainting : 'set-painting-command',
+};
+
+const EventId = {
+    EnterSession : 'enter-session-event',
+    JoinSessionFailed : 'join-session-failed-event',
+    Kicked : 'kicked-event',
+    ChangeGameView : 'change-game-view-event',
+    TimerChanged : 'timer-changed-event',
+    ChangeToolModifier : 'change-tool-modifier-event',
+    PaintingChanged : 'painting-changed-event',
+    PlayersChanged : 'players-changed-event',
+    PlayerReadyChanged : 'player-ready-changed-event',
+    PopUp : 'pop-up-event',
+    DebugMessage : 'debug-message-event',
+};
+
+// Enum:
+const GameView = {
+    title : 'title',
+    lobby : 'lobby',
+    promptselection : 'promptselection',
+    artstudioGeneric : 'artstudio-generic',
+    artstudioActive : 'artstudio-active',
+    artstudioSticker : 'artstudio-sticker',
+    gallery : 'gallery',
+    announcer : 'announcer',
+};
+
+// Enum:
+const Effect = {
+    flashlight : 'flashlight',
+    drunk : 'drunk',
+    flip : 'flip',
+    swap_tool : 'swap_tool',
+    lock_pencil : 'lock_pencil',
+};
+
+// Enum:
+const UserAction = {
+    setReady : 'set-ready',
+    setNotReady : 'set-not-ready',
+    leaveGallery : 'leave-gallery',
+};
+
+// Enum:
+const Backdrop = {
+    arctic : 'arctic',
+    graveyard : 'graveyard',
+    pirateShip : 'pirate_ship',
+    theaterStage1 : 'theater_stage1',
+    desert : 'desert',
+};
+
+// Command:
+function sendCreateSessionCommand(nickName)
+{
+    socket.send(JSON.stringify({
+        type : CommandId.CreateSession,
+        nickName : nickName, // str
+    }));
+}
+
+// Command:
+function sendJoinSessionCommand(nickName, sessionId)
+{
+    socket.send(JSON.stringify({
+        type : CommandId.JoinSession,
+        nickName : nickName, // str
+        sessionId : sessionId, // str
+    }));
+}
+
+// Command:
+function sendLeaveSessionCommand()
+{
+    socket.send(JSON.stringify({
+        type : CommandId.LeaveSession,
+    }));
+}
+
+// Command:
+function sendUserCommand(action)
+{
+    socket.send(JSON.stringify({
+        type : CommandId.User,
+        action : action, // UserAction
+    }));
+}
+
+// Command:
+function sendVoteCommand(option)
+{
+    socket.send(JSON.stringify({
+        type : CommandId.Vote,
+        option : option, // str
+    }));
+}
+
+// Command:
+function sendPlaceStickerCommand(sticker, x, y)
+{
+    socket.send(JSON.stringify({
+        type : CommandId.PlaceSticker,
+        sticker : sticker, // str
+        x : x, // float
+        y : y, // float
+    }));
+}
+
+// Command:
+function sendSetPaintingCommand(graphics)
+{
+    socket.send(JSON.stringify({
+        type : CommandId.SetPainting,
+        graphics : graphics, // Graphics
+    }));
+}
+
+
+        var log_area;
+        var sessionId = null;
+
+        const STATUS_FIELDS = {};
+
+        function setStatus(field, value) {
+            STATUS_FIELDS[field].innerText = String(value);
+        }
+
+        function logElement(element)
+        {
+            if(!log_area) {
+                return;
+            }
+            log_area.appendChild(element);
+            element.scrollIntoView();
+        }
+
+        function log(...text)
+        {
+            const text_node = document.createElement("p");
+            text_node.innerText = text.join("");
+            logElement(text_node);
+        }
+
+        function logButton(text, handler)
+        {
+            const btn = document.createElement("button");
+            btn.innerText = text;
+            btn.addEventListener("click", handler)
+            logElement(btn);
+        }
+
+        function handleDebugMessage(evt) {
+            console.log(evt.message);
+            log("DEBUG: ", evt.message);
+            return true;
+        }
+
+        function handleEnterSession(evt) {
+            sessionId = evt.sessionId;
+            setStatus("sessionId", sessionId);
+        }
+
+        function handleJoinSessionFailed(evt) {
+
+        }
+
+        function handleTimerChanged(evt) {
+            setStatus("timer", evt.secondsLeft);
+            return true;
+        }
+
+        function handleKicked(evt) {
+            sessionId = null;
+            setStatus("sessionId", "-");
+        }
+
+        function handleChangeGameView(evt) {
+            setStatus("view", evt.view);
+            setStatus("backdrop", evt.paintingBackdrop);
+
+            log('ChangeGameViewEvent to ', JSON.stringify(evt.view));
+            log('  painting: ', JSON.stringify(evt.painting));
+            if (evt.voteOptions && evt.voteOptions.length > 0) {
+                log('  vote:');
+                for(const option of evt.voteOptions) {
+                    logButton(option, function() {
+                        sendVoteCommand(option);
+                    });
+                }
+            } else {
+                log('  vote: none');
+            }
+
+
+            switch(evt.view) {
+                case GameView.lobby: 
+                    log("Entered lobby, select if you're ready:")
+                    logButton("ready", function() {
+                        sendUserCommand(UserAction.setReady);
+                    });
+                    logButton("not ready", function() {
+                        sendUserCommand(UserAction.setNotReady);
+                    });
+                    break;
+                case GameView.announcer:
+                    let msg = document.createElement("h1");
+                    msg.innerText = evt.announcer;
+                    logElement(msg);
+                    break;
+            }
+            
+            return true;
+        }
+
+        function handleChangeToolModifier(evt) {
+
+        }
+
+        function handlePaintingChanged(evt) {
+
+        }
+
+        function handlePlayersChanged(evt) {
+            setStatus("players", evt.players.join(", "));
+
+            if (evt.addedPlayer) {
+                log(evt.addedPlayer, " joined the game");
+            }
+            else if (evt.addedPlayer) {
+                log(evt.removedPlayer, " joined the game");
+            }
+            else {
+                log("Players changed to: ", evt.players.join(", "));
+            }
+
+            return true;
+        }
+
+        function handlePlayerReadyChanged(evt) {
+            log(
+                "READY: ", 
+                Object.keys(evt.players).filter(k => evt.players[k]).join(", ") || "-",
+                "	NOT READY:",
+                Object.keys(evt.players).filter(k => !evt.players[k]).join(", " || "-")
+            )
+            return true;
+        }
+
+
+function autoSendCreateSessionCommand()
+{
+    let nickName = document.getElementById("CreateSessionCommand-arg-nickName").value;
+    let cmd_struct = JSON.stringify({
+        type : 'create-session-command',
+        nickName : nickName, // str
+    });
+    console.log('Sending', cmd_struct);
+    socket.send(cmd_struct);
+}
+function autoSendJoinSessionCommand()
+{
+    let nickName = document.getElementById("JoinSessionCommand-arg-nickName").value;
+    let sessionId = document.getElementById("JoinSessionCommand-arg-sessionId").value;
+    let cmd_struct = JSON.stringify({
+        type : 'join-session-command',
+        nickName : nickName, // str
+        sessionId : sessionId, // str
+    });
+    console.log('Sending', cmd_struct);
+    socket.send(cmd_struct);
+}
+function autoSendLeaveSessionCommand()
+{
+    let cmd_struct = JSON.stringify({
+        type : 'leave-session-command',
+    });
+    console.log('Sending', cmd_struct);
+    socket.send(cmd_struct);
+}
+function autoSendUserCommand()
+{
+    let action = document.getElementById("UserCommand-arg-action").value;
+    let cmd_struct = JSON.stringify({
+        type : 'user-command',
+        action : action, // UserAction
+    });
+    console.log('Sending', cmd_struct);
+    socket.send(cmd_struct);
+}
+function autoSendVoteCommand()
+{
+    let option = document.getElementById("VoteCommand-arg-option").value;
+    let cmd_struct = JSON.stringify({
+        type : 'vote-command',
+        option : option, // str
+    });
+    console.log('Sending', cmd_struct);
+    socket.send(cmd_struct);
+}
+function autoSendPlaceStickerCommand()
+{
+    let sticker = document.getElementById("PlaceStickerCommand-arg-sticker").value;
+    let x = document.getElementById("PlaceStickerCommand-arg-x").value;
+    x = Number(x);
+    let y = document.getElementById("PlaceStickerCommand-arg-y").value;
+    y = Number(y);
+    let cmd_struct = JSON.stringify({
+        type : 'place-sticker-command',
+        sticker : sticker, // str
+        x : x, // float
+        y : y, // float
+    });
+    console.log('Sending', cmd_struct);
+    socket.send(cmd_struct);
+}
+function autoSendSetPaintingCommand()
+{
+    let graphics = document.getElementById("SetPaintingCommand-arg-graphics").value;
+    let cmd_struct = JSON.stringify({
+        type : 'set-painting-command',
+        graphics : graphics, // Graphics
+    });
+    console.log('Sending', cmd_struct);
+    socket.send(cmd_struct);
+}
+function deserialize(msg)
+{
+    const obj = JSON.parse(msg);
+    switch(obj.type) {
+    case 'enter-session-event':
+        if(handleEnterSession(obj)) {
+            return;
+        }
+        log('event: EnterSessionEvent');
+        log('  sessionId: ', JSON.stringify(obj.sessionId))
+          log();
+        break;
+    case 'join-session-failed-event':
+        if(handleJoinSessionFailed(obj)) {
+            return;
+        }
+        log('event: JoinSessionFailedEvent');
+        log('  reason: ', JSON.stringify(obj.reason))
+          log();
+        break;
+    case 'kicked-event':
+        if(handleKicked(obj)) {
+            return;
+        }
+        log('event: KickedEvent');
+        log('  reason: ', JSON.stringify(obj.reason))
+          log();
+        break;
+    case 'change-game-view-event':
+        if(handleChangeGameView(obj)) {
+            return;
+        }
+        log('event: ChangeGameViewEvent');
+        log('  view: ', JSON.stringify(obj.view))
+        log('  painting: ', JSON.stringify(obj.painting))
+        log('  results: ', JSON.stringify(obj.results))
+        log('  votePrompt: ', JSON.stringify(obj.votePrompt))
+        log('  voteOptions: ', JSON.stringify(obj.voteOptions))
+        log('  announcer: ', JSON.stringify(obj.announcer))
+          log();
+        break;
+    case 'timer-changed-event':
+        if(handleTimerChanged(obj)) {
+            return;
+        }
+        log('event: TimerChangedEvent');
+        log('  secondsLeft: ', JSON.stringify(obj.secondsLeft))
+          log();
+        break;
+    case 'change-tool-modifier-event':
+        if(handleChangeToolModifier(obj)) {
+            return;
+        }
+        log('event: ChangeToolModifierEvent');
+        log('  modifier: ', JSON.stringify(obj.modifier))
+        log('  duration: ', JSON.stringify(obj.duration))
+          log();
+        break;
+    case 'painting-changed-event':
+        if(handlePaintingChanged(obj)) {
+            return;
+        }
+        log('event: PaintingChangedEvent');
+        log('  graphics: ', JSON.stringify(obj.graphics))
+          log();
+        break;
+    case 'players-changed-event':
+        if(handlePlayersChanged(obj)) {
+            return;
+        }
+        log('event: PlayersChangedEvent');
+        log('  players: ', JSON.stringify(obj.players))
+        log('  addedPlayer: ', JSON.stringify(obj.addedPlayer))
+        log('  removedPlayer: ', JSON.stringify(obj.removedPlayer))
+          log();
+        break;
+    case 'player-ready-changed-event':
+        if(handlePlayerReadyChanged(obj)) {
+            return;
+        }
+        log('event: PlayerReadyChangedEvent');
+        log('  players: ', JSON.stringify(obj.players))
+          log();
+        break;
+    case 'pop-up-event':
+        if(handlePopUp(obj)) {
+            return;
+        }
+        log('event: PopUpEvent');
+        log('  message: ', JSON.stringify(obj.message))
+        log('  duration: ', JSON.stringify(obj.duration))
+          log();
+        break;
+    case 'debug-message-event':
+        if(handleDebugMessage(obj)) {
+            return;
+        }
+        log('event: DebugMessageEvent');
+        log('  message: ', JSON.stringify(obj.message))
+          log();
+        break;
+    default:
+        log('received unknown object of type ', obj.type);
+        break;
+    }
+}
+
+
+        function reconnect() {
+            if(socket) {
+                socket.close();
+            }
+            socket = new WebSocket("ws://" + document.location.host + "/ws");
+            socket.onclose = function (evt) {
+              log("Connection closed.");
+            };
+            socket.onmessage = function (evt) {
+                console.log("Recieved: " + evt.data);
+                deserialize(evt.data)
+            };
+        }
+    
+        window.addEventListener("DOMContentLoaded", () => {
+            log_area = document.getElementById("log");
+            
+            STATUS_FIELDS['sessionId'] = document.getElementById('status-sessionId');
+            STATUS_FIELDS['view'] = document.getElementById('status-view');
+            STATUS_FIELDS['players'] = document.getElementById('status-players');
+            STATUS_FIELDS['backdrop'] = document.getElementById('status-backdrop');
+            STATUS_FIELDS['timer'] = document.getElementById('status-timer');
+
+            const nick_names = [
+                "Trolliver", "Trollarella", "Trollker", "Bertrolli", "Trollivia", "Trollo", "Trollbert", "Matrollka", "Trollbob", "Finntroll", "Trolluminati", "Trollington", "Benetroll", "Trollix", "Santrolla", "Supertroll", "Trollnathan", "Alexantrolla", "Papa Troll", "Trollino", "Trollster", "Trollygon", "Petroll", "Mythtrollogy", "Trollando Bloom", "Trolleander", "Atrollf", "Gwentrollyn", "Trollores", "Trollita"
+            ];
+
+            const nick = nick_names[Math.floor(Math.random()*nick_names.length)];
+
+            document.getElementById("CreateSessionCommand-arg-nickName").value = nick;
+            document.getElementById("JoinSessionCommand-arg-nickName").value = nick;
+            document.getElementById('JoinSessionCommand-arg-sessionId').value = "0xDEADBEEF";
+
+            reconnect();
+        });
+
+    </script>
+  </head>
+  <body>
+    <table id="status">
+<tr>
+<td>Session ID</td>
+<td>Current View</td>
+<td>Players</td>
+<td>Backdrop</td>
+<td>Timer</td>
+</tr>
+<td id="status-sessionId">-</td>
+<td id="status-view">-</td>
+<td id="status-players">-</td>
+<td id="status-backdrop">-</td>
+<td id="status-timer">-</td>
+</table>
+    <div class="commands">
+    <div class="command">
+        <button onClick="reconnect()">Reconnect ws</button>
+    </div>
+    
+<div class="command">
+<button onClick="autoSendCreateSessionCommand()">CreateSessionCommand</button>
+<span>nickName:</span>
+<input id="CreateSessionCommand-arg-nickName" type="text">
+</div>
+<div class="command">
+<button onClick="autoSendJoinSessionCommand()">JoinSessionCommand</button>
+<span>nickName:</span>
+<input id="JoinSessionCommand-arg-nickName" type="text">
+<span>sessionId:</span>
+<input id="JoinSessionCommand-arg-sessionId" type="text">
+</div>
+<div class="command">
+<button onClick="autoSendLeaveSessionCommand()">LeaveSessionCommand</button>
+</div>
+<div class="command">
+<button onClick="autoSendUserCommand()">UserCommand</button>
+<span>action:</span>
+<select id="UserCommand-arg-action">
+<option value="set-ready">setReady</option>
+<option value="set-not-ready">setNotReady</option>
+<option value="leave-gallery">leaveGallery</option>
+</select>
+</div>
+<div class="command">
+<button onClick="autoSendVoteCommand()">VoteCommand</button>
+<span>option:</span>
+<input id="VoteCommand-arg-option" type="text">
+</div>
+<div class="command">
+<button onClick="autoSendPlaceStickerCommand()">PlaceStickerCommand</button>
+<span>sticker:</span>
+<input id="PlaceStickerCommand-arg-sticker" type="text">
+<span>x:</span>
+<input id="PlaceStickerCommand-arg-x" type="number">
+<span>y:</span>
+<input id="PlaceStickerCommand-arg-y" type="number">
+</div>
+<div class="command">
+<button onClick="autoSendSetPaintingCommand()">SetPaintingCommand</button>
+<span>graphics:</span>
+<input id="SetPaintingCommand-arg-graphics" type="text">
+</div>
+
+    </div>
+    <div id="log"></div>
+  </body>
+</html>
+
