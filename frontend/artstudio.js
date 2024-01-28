@@ -122,8 +122,6 @@ function onMouseMove(e) {
 }
 
 function onMouseUp(e) {
-  mx = -1000;
-  my = -1000;
   drawPainterCanvas();
   sendPainting();
 }
