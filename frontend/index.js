@@ -41,7 +41,8 @@ function initSocket() {
     if (urlParams.has("local")) {
       socketUrl = "ws://localhost:8080/ws";
     } else if (urlParams.has("host")) {
-      socketUrl = "ws://" + urlParams.get("host") + ":8080/ws";
+      socketUrl = "ws://" + window.location.hostname + ":8080/ws";
+      console.log("socket url: " + socketUrl);
     }
   }
 

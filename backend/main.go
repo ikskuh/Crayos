@@ -3,92 +3,30 @@ package main
 import (
 	"flag"
 	"log"
-	"net/http"
-	"time"
 
 	"random-projects.net/crayos-backend/game"
-
-	"github.com/gorilla/websocket"
+	"random-projects.net/crayos-backend/meta"
+	"random-projects.net/crayos-backend/server"
 )
 
-var addr = flag.String("addr", ":8080", "http service address")
-
-func serveApi(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "api.html")
-}
-
-func serveHome(w http.ResponseWriter, r *http.Request) {
-	log.Println(r.URL)
-	if r.URL.Path != "/" {
-		http.Error(w, "Not found", http.StatusNotFound)
-		return
-	}
-	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-	http.ServeFile(w, r, "home.html")
-}
-
-var websocketUpgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-	CheckOrigin: func(*http.Request) bool {
-		return true
-	},
-}
-
-func acceptPlayerWebsocket(w http.ResponseWriter, r *http.Request) {
-
-	conn, err := websocketUpgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
-	game.CreatePlayer(conn)
-}
-
 func main() {
-
 	flag.Parse()
 
-	http.HandleFunc("/", serveHome)
-	http.HandleFunc("/api", serveApi)
-	http.HandleFunc("/ws", acceptPlayerWebsocket)
-
-	server := &http.Server{
-		Addr:              *addr,
-		ReadHeaderTimeout: 3 * time.Second,
-	}
+	server.Setup()
 
 	log.Println("Ready.")
 
-	err := server.ListenAndServe()
+	if *meta.DEBUG_MODE {
+		default_session := game.CreateSession(nil)
+
+		game.SetDebugSession(default_session)
+
+		log.Println("DEFAULT SESSION ID:", default_session.Id)
+	}
+
+	err := server.Run()
+
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
 }
-
-// func (h *Hub) run() {
-// 	for {
-// 		select {
-// 		case client := <-h.register:
-// 			h.clients[client] = true
-// 		case client := <-h.unregister:
-// 			if _, ok := h.clients[client]; ok {
-// 				delete(h.clients, client)
-// 				close(client.send)
-// 			}
-// 		case message := <-h.broadcast:
-// 			for client := range h.clients {
-// 				select {
-// 				case client.send <- message:
-// 				default:
-// 					close(client.send)
-// 					delete(h.clients, client)
-// 				}
-// 			}
-// 		}
-// 	}
-// }

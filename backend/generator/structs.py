@@ -103,7 +103,7 @@ class GameView(Enum):
 
 @api_enum
 class Effect(Enum):
-    none = "none"
+    # none = ""
     flashlight = "flashlight"
     drunk = "drunk"
     flip = "flip"
@@ -219,6 +219,9 @@ class PlayerReadyChangedEvent:
 class PopUpEvent:
     message: str
 
+@api_event
+class DebugMessageEvent:
+    message: str # Show this text as a debug overlay somewhere
 
 ###############################################################################
 
@@ -603,6 +606,11 @@ table#status tr:nth-child(2) td {
                         sendUserCommand(UserAction.setNotReady);
                     });
                     break;
+                case GameView.announcer:
+                    let msg = document.createElement("h1");
+                    msg.innerText = evt.announcer;
+                    logElement(msg);
+                    break;
             }
             
             return true;
@@ -726,16 +734,17 @@ table#status tr:nth-child(2) td {
     for field_name in  STATUS_FIELDS.keys():
         lineout("            STATUS_FIELDS['",field_name,"'] = document.getElementById('status-",field_name,"');");
 
+
     lineout("""
-            const nick_names = [
-                "xq", "manello", "captainhorst","philippwendel", "dionymoth", "Alm4nditte" 
-            ];
+            const nick_names = [""")
+    lineout("""                "xq", "manello", "captainhorst","philippwendel", "dionymoth", "Alm4nditte" """)
+    lineout("""            ];
 
             const nick = nick_names[Math.floor(Math.random()*nick_names.length)];
 
             document.getElementById("CreateSessionCommand-arg-nickName").value = nick;
             document.getElementById("JoinSessionCommand-arg-nickName").value = nick;
-
+            document.getElementById('JoinSessionCommand-arg-sessionId').value = "0xDEADBEEF";
 
             reconnect();
         });

@@ -102,6 +102,7 @@ const EventId = {
     PlayersChanged : 'players-changed-event',
     PlayerReadyChanged : 'player-ready-changed-event',
     PopUp : 'pop-up-event',
+    DebugMessage : 'debug-message-event',
 };
 
 // Enum:
@@ -118,7 +119,6 @@ const GameView = {
 
 // Enum:
 const Effect = {
-    none : 'none',
     flashlight : 'flashlight',
     drunk : 'drunk',
     flip : 'flip',
@@ -287,6 +287,11 @@ function sendSetPaintingCommand(graphics)
                     logButton("not ready", function() {
                         sendUserCommand(UserAction.setNotReady);
                     });
+                    break;
+                case GameView.announcer:
+                    let msg = document.createElement("h1");
+                    msg.innerText = evt.announcer;
+                    logElement(msg);
                     break;
             }
             
@@ -496,6 +501,14 @@ function deserialize(msg)
         log('  message: ', JSON.stringify(obj.message))
           log();
         break;
+    case 'debug-message-event':
+        if(handleDebugMessage(obj)) {
+            return;
+        }
+        log('event: DebugMessageEvent');
+        log('  message: ', JSON.stringify(obj.message))
+          log();
+        break;
     default:
         log('received unknown object of type ', obj.type);
         break;
@@ -534,7 +547,7 @@ function deserialize(msg)
 
             document.getElementById("CreateSessionCommand-arg-nickName").value = nick;
             document.getElementById("JoinSessionCommand-arg-nickName").value = nick;
-
+            document.getElementById('JoinSessionCommand-arg-sessionId').value = "0xDEADBEEF";
 
             reconnect();
         });
