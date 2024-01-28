@@ -739,9 +739,9 @@ table#status tr:nth-child(2) td {
     lineout("""
             const nick_names = [""")
     old_nick_names_str_array = open(os.path.join(os.path.dirname(__file__), "../game/old_nick_names.txt")).read().splitlines()
-
+    # old_nick_names_as_single_string = ', '.join(f'"{name}"' for name in old_nick_names_str_array)
     # nick_names_str_array = open(os.path.join(os.path.dirname(__file__), "../game/nick_names.txt")).read().splitlines()
-    old_nick_names_string = """"xq", "manello", "captainhorst","philippwendel", "dionymoth", "Alm4nditte" """
+    old_nick_names_string = """"xq", "manello", "captainhorst", "philippwendel", "dionymoth", "Alm4nditte" """
     lineout(f"""                {old_nick_names_string}""")
     lineout("""            ];
 
