@@ -171,7 +171,12 @@ function onSocketReceive(event) {
       setTimerSecondsLeft(data.secondsLeft);
       break;
     case EventId.ChangeToolModifier:
-      activateChaosEffect(data.modifier, data.duration);
+      if (data.modifier == "") {
+        // special handling: deactivate current effect
+        deactivateChaosEffect(chaosEffect);
+      } else {
+        activateChaosEffect(data.modifier, data.duration);
+      }
       break;
     case EventId.PaintingChanged:
       setPainting(data.graphics);
