@@ -71,39 +71,41 @@ function showSection(id) {
   document.getElementById(id).style.display = "flow";
 }
 
-function setView(newView) {
-  if (
-    newView == GameView.title ||
-    newView == GameView.lobby ||
-    newView == GameView.gallery ||
-    newView == "connecting" ||
-    newView == "connection_failed" ||
-    newView == "link_required" ||
-    newView == "link_invalid"
-  ) {
-    hideSection(currentView);
-    currentView = newView;
-    showSection(newView);
+function setView(newView, data = undefined) {
+    if (
+        newView == GameView.title ||
+        newView == GameView.lobby ||
+        newView == GameView.gallery ||
+        newView == "connecting" ||
+        newView == "connection_failed" ||
+        newView == "link_required" ||
+        newView == "link_invalid" ||
+        newView == "announcer"
+    ) {
+        hideSection(currentView);
+        currentView = newView;
+        showSection(newView);
 
-    if (newView == GameView.gallery) {
-      initGallery();
+        if (newView == GameView.gallery) {
+            initGallery();
+        }
+    }   
+    else {
+        switch (newView) {
+        case GameView.promptselection:
+            break;
+        case GameView.artstudioGeneric:
+            break;
+        case GameView.artstudioActive:
+            break;
+        case GameView.artstudioSticker:
+            break;
+        }
+        newView = "artstudio";
+        hideSection(currentView);
+        currentView = newView;
+        showSection(newView);
     }
-  } else {
-    switch (newView) {
-      case GameView.promptselection:
-        break;
-      case GameView.artstudioGeneric:
-        break;
-      case GameView.artstudioActive:
-        break;
-      case GameView.artstudioSticker:
-        break;
-    }
-    newView = "artstudio";
-    hideSection(currentView);
-    currentView = newView;
-    showSection(newView);
-  }
 }
 
 function onSocketReceive(event) {
@@ -141,6 +143,10 @@ function onSocketReceive(event) {
         setPaintingToolsEnabled(true);
       } else {
         setPaintingToolsEnabled(false);
+      }
+
+      if (data.announcer != "") {
+        document.getElementById("announcer_text").textContent = data.announcer;
       }
 
       setView(data.view);
