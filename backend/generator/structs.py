@@ -188,6 +188,7 @@ class Painting:
     backdrop: Backdrop # the ID of the backdrop 
     stickers: list[Sticker] # the current list of stickers that should be shown
     winner: bool # the painting is the winner
+    score: int # the number of total points (1...5 per player)
 
 @api_event
 class ChangeGameViewEvent:

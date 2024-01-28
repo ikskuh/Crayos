@@ -65,9 +65,10 @@ const (
 	TEXT_POPUP_TIMES_UP         string = "Someone's sleepy!"
 
 	// Vote Prompts:
-	TEXT_VOTE_PROMPT   string = "Select a prompt"
-	TEXT_VOTE_EFFECT   string = "Select a trolling effect"
-	TEXT_VOTE_SHOWCASE string = "Gaze upon this masterpiece"
+	TEXT_VOTE_PROMPT     string = "Select a prompt"
+	TEXT_VOTE_EFFECT     string = "Select a trolling effect"
+	TEXT_VOTE_SHOWCASE   string = "Gaze upon this masterpiece"
+	TEXT_VOTE_STICKERING string = "Place all the stickers!"
 
 	// Announcements:
 	TEXT_ANNOUNCE_YOU_ARE_TROLL   string = "Chose an image that should be drawn"
