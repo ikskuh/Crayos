@@ -32,6 +32,9 @@ type Session struct {
 	InboundDataChan chan PlayerMessage
 	JoinChan        chan *Player // receives players that have joined the session
 	LeaveChan       chan *Player // receives players that have left  the session
+
+	// Internals:
+	startupTime int64
 }
 
 type Role int
@@ -62,6 +65,8 @@ func CreateSession(player *Player) *Session {
 		Flags: SessionFlags{
 			Joinable: true,
 		},
+
+		startupTime: meta.Timestamp(),
 	}
 	session.Id = fmt.Sprintf("%p", session)
 
@@ -76,7 +81,7 @@ func CreateSession(player *Player) *Session {
 	go session.Run()
 
 	// Register session
-	log.Println("Created session...", session.Id)
+	session.ServerPrint("Created")
 	sessions[session.Id] = session
 
 	return session
@@ -105,7 +110,7 @@ func (session *Session) AddPlayer(new *Player) {
 		return
 	}
 
-	log.Println("Player", new.NickName, "joined session", session.Id)
+	session.ServerPrint("Player", new.NickName, "joined")
 
 	new.Session = session
 	session.Players[new] = true
@@ -213,7 +218,7 @@ func (session *Session) PumpEvents(timeout <-chan time.Time) *PlayerMessage {
 
 		case old := <-session.LeaveChan:
 
-			log.Println("Player", old.NickName, "left session", session.Id)
+			session.ServerPrint("Player", old.NickName, "left")
 			delete(session.Players, old)
 
 			session.BroadcastPlayers(nil, old)
@@ -234,7 +239,7 @@ func (session *Session) PumpEvents(timeout <-chan time.Time) *PlayerMessage {
 }
 
 func broadcastPlayerReadyState(s *Session, m playerSet) {
-	log.Println("Sending PlayerReadyState", m)
+	s.ServerPrint("Sending PlayerReadyState", m)
 	readyMap := make(map[string]bool)
 	for p, b := range m.items {
 		readyMap[p.NickName] = b.value
@@ -259,6 +264,27 @@ func (evt *ChangeGameViewEvent) SetVote(prompt string, options []string) {
 	evt.VoteOptions = options
 }
 
+func (session *Session) ServerPrint(message ...any) {
+	timestamp := meta.Timestamp() - session.startupTime
+	formatted := fmt.Sprint(message...)
+
+	log.Println(
+		fmt.Sprintf("Session[%s, %7d]: %s", session.Id, timestamp, formatted),
+	)
+}
+
+func (session *Session) DebugPrint(message ...any) {
+	timestamp := meta.Timestamp() - session.startupTime
+	formatted := fmt.Sprint(message...)
+
+	log.Println(
+		fmt.Sprintf("Session[%s, %7d]: %s", session.Id, timestamp, formatted),
+	)
+	session.Broadcast(&DebugMessageEvent{
+		Message: fmt.Sprintf("%d: %s", timestamp, formatted),
+	})
+}
+
 func (session *Session) Announce(text string, duration time.Duration) {
 	session.Broadcast(&ChangeGameViewEvent{
 		View:      GAME_VIEW_ANNOUNCER,
@@ -270,12 +296,14 @@ func (session *Session) Announce(text string, duration time.Duration) {
 func (session *Session) Run() {
 	random_source := rand.New(rand.NewSource(time.Now().UnixNano()))
 
-	log.Println("Starting ", session.Id, " opened")
-	defer log.Println("Session ", session.Id, " closed")
+	session.ServerPrint("Started")
+	defer session.ServerPrint("Stopped")
 
 	no_timeout := make(chan time.Time) // pass when no timeout is required
 
 	for *meta.DEBUG_MODE || len(session.Players) > 0 {
+
+		session.DebugPrint("Enter lobby")
 
 		// Lobby
 		{
@@ -306,10 +334,10 @@ func (session *Session) Run() {
 			}
 		}
 
+		session.DebugPrint("Start game")
+
 		// Game
 		{
-			log.Println(session.Id, "Start game")
-
 			// Create a list of players:
 			players := make([]*Player, len(session.Players))
 			{
@@ -330,7 +358,9 @@ func (session *Session) Run() {
 			// Each player gets their turn:
 			for index, active_painter := range players {
 
-				log.Println(session.Id, "Start round", index+1)
+				round_id := fmt.Sprintf("Round %d: ", index+1)
+
+				session.DebugPrint(round_id, "Initialize")
 
 				// Assign roles:
 				player_role := make(map[*Player]Role)
@@ -371,8 +401,8 @@ func (session *Session) Run() {
 				})
 				prompts = prompts[0:3]
 
-				log.Println("selected backdrop:", backdrop)
-				log.Println("selected prompts: ", prompts)
+				session.ServerPrint("selected backdrop:", backdrop)
+				session.ServerPrint("selected prompts: ", prompts)
 
 				// Tell them what's happening
 				splitAnnounce(
@@ -407,10 +437,10 @@ func (session *Session) Run() {
 					for _, player := range players {
 						switch player_role[player] {
 						case ROLE_PAINTER:
-							// log.Println("send view (painter)", player.NickName, painter_view)
+							// session.ServerPrint("send view (painter)", player.NickName, painter_view)
 							player.Send(painter_view)
 						case ROLE_TROLL:
-							// log.Println("send view (troll)", player.NickName, troll_view)
+							// session.ServerPrint("send view (troll)", player.NickName, troll_view)
 							player.Send(troll_view)
 						}
 					}
@@ -432,7 +462,7 @@ func (session *Session) Run() {
 				troll_view.RemoveVote()
 
 				// Phase 1: Trolls vote for a prompt
-				log.Println(session.Id, "Prompt voting for trolls starts")
+				session.DebugPrint(round_id, "Prompt voting for trolls starts")
 				var selected_painting_prompt string
 				{
 					prompt_voted := createPlayerSetFromList(players, active_painter)
@@ -449,7 +479,7 @@ func (session *Session) Run() {
 						case *VoteCommand:
 							if pmsg.Player != active_painter {
 
-								log.Println("Player ", pmsg.Player.NickName, "voted for", msg)
+								session.ServerPrint("Player ", pmsg.Player.NickName, "voted for", msg)
 
 								index := -1
 								for i, val := range prompts {
@@ -467,12 +497,12 @@ func (session *Session) Run() {
 									pmsg.Player.Send(troll_view)
 
 								} else {
-									log.Println("troll tried to vote illegaly. BAD BOY")
+									session.ServerPrint("troll tried to vote illegaly. BAD BOY")
 
 								}
 
 							} else {
-								log.Println("painter tried to vote. BAD BOY")
+								session.ServerPrint("painter tried to vote. BAD BOY")
 							}
 						}
 					}
@@ -489,7 +519,7 @@ func (session *Session) Run() {
 
 					selected_painting_prompt = prompts[best_prompt_index]
 
-					log.Println("Prompt", selected_painting_prompt, "won with", best_prompt_level, "votes")
+					session.ServerPrint("Prompt", selected_painting_prompt, "won with", best_prompt_level, "votes")
 				}
 
 				changeBoth(func(view *ChangeGameViewEvent) {
@@ -503,7 +533,7 @@ func (session *Session) Run() {
 				updateViews()
 
 				// Phase 2:
-				log.Println(session.Id, "Painter is now being tortured")
+				session.DebugPrint(round_id, "Painter is now being tortured")
 				{
 					// Setup troll order, current troll is always the first one
 					trolls := make([]*Player, len(players)-1)
@@ -577,7 +607,7 @@ func (session *Session) Run() {
 								trolls[0].Send(troll_view) // reset troll to regular view, hide the vote options
 								troll_did_effect = true
 							} else {
-								log.Println("someone else tried to harm the painter. BAD BOY!")
+								session.ServerPrint("someone else tried to harm the painter. BAD BOY!")
 							}
 
 						case *SetPaintingCommand:
@@ -593,7 +623,7 @@ func (session *Session) Run() {
 								}, pmsg.Player)
 
 							} else {
-								log.Println("someone else tried to paint. BAD BOY!")
+								session.ServerPrint("someone else tried to paint. BAD BOY!")
 							}
 						}
 					}
@@ -608,8 +638,8 @@ func (session *Session) Run() {
 				})
 
 				// Phase 3:
+				session.DebugPrint(round_id, "Trolls now select stickers")
 				{
-					log.Println(session.Id, "Trolls now select stickers")
 
 					// TODO(fqu): Set stickering mode here
 
@@ -627,8 +657,8 @@ func (session *Session) Run() {
 				}
 
 				// Phase 4:
+				session.DebugPrint(round_id, "Showcase the artwork")
 				{
-					log.Println(session.Id, "Players can now gaze upon the art")
 					round_end_timer := time.NewTimer(GALLERY_ROUND_TIME_S)
 					timeLeft := true
 					players_ready := createPlayerSetFromMap(session.Players, nil)
@@ -667,11 +697,12 @@ func (session *Session) Run() {
 
 			// Phase 5:
 			{
-				log.Println(session.Id, "All rounds done, vote for the winner")
-
 				// TODO: Loop through all results and let the players vote for the pictures
 
 				for index, result := range results {
+					round_id := fmt.Sprintf("Showcase %d: ", index+1)
+
+					session.DebugPrint(round_id, "Vote for image")
 
 					vote_view := ChangeGameViewEvent{
 						View:     GAME_VIEW_ARTSTUDIO_GENERIC,
@@ -721,7 +752,7 @@ func (session *Session) Run() {
 									players_ready.add(pmsg.Player)
 								}
 							} else {
-								log.Println("don't wont twice my friend. BAD BOY!")
+								session.ServerPrint("don't wont twice my friend. BAD BOY!")
 							}
 
 						case *NotifyTimeout:
@@ -752,9 +783,8 @@ func (session *Session) Run() {
 			}
 
 			// Phase 6:
+			session.DebugPrint("Showcase the winner")
 			{
-				log.Println(session.Id, "Showcase the winner")
-
 				view_cmd := ChangeGameViewEvent{
 					View: GAME_VIEW_GALLERY,
 
@@ -788,6 +818,8 @@ func (session *Session) Run() {
 					}
 				}
 			}
+
+			session.DebugPrint("Round done. Back to lobby!")
 		}
 	}
 }
