@@ -241,6 +241,12 @@ function sendSetPaintingCommand(graphics)
             logElement(btn);
         }
 
+        function handleDebugMessage(evt) {
+            console.log(evt.message);
+            log("DEBUG: ", evt.message);
+            return true;
+        }
+
         function handleEnterSession(evt) {
             sessionId = evt.sessionId;
             setStatus("sessionId", sessionId);
@@ -540,7 +546,7 @@ function deserialize(msg)
             STATUS_FIELDS['timer'] = document.getElementById('status-timer');
 
             const nick_names = [
-                "xq", "manello", "captainhorst","philippwendel", "dionymoth", "Alm4nditte" 
+                "Trolliver", "Trollarella", "Trollker", "Bertrolli", "Trollivia", "Trollo", "Trollbert", "Matrollka", "Trollbob", "Finntroll", "Trolluminati", "Trollington", "Benetroll", "Trollix", "Santrolla", "Supertroll", "Trollnathan", "Alexantrolla", "Papa Troll", "Trollino", "Trollster", "Trollygon", "Petroll", "Mythtrollogy", "Trollando Bloom", "Trolleander", "Atrollf", "Gwentrollyn", "Trollores", "Trollita"
             ];
 
             const nick = nick_names[Math.floor(Math.random()*nick_names.length)];

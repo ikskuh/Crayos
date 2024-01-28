@@ -28,14 +28,30 @@ let my = -1000;
 
 let chaosEffect = null;
 
+let paintingSenderInterval = null;
+function startPaintingSender() {
+  stopPaintingSender();
+  paintingSenderInterval = setInterval(() => {
+    sendPainting();
+  }, 100);
+}
+function stopPaintingSender() {
+  if (paintingSenderInterval) {
+    clearInterval(paintingSenderInterval);
+    paintingSenderInterval = null;
+  }
+}
+
 function setPaintingToolsEnabled(enabled) {
   document.getElementById("painting-tools").style.display = enabled ? "block" : "none";
   setInputEnabled(enabled);
   if (enabled) {
     initPalette();
     selectTool(TOOL_PENCIL);
+    startPaintingSender();
   } else {
     selectTool(null);
+    stopPaintingSender();
   }
 }
 
@@ -122,8 +138,6 @@ function onMouseMove(e) {
 }
 
 function onMouseUp(e) {
-  mx = -1000;
-  my = -1000;
   drawPainterCanvas();
   sendPainting();
 }

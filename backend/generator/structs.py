@@ -560,6 +560,12 @@ table#status tr:nth-child(2) td {
             logElement(btn);
         }
 
+        function handleDebugMessage(evt) {
+            console.log(evt.message);
+            log("DEBUG: ", evt.message);
+            return true;
+        }
+
         function handleEnterSession(evt) {
             sessionId = evt.sessionId;
             setStatus("sessionId", sessionId);
@@ -738,11 +744,11 @@ table#status tr:nth-child(2) td {
 
     lineout("""
             const nick_names = [""")
-    old_nick_names_str_array = open(os.path.join(os.path.dirname(__file__), "../game/old_nick_names.txt")).read().splitlines()
-
-    # nick_names_str_array = open(os.path.join(os.path.dirname(__file__), "../game/nick_names.txt")).read().splitlines()
-    old_nick_names_string = """"xq", "manello", "captainhorst","philippwendel", "dionymoth", "Alm4nditte" """
-    lineout(f"""                {old_nick_names_string}""")
+    # nick_names_string = '''"xq", "manello", "captainhorst", "philippwendel", "dionymoth", "Alm4nditte"'''
+    # old_nick_names_str_array = open(os.path.join(os.path.dirname(__file__), "../game/old_nick_names.txt")).read().splitlines()
+    nick_names_string_array = open(os.path.join(os.path.dirname(__file__), "../game/nick_names.txt")).read().splitlines()
+    nick_names_string = ', '.join(f'"{name}"' for name in nick_names_string_array)
+    lineout(f"""                {nick_names_string}""")
     lineout("""            ];
 
             const nick = nick_names[Math.floor(Math.random()*nick_names.length)];
