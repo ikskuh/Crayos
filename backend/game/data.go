@@ -1,7 +1,6 @@
 package game
 
 import (
-	"embed"
 	_ "embed"
 	"strings"
 	"time"
@@ -74,21 +73,3 @@ const (
 //go:embed drawing_prompts_the_other_kind_of_drawcalls.txt
 var fileData []byte
 var AVAILABLE_PROMPTS = strings.Split(string(fileData), "\n")
-
-func getStickerStringsArray() []string {
-	// game -> backend -> root -> frontend -> img
-	// TODO wait for path to images, currently local folder
-	//go:embed *
-	var fs embed.FS
-
-	filenames, err := fs.ReadDir("files")
-
-	if err != nil {
-		panic(err)
-	}
-
-	var filenamesSlice []string
-	for _, file := range filenames {
-		filenamesSlice = append(filenamesSlice, file.Name())
-	}
-}
