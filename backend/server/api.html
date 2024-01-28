@@ -545,10 +545,7 @@ function deserialize(msg)
             STATUS_FIELDS['players'] = document.getElementById('status-players');
             STATUS_FIELDS['backdrop'] = document.getElementById('status-backdrop');
             STATUS_FIELDS['timer'] = document.getElementById('status-timer');
-
-            const nick_names = [
-                "Trolliver", "Trollarella", "Trollker", "Bertrolli", "Trollivia", "Trollo", "Trollbert", "Matrollka", "Trollbob", "Finntroll", "Trolluminati", "Trollington", "Benetroll", "Trollix", "Santrolla", "Supertroll", "Trollnathan", "Alexantrolla", "Papa Troll", "Trollino", "Trollster", "Trollygon", "Petroll", "Mythtrollogy", "Trollando Bloom", "Trolleander", "Atrollf", "Gwentrollyn", "Trollores", "Trollita"
-            ];
+const nick_names = ["Trolliver", "Trollarella", "Trollker", "Bertrolli", "Trollivia", "Trollo", "Trollbert", "Matrollka", "Trollbob", "Finntroll", "Trolluminati", "Trollington", "Benetroll", "Trollix", "Santrolla", "Supertroll", "Trollnathan", "Alexantrolla", "Papa Troll", "Trollino", "Trollster", "Trollygon", "Petroll", "Mythtrollogy", "Trollando Bloom", "Trolleander", "Atrollf", "Gwentrollyn", "Trollores", "Trollita"];
 
             const nick = nick_names[Math.floor(Math.random()*nick_names.length)];
 

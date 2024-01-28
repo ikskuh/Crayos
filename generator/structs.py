@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import os
 import typing, json, caseconverter, io 
 from pathlib import Path 
 from dataclasses import dataclass
@@ -9,9 +8,24 @@ from enum import Enum
 
 SCRIPT_ROOT = Path(__file__).parent 
 
-GO_MODULE = SCRIPT_ROOT / ".." / "game" / "structs.go"
-JS_MODULE = SCRIPT_ROOT / ".." / ".." / "frontend" / "structs.js"
-API_MODULE = SCRIPT_ROOT / ".." / "server" / "api.html"
+REPO_ROOT = SCRIPT_ROOT.parent
+
+# Outputs:
+GO_STRUCTS_MODULE = REPO_ROOT / "backend" / "game" / "structs.go"
+GO_STICKERS_MODULE = REPO_ROOT / "backend" / "game" / "stickers.go"
+JS_MODULE = REPO_ROOT /  "frontend" / "structs.js"
+API_MODULE = REPO_ROOT / "backend" / "server" / "api.html"
+NICKNAMES_JS =  REPO_ROOT  / "frontend" / "nick_names.js"
+STICKER_PRELOADER_JS = REPO_ROOT / "frontend" / "stickers.js"
+
+# Inputs:
+NICKNAMES_FILE = SCRIPT_ROOT / "nick_names.txt" 
+STICKER_FILES_DIR = REPO_ROOT / "frontend" / "img" / "stickers"
+
+# Load inputs:
+NICK_NAMES_ARRAY = NICKNAMES_FILE.read_text().splitlines()
+ALL_STICKER_PATHS = list(STICKER_FILES_DIR.glob("*.png"))
+
 
 class Graphics:
     pass 
@@ -28,12 +42,6 @@ GO_TYPES: dict[type,str] = {
     dict[str, bool]: "map[string]bool",
     Graphics: "Graphics",
 }
-
-nick_names_string_array = open(os.path.join(os.path.dirname(__file__), "../game/nick_names.txt")).read().splitlines()
-nick_names_string = ', '.join(f'"{name}"' for name in nick_names_string_array)
-
-img_path = os.path.join(os.path.dirname(__file__), "../../frontend/img/stickers")
-sticker_filenames = os.listdir(img_path) 
 
 assert Optional[str] == None | str 
 
@@ -751,11 +759,8 @@ table#status tr:nth-child(2) td {
         lineout("            STATUS_FIELDS['",field_name,"'] = document.getElementById('status-",field_name,"');");
 
 
+    lineout("const nick_names = ", json.dumps(NICK_NAMES_ARRAY), ";")
     lineout("""
-            const nick_names = [""")
-    lineout(f"""                {nick_names_string}""")
-    lineout("""            ];
-
             const nick = nick_names[Math.floor(Math.random()*nick_names.length)];
 
             document.getElementById("CreateSessionCommand-arg-nickName").value = nick;
@@ -829,7 +834,7 @@ def main():
 
     # print(type_registry)
 
-    with GO_MODULE.open("w") as f:
+    with GO_STRUCTS_MODULE.open("w") as f:
         generate_go_file(f)
 
     with JS_MODULE.open("w") as f:
@@ -838,13 +843,24 @@ def main():
     with API_MODULE.open("w") as f:
         generate_debug_file(f)
 
-    with open(os.path.join(os.path.dirname(__file__), "../../frontend/nick_names.js"), 'w') as f:
-        f.write(f'''const nick_names = [ {nick_names_string} ];''')
+    with NICKNAMES_JS.open("w") as f:
+        f.write("const nick_names = " + json.dumps(NICK_NAMES_ARRAY) + ";\n")
 
-    with open(os.path.join(os.path.dirname(__file__), "../../frontend/copy_sticker_prefix_into_index.html"), 'w') as f:
-        for img in sticker_filenames:
-            f.write(f'''    <link rel="prefetch" href="img/stickers/{img}" />\n''')
-    
+    with STICKER_PRELOADER_JS.open("w") as f:
+        f.write("function preloadAllStickers() {\n")
+        for imgpath in ALL_STICKER_PATHS:
+            f.write(f'    getStickerImage({json.dumps(imgpath.stem)});\n')
+        f.write("}\n")
+        f.write("\n")
+
+    with GO_STICKERS_MODULE.open("w") as f:
+        f.write("package game\n")
+        f.write("\n")
+        f.write("var ALL_STICKER_TAGS = []string {\n")
+        for imgpath in ALL_STICKER_PATHS:
+            f.write("    " + json.dumps(imgpath.stem) + ",\n")
+        f.write("}\n")
+        f.write("\n")
 
 
 

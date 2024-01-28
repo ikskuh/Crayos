@@ -23,6 +23,8 @@ function init() {
 
     loadBackgrounds();
 
+    preloadAllStickers();
+
     initSocket();
 
     const resize = (event) => {
@@ -52,7 +54,7 @@ function initSocket() {
     }
   }
   console.log("socket url: " + socketUrl);
-  
+
   document.getElementById("connecting").style.display = "flow";
   socket = new WebSocket(socketUrl);
 
