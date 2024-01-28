@@ -69,11 +69,16 @@ function setPromptOptions(prompts) {
 }
 
 function setVoteOptions(voteOptions) {
+  let imagePath = "img/";
+  if (currentView == GameView.artstudioSticker) {
+    imagePath = "img/stickers/";
+  }
+
   for (let i = 0; i < 5; i++) {
     const button = document.getElementById("vote" + i);
     if (voteOptions[i]) {
       button.style.display = "block";
-      button.style.backgroundImage = "url('img/" + voteOptions[i] + ".png')";
+      button.style.backgroundImage = "url('" + imagePath + voteOptions[i] + ".png')";
       button.onclick = () => sendVoteCommand(voteOptions[i]);
     } else {
       button.style.display = "none";
@@ -209,7 +214,7 @@ function drawPainterCanvas() {
     console.log("flashlight");
     ctx.beginPath();
     ctx.rect(0, 0, painterCanvas.width, painterCanvas.height);
-    ctx.arc(mx, my, 200, 2 * Math.PI, 0);
+    ctx.arc(mx, my, 50, 2 * Math.PI, 0);
     ctx.fillStyle = "#000";
     ctx.fill("evenodd");
   }

@@ -388,6 +388,10 @@ func (session *Session) Run() {
 
 				round_id := fmt.Sprintf("Round %d: ", index+1)
 
+				fmt_context := AnnouncementContext{
+					PainterName: active_painter.NickName,
+				}
+
 				session.DebugPrint(round_id, "Initialize")
 
 				// Assign roles:
@@ -452,8 +456,8 @@ func (session *Session) Run() {
 
 				// Tell them what's happening
 				splitAnnounce(
-					TEXT_ANNOUNCE_YOU_ARE_PAINTER,
-					TEXT_ANNOUNCE_YOU_ARE_TROLL,
+					TEXT_ANNOUNCE_YOU_ARE_PAINTER.Format(fmt_context),
+					TEXT_ANNOUNCE_YOU_ARE_TROLL.Format(fmt_context),
 				)
 
 				// Create prototypes for the views:
@@ -708,18 +712,13 @@ func (session *Session) Run() {
 				// Phase 3:
 				session.DebugPrint(round_id, "Trolls now select stickers")
 				{
-					// Send stickers to display
-					// Get 5 stickers from list
-					session.Broadcast(&ChangeToolModifierEvent{
-						Modifier: "",
-						Duration: 0,
-					})
-
 					round_end_timer := session.createTimer(TIME_GAME_STICKERING_S)
 					players_ready := createPlayerSetFromMap(session.Players, nil)
 
 					// TODO(philippwendel) Check if more of view neeeds to be changed
 					painter_view.View = GAME_VIEW_ARTSTUDIO_GENERIC
+					painter_view.RemoveVote()
+
 					troll_view.View = GAME_VIEW_ARTSTUDIO_STICKER
 					troll_view.SetVote(TEXT_VOTE_STICKERING, []string{
 						"banana-peel",
@@ -731,9 +730,12 @@ func (session *Session) Run() {
 
 					updateViews()
 
+					//
+					troll_view.RemoveVote()
+
 					mapped_stickers := make(map[*Player]*Sticker)
 
-					for !round_end_timer.TimedOut() && !players_ready.allSet() {
+					for !round_end_timer.TimedOut() && !players_ready.allTrollsSet() {
 						pmsg := session.PumpEvents(round_end_timer)
 						if pmsg == nil {
 							return
@@ -742,11 +744,24 @@ func (session *Session) Run() {
 						switch msg := pmsg.Message.(type) {
 						case *PlaceStickerCommand:
 							if pmsg.Player != active_painter {
-								mapped_stickers[pmsg.Player] = &Sticker{
+								sticker := Sticker{
 									Id: msg.Sticker,
 									X:  msg.X,
 									Y:  msg.Y,
 								}
+								mapped_stickers[pmsg.Player] = &sticker
+
+								// hide the stickering options for the troll, but
+								// show them their own sticker:
+								{
+									personal_stickered_view := *painter_view
+									personal_stickered_view.Painting.Stickers = []Sticker{
+										sticker,
+									}
+									pmsg.Player.Send(&personal_stickered_view)
+								}
+
+								players_ready.add(pmsg.Player)
 							} else {
 								session.ServerPrint("painted tried to sticker. BAD BOY!")
 							}
@@ -830,14 +845,18 @@ func (session *Session) Run() {
 				}
 			} // end of inner loop over players
 
-			session.Announce("Vote for the winner now!", TIME_ANNOUNCE_GENERIC)
-
 			// Phase 5:
 			{
 				// TODO: Loop through all results and let the players vote for the pictures
 
 				for index, result := range results {
 					round_id := fmt.Sprintf("Showcase %d: ", index+1)
+
+					fmt_context := AnnouncementContext{
+						PainterName: players[index].NickName,
+					}
+
+					session.Announce(TEXT_ANNOUNCE_VOTE_NOW.Format(fmt_context), TIME_ANNOUNCE_GENERIC)
 
 					session.DebugPrint(round_id, "Vote for image")
 
@@ -910,7 +929,9 @@ func (session *Session) Run() {
 				}
 			}
 
-			session.Announce(TEXT_ANNOUNCE_WINNER, TIME_ANNOUNCE_GENERIC)
+			session.Announce(TEXT_ANNOUNCE_WINNER.Format(AnnouncementContext{
+				PainterName: "<<<<NO YOU DONT!>>>>",
+			}), TIME_ANNOUNCE_GENERIC)
 
 			// Determine winner:
 			{
@@ -947,7 +968,7 @@ func (session *Session) Run() {
 
 				round_end_timer := session.createTimer(TIME_GAME_GALLERY_S)
 				players_ready := createPlayerSetFromMap(session.Players, nil)
-				for !round_end_timer.TimedOut() && players_ready.any(false) {
+				for !round_end_timer.TimedOut() && !players_ready.allSet() {
 					pmsg := session.PumpEvents(round_end_timer)
 					if pmsg == nil {
 						return

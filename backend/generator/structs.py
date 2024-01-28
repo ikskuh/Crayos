@@ -32,10 +32,8 @@ GO_TYPES: dict[type,str] = {
 nick_names_string_array = open(os.path.join(os.path.dirname(__file__), "../game/nick_names.txt")).read().splitlines()
 nick_names_string = ', '.join(f'"{name}"' for name in nick_names_string_array)
 
-img_path = os.path.join(os.path.dirname(__file__), "../../frontend/img")
-print(img_path)
+img_path = os.path.join(os.path.dirname(__file__), "../../frontend/img/stickers")
 sticker_filenames = os.listdir(img_path) 
-print(sticker_filenames)
 
 assert Optional[str] == None | str 
 
@@ -842,6 +840,11 @@ def main():
 
     with open(os.path.join(os.path.dirname(__file__), "../../frontend/nick_names.js"), 'w') as f:
         f.write(f'''const nick_names = [ {nick_names_string} ];''')
+
+    with open(os.path.join(os.path.dirname(__file__), "../../frontend/copy_sticker_prefix_into_index.html"), 'w') as f:
+        for img in sticker_filenames:
+            f.write(f'''    <link rel="prefetch" href="img/stickers/{img}" />\n''')
+    
 
 
 
