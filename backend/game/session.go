@@ -674,6 +674,7 @@ func (session *Session) Run() {
 					timeLeft := true
 					players_ready := createPlayerSetFromMap(session.Players, nil)
 
+					// TODO(philippwendel) Check if more of view neeeds to be changed
 					troll_view.View = GAME_VIEW_ARTSTUDIO_STICKER
 					painter_view.View = GAME_VIEW_ARTSTUDIO_GENERIC
 
@@ -687,7 +688,10 @@ func (session *Session) Run() {
 
 						switch msg := pmsg.Message.(type) {
 						case *PlaceStickerCommand:
-							painter_view.Painting.Stickers = append(painter_view.Painting.Stickers, Sticker{Id: msg.Sticker, X: msg.X, Y: msg.Y})
+							changeBoth(func(view *ChangeGameViewEvent) {
+								view.Painting.Stickers = append(view.Painting.Stickers, Sticker{Id: msg.Sticker, X: msg.X, Y: msg.Y})
+							})
+							updateViews()
 						case *NotifyTimeout:
 							timeLeft = false
 						}
