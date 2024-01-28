@@ -21,6 +21,8 @@ div#wrapper {
     transform: translate(-50%, -50%);
     width: 1920px;
     height: 1080px;
+
+    overflow: hidden;
 }
 
 section {
@@ -57,6 +59,37 @@ div.info_box {
 #debug-overlay {
     padding: 1rem;
     background: rgba(255, 255, 255, 0.2);
+}
+
+#popup {
+    position: absolute;
+    bottom: -216px;
+    left: 949px;
+    width: 328px;
+    height: 216px;
+
+    background: url(img/popup_wrapper.png);
+    background-size: 100%;
+
+    transition: bottom 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+
+    padding: 15px;
+    box-sizing: border-box;
+    font-size: 32px;
+
+    /* word wrap with text overflow hidden */
+    text-wrap: wrap;
+    overflow: hidden;
+
+    /* center text */
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+}
+
+#popup.visible {
+    bottom: 342px;
 }
 
 button.infoBoxBtn {

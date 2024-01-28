@@ -249,6 +249,7 @@ type PlayerReadyChangedEvent struct {
 
 type PopUpEvent struct {
 	Message string `json:"message"`
+	Duration int `json:"duration"`
 }
 
 type DebugMessageEvent struct {

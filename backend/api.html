@@ -505,6 +505,7 @@ function deserialize(msg)
         }
         log('event: PopUpEvent');
         log('  message: ', JSON.stringify(obj.message))
+        log('  duration: ', JSON.stringify(obj.duration))
           log();
         break;
     case 'debug-message-event':
