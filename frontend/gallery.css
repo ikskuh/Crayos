@@ -36,11 +36,13 @@
     top: 925px;
     width: 392px;
     height: 90px;
+    color: white;
 
-    background-color: #FD5A46;
-    font-size: 65px;
+    font-size: 50px;
+    background-color: transparent;
+    background-image: url('img/button.png');
 }
 
 #backToLobby:hover {
-    color: white;
+    background-image: url('img/button_hover.png');
 }
