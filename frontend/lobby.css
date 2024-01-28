@@ -71,6 +71,14 @@ button#joinLink {
     margin-top: 0;
 }
 
+ol#lobbyRules {
+    position: absolute;
+    top: 430px;
+    left: 845px;
+    width: 900px;
+    font-size: 40px;
+}
+
 input#copyId {
     width: 392px;
     height: 85px;
