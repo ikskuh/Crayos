@@ -322,6 +322,9 @@ func (session *Session) Run() {
 			players_ready := createPlayerSetFromMap(session.Players, nil)
 
 			for len(session.Players) < 2 || players_ready.any(false) {
+
+				broadcastPlayerReadyState(session, players_ready)
+
 				pmsg := session.PumpEvents(no_timeout)
 				if pmsg == nil {
 					return
@@ -342,7 +345,6 @@ func (session *Session) Run() {
 					players_ready.removePlayer(pmsg.Player)
 
 				}
-				broadcastPlayerReadyState(session, players_ready)
 			}
 		}
 
