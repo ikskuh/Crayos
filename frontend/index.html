@@ -55,8 +55,11 @@
         <input type="text" id="player3" class="genericUi" value="Player 3" disabled />
         <input type="text" id="player4" class="genericUi" value="Player 4" disabled />
         <button type="button" id="ready" class="genericUi" onclick="readyClicked()">Ready</button>
-        <button type="button" id="joinLink" class="genericUi" onclick="btnCopyInvite()">Copy Invite Link</button>
-      </section>
+        <div id="linkIdWrapper">
+            <button type="button" id="joinLink" class="genericUi" onclick="btnCopyInvite()">Copy Invite Link</button>
+            <button type="button" id="copyId" class="genericUi" onclick="btnCopyId()">ID: </button>
+        </div>
+    </section>
       <section id="artstudio">
         <div class="timer">
           <p>Time left:<br /><span id="painter-timer-number"></span></p>
@@ -66,23 +69,23 @@
         </div>
         <div class="toolbox">
           <div id="painting-tools">
-            <button id="pencil" onclick="selectTool('pencil')" />
-            <button id="eraser" onclick="selectTool('eraser')" />
+            <button id="pencil" onclick="selectTool('pencil')"></button>
+            <button id="eraser" onclick="selectTool('eraser')"></button>
             <canvas id="palette" width="264" height="360"></canvas>
           </div>
           <div id="voting-buttons">
-            <button id="vote0" />
-            <button id="vote1" />
-            <button id="vote2" />
-            <button id="vote3" />
-            <button id="vote4" />
+            <button id="vote0"></button>
+            <button id="vote1"></button>
+            <button id="vote2"></button>
+            <button id="vote3"></button>
+            <button id="vote4"></button>
           </div>
         </div>
         <canvas id="painter-canvas" class="drawing-canvas" width="1385" height="737"></canvas>
         <div id="prompt-selection">
-          <button id="prompt0" onclick="selectPrompt(0)" /><br />
-          <button id="prompt1" onclick="selectPrompt(1)" /><br />
-          <button id="prompt2" onclick="selectPrompt(2)" />
+          <button id="prompt0" onclick="selectPrompt(0)"></button><br />
+          <button id="prompt1" onclick="selectPrompt(1)"></button><br />
+          <button id="prompt2" onclick="selectPrompt(2)"></button>
         </div>
       </section>
       <section id="gallery">
