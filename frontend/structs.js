@@ -47,7 +47,7 @@ const Effect = {
 const UserAction = {
     setReady : 'set-ready',
     setNotReady : 'set-not-ready',
-    continueGame : 'continue',
+    leaveGallery : 'leave-gallery',
 };
 
 // Enum:

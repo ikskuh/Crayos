@@ -141,12 +141,12 @@ type UserAction string
 const (
 	USER_ACTION_SET_READY UserAction = "set-ready"
 	USER_ACTION_SET_NOT_READY UserAction = "set-not-ready"
-	USER_ACTION_CONTINUE_GAME UserAction = "continue"
+	USER_ACTION_LEAVE_GALLERY UserAction = "leave-gallery"
 )
 var ALL_USER_ACTION_ITEMS = []UserAction{
 	"set-ready",
 	"set-not-ready",
-	"continue",
+	"leave-gallery",
 }
 
 type Backdrop string

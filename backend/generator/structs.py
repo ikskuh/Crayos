@@ -118,7 +118,8 @@ class Effect(Enum):
 class UserAction(Enum):
     setReady = "set-ready" # sets the player ready
     setNotReady = "set-not-ready" # sets the player to "not ready" in the lobby
-    continueGame = "continue" # the player wants to continue/leave the current screen
+
+    leaveGallery = "leave-gallery" # leave the gallery and return to the lobby
 
 @api_enum
 class Backdrop(Enum):
