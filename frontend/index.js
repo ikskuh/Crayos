@@ -13,6 +13,7 @@ let localIsReady = false;
 let currentView = "connecting";
 
 const backgrounds = [];
+let selectedBackground = null;
 
 function init() {
   loadBackgrounds();
@@ -34,6 +35,8 @@ function initSocket() {
     let urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has("local")) {
       socketUrl = "ws://localhost:8080/ws";
+    } else if (urlParams.has("host")) {
+      socketUrl = "ws://" + urlParams.get("host") + ":8080/ws";
     }
   }
 
@@ -127,6 +130,8 @@ function onSocketReceive(event) {
       }
       if (data.painting.graphics) {
         setPainting(data.painting.graphics);
+      } else {
+        clearPainting();
       }
       setPaintingPrompt(data.painting.prompt);
 
@@ -187,7 +192,11 @@ function setBackground(name) {
 
 function drawPainting(canvas, paths) {
   const ctx = canvas.getContext("2d");
-  ctx.drawImage(selectedBackground, 0, 0, canvas.width, canvas.height);
+  if (selectedBackground) {
+    ctx.drawImage(selectedBackground, 0, 0, canvas.width, canvas.height);
+  } else {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
 
   ctx.lineWidth = lineWidth;
   ctx.lineCap = "round";
