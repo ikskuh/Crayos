@@ -700,6 +700,7 @@ func (session *Session) Run() {
 					round_end_timer := session.createTimer(TIME_GAME_STICKERING_S)
 					players_ready := createPlayerSetFromMap(session.Players, nil)
 
+					// TODO(philippwendel) Check if more of view neeeds to be changed
 					troll_view.View = GAME_VIEW_ARTSTUDIO_STICKER
 					painter_view.View = GAME_VIEW_ARTSTUDIO_GENERIC
 
@@ -713,7 +714,10 @@ func (session *Session) Run() {
 
 						switch msg := pmsg.Message.(type) {
 						case *PlaceStickerCommand:
-							painter_view.Painting.Stickers = append(painter_view.Painting.Stickers, Sticker{Id: msg.Sticker, X: msg.X, Y: msg.Y})
+							changeBoth(func(view *ChangeGameViewEvent) {
+								view.Painting.Stickers = append(view.Painting.Stickers, Sticker{Id: msg.Sticker, X: msg.X, Y: msg.Y})
+							})
+							updateViews()
 						}
 					}
 

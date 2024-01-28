@@ -13,27 +13,31 @@ section#title {
 }
 
 .titleButtons {
+    color: white;
     margin-top: 10px;
     margin-bottom: 10px;
     width: 392px;
-    height: 90px;
+    height: 85px;
+    border-radius: 0;
 
-    background-color: #FD5A46;
-    font-size: 65px;
+    font-size: 50px;
+    background-color: transparent;
+    background-image: url('img/button.png');
 }
-
-.titleButtons:hover {
-    color: white;
-    transform: scale(0.95);
+button.titleButtons:hover {
+    background-image: url('img/button_hover.png');
+}
+button.titleButtons:active {
+    background-image: url('img/button_pressed.png');
 }
 
 .titleInputs {
     margin-top: 10px;
     margin-bottom: 10px;
     width: 900px;
-    height: 90px;
+    height: 85px;
 
-    font-size: 65px;
+    font-size: 60px;
     background-color: white;
 
     color: black;
