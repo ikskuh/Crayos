@@ -53,3 +53,8 @@ div.info_box {
     border: none;
     border-radius: 25px;
 }
+
+#debug-overlay {
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.2);
+}
