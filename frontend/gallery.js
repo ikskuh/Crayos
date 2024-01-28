@@ -9,24 +9,24 @@ function initGallery()
     }
 }
 
-function setGalleryCanvases(paths, points, sticker)
+function setGalleryCanvases(results)
 {
     let winnerCanvas;
     let highestScore = 0;
-    for (let i = 0; i < 4; i++)
+    for (let i = 0; i < results.length; i++)
     {
-        let galCanvas = document.getElementById("gallery" + i);
-        drawPainting(galCanvas, paths[i]);
-        drawFinalStars(galCanvas, points[i]);
+        let galCanvas = document.getElementById("gallery" + (i+1));
+        drawPainting(galCanvas, results[i].graphics, results[i].backdrop);
+        //drawFinalStars(galCanvas, 1);
 
-        if (points[i] > highestScore)
+        if (results[i].winner)
         {
-            highestScore = points[i];
+            //highestScore = results[i].points[i];
             winnerCanvas = galCanvas;
         }
     }
 
-    drawWinnerBadge(winnerCanvas);
+    //drawWinnerBadge(winnerCanvas);
 }
 
 function drawFinalStars(canvas, points)

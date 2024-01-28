@@ -13,7 +13,7 @@ let localIsReady = false;
 let currentView = "connecting";
 
 const backgrounds = [];
-let selectedBackground = null;
+let selectedBackgroundName = "";
 
 function init() {
     window.onerror = (event) => {
@@ -143,8 +143,7 @@ function onSocketReceive(event) {
       sessionID = data.sessionId;
       break;
     case EventId.JoinSessionFailed:
-      setView("gallery");
-      //setView("server_error");
+      setView("server_error");
       document.getElementById("serverErrorText").textContent = data.reason;
       break;
     case EventId.Kicked:
@@ -178,6 +177,11 @@ function onSocketReceive(event) {
         setPaintingToolsEnabled(true);
       } else {
         setPaintingToolsEnabled(false);
+      }
+
+      if (data.view == GameView.gallery) {
+        setGalleryCanvases(data.results)
+        setView(GameView.gallery);
       }
 
       if (data.announcer != "") {
@@ -232,15 +236,15 @@ function loadBackgrounds() {
   backgrounds["desert"] = document.getElementById("background-desert");
 }
 
-function setBackground(name) {
-  selectedBackground = backgrounds[name];
+function setBackground(backgroundName) {
+  selectedBackgroundName = backgroundName;
   drawPainterCanvas();
 }
 
-function drawPainting(canvas, paths) {
+function drawPainting(canvas, paths, backgroundName) {
   const ctx = canvas.getContext("2d");
-  if (selectedBackground) {
-    ctx.drawImage(selectedBackground, 0, 0, canvas.width, canvas.height);
+  if (backgroundName != "") {
+    ctx.drawImage(backgrounds[backgroundName], 0, 0, canvas.width, canvas.height);
   } else {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
   }

@@ -188,7 +188,7 @@ function setInputEnabled(enabled) {
 function drawPainterCanvas() {
   const painterCanvas = document.getElementById("painter-canvas");
   const ctx = painterCanvas.getContext("2d");
-  drawPainting(painterCanvas, painterPaths);
+  drawPainting(painterCanvas, painterPaths, selectedBackgroundName);
 
   // preview tool
   if (selectedTool == TOOL_PENCIL) {
