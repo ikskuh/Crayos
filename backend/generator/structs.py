@@ -726,10 +726,11 @@ table#status tr:nth-child(2) td {
     for field_name in  STATUS_FIELDS.keys():
         lineout("            STATUS_FIELDS['",field_name,"'] = document.getElementById('status-",field_name,"');");
 
+
     lineout("""
-            const nick_names = [
-                "xq", "manello", "captainhorst","philippwendel", "dionymoth", "Alm4nditte" 
-            ];
+            const nick_names = [""")
+    lineout("""                "xq", "manello", "captainhorst","philippwendel", "dionymoth", "Alm4nditte" """)
+    lineout("""            ];
 
             const nick = nick_names[Math.floor(Math.random()*nick_names.length)];
 
