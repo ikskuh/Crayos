@@ -17,13 +17,15 @@
     height: 116px;
     color: white;
     background-image: url('img/prompt_box.png');
+    background-position: center;
+    background-repeat: no-repeat;
 }
 .prompt p {
     position: absolute;
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
-    font-size: 60px;
+    font-size: 50px;
     white-space: nowrap;
     text-align: center;
 }
@@ -33,13 +35,15 @@
     top: 350px;
 }
 #prompt-selection button {
+    color: white;
     border: none;
     border-radius: 20px;
     width: 1321px;
     height: 104px;
     margin-left: 32px;
     margin-top: 32px;
-    font-size: 60px;
+    font-size: 50px;
+    background-color: #FD5A46;
 }
 
 .toolbox {
@@ -61,6 +65,7 @@
     height: 104px;
     margin-left: 32px;
     margin-top: 32px;
+    background-size: contain;
 }
 .toolbox button.selected {
     border: 4px solid black;
@@ -73,21 +78,6 @@
 }
 .toolbox button#eraser {
     background-image: url('img/eraser.png');
-}
-.toolbox button#drunk {
-    background-image: url('img/drunk.png');
-}
-.toolbox button#flashlight {
-    background-image: url('img/flashlight.png');
-}
-.toolbox button#flip {
-    background-image: url('img/flip.png');
-}
-.toolbox button#lock_pencil {
-    background-image: url('img/lock_pencil.png');
-}
-.toolbox button#swap_tool {
-    background-image: url('img/swap_tool.png');
 }
 
 .toolbox #palette {

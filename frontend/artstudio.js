@@ -69,11 +69,16 @@ function setPromptOptions(prompts) {
 }
 
 function setVoteOptions(voteOptions) {
+  let imagePath = "img/";
+  if (currentView == GameView.artstudioSticker) {
+    imagePath = "img/stickers/";
+  }
+
   for (let i = 0; i < 5; i++) {
     const button = document.getElementById("vote" + i);
     if (voteOptions[i]) {
       button.style.display = "block";
-      button.style.backgroundImage = "url('img/" + voteOptions[i] + ".png')";
+      button.style.backgroundImage = "url('" + imagePath + voteOptions[i] + ".png')";
       button.onclick = () => sendVoteCommand(voteOptions[i]);
     } else {
       button.style.display = "none";

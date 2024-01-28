@@ -73,10 +73,27 @@ function btnReconnect() {
 }
 
 function hideSection(id) {
+  switch (id) {
+    case GameView.promptselection:
+    case GameView.artstudioGeneric:
+    case GameView.artstudioActive:
+    case GameView.artstudioSticker:
+      id = "artstudio";
+      break;
+  }
+
   document.getElementById(id).style.display = "none";
 }
 
 function showSection(id) {
+  switch (id) {
+    case GameView.promptselection:
+    case GameView.artstudioGeneric:
+    case GameView.artstudioActive:
+    case GameView.artstudioSticker:
+      id = "artstudio";
+      break;
+  }
   document.getElementById(id).style.display = "flow";
 }
 
@@ -96,42 +113,14 @@ function showPopUp(message, duration) {
 }
 
 
-function setView(newView, data = undefined) {
-    if (
-        newView == GameView.title ||
-        newView == GameView.lobby ||
-        newView == GameView.gallery ||
-        newView == "connecting" ||
-        newView == "connection_failed" ||
-        newView == "link_required" ||
-        newView == "link_invalid" ||
-        newView == "announcer" ||
-        newView == "server_error"
-    ) {
-        hideSection(currentView);
-        currentView = newView;
-        showSection(newView);
+function setView(newView) {
+  hideSection(currentView);
+  currentView = newView;
+  showSection(newView);
 
-        if (newView == GameView.gallery) {
-            initGallery();
-        }
-    }   
-    else {
-        switch (newView) {
-        case GameView.promptselection:
-            break;
-        case GameView.artstudioGeneric:
-            break;
-        case GameView.artstudioActive:
-            break;
-        case GameView.artstudioSticker:
-            break;
-        }
-        newView = "artstudio";
-        hideSection(currentView);
-        currentView = newView;
-        showSection(newView);
-    }
+  if (newView == GameView.gallery) {
+      initGallery();
+  }
 }
 
 function onSocketReceive(event) {
@@ -168,6 +157,7 @@ function onSocketReceive(event) {
         initTitle();
       }
 
+      setView(data.view); // HACK: need currenView before setVoteOptions
       if (data.view == GameView.promptselection) {
         setPromptOptions(data.voteOptions);
         setPromptSelectionEnabled(true);
@@ -185,14 +175,11 @@ function onSocketReceive(event) {
 
       if (data.view == GameView.gallery) {
         setGalleryCanvases(data.results)
-        setView(GameView.gallery);
       }
 
       if (data.announcer != "") {
         document.getElementById("announcer_text").textContent = data.announcer;
       }
-
-      setView(data.view);
       break;
     case EventId.TimerChanged:
       setTimerSecondsLeft(data.secondsLeft);
