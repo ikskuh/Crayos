@@ -56,6 +56,7 @@
 .toolbox button {
     border: none;
     border-radius: 20px;
+    box-sizing: border-box;
     width: 260px;
     height: 104px;
     margin-left: 32px;
@@ -63,11 +64,9 @@
 }
 .toolbox button.selected {
     border: 4px solid black;
-    height: 108px;
 }
 .toolbox button:active {
     border: 4px solid black;
-    height: 108px;
 }
 .toolbox button#pencil {
     background-image: url('img/pencil.png');
