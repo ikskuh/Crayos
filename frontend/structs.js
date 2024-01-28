@@ -19,6 +19,7 @@ const EventId = {
     PlayersChanged : 'players-changed-event',
     PlayerReadyChanged : 'player-ready-changed-event',
     PopUp : 'pop-up-event',
+    DebugMessage : 'debug-message-event',
 };
 
 // Enum:
@@ -35,7 +36,6 @@ const GameView = {
 
 // Enum:
 const Effect = {
-    none : 'none',
     flashlight : 'flashlight',
     drunk : 'drunk',
     flip : 'flip',

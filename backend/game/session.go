@@ -6,6 +6,8 @@ import (
 	"math/rand"
 	"time"
 	"unsafe"
+
+	"random-projects.net/crayos-backend/meta"
 )
 
 type PlayerMessage struct {
@@ -41,6 +43,13 @@ const (
 
 var sessions = map[string]*Session{}
 
+func SetDebugSession(session *Session) {
+	if !*meta.DEBUG_MODE {
+		log.Fatalln("Only allowed in debug mode!")
+	}
+	sessions["0xDEADBEEF"] = session
+}
+
 func CreateSession(player *Player) *Session {
 	session := &Session{
 		HostPlayer: player,
@@ -56,7 +65,11 @@ func CreateSession(player *Player) *Session {
 	}
 	session.Id = fmt.Sprintf("%p", session)
 
-	session.AddPlayer(player)
+	if player != nil {
+		session.AddPlayer(player)
+	} else if !*meta.DEBUG_MODE {
+		log.Fatalln("Invalid parameter: Session requires a player in non-debug mode")
+	}
 
 	// add player before starting main loop, otherwise it will kill itself automatically
 
@@ -185,7 +198,7 @@ func (self *NotifyPlayerLeft) FixNils() Message {
 
 func (session *Session) PumpEvents(timeout <-chan time.Time) *PlayerMessage {
 
-	for len(session.Players) > 0 {
+	for *meta.DEBUG_MODE || len(session.Players) > 0 {
 		select {
 		case pmsg := <-session.InboundDataChan:
 			return &pmsg
@@ -262,7 +275,7 @@ func (session *Session) Run() {
 
 	no_timeout := make(chan time.Time) // pass when no timeout is required
 
-	for len(session.Players) > 0 {
+	for *meta.DEBUG_MODE || len(session.Players) > 0 {
 
 		// Lobby
 		{
@@ -532,8 +545,7 @@ func (session *Session) Run() {
 
 							vote_effect_view := *troll_view
 
-							// [1:] strips "none" effect
-							vote_effect_view.SetVote(TEXT_VOTE_EFFECT, (*(*[]string)(unsafe.Pointer(&ALL_EFFECT_ITEMS)))[1:])
+							vote_effect_view.SetVote(TEXT_VOTE_EFFECT, *(*[]string)(unsafe.Pointer(&ALL_EFFECT_ITEMS)))
 
 							trolls[0].Send(&vote_effect_view) // troll view is "generic empty" here
 							troll_did_effect = false
@@ -591,7 +603,7 @@ func (session *Session) Run() {
 
 				// Disable all active effects
 				session.Broadcast(&ChangeToolModifierEvent{
-					Modifier: EFFECT_NONE,
+					Modifier: "",
 					Duration: 0,
 				})
 
@@ -723,8 +735,20 @@ func (session *Session) Run() {
 
 			// Determine winner:
 			{
-				// TODO(fqu): Determine the winning painting and flag
-				// Painting.Winner = true
+				best_painting_score := 0
+				best_painting_index := 0
+
+				for i := range results {
+					results[i].painting.Winner = false
+
+					if results[i].totalPoints >= best_painting_score {
+						best_painting_score = results[i].totalPoints
+						best_painting_index = i
+					}
+
+				}
+
+				results[best_painting_index].painting.Winner = true
 			}
 
 			// Phase 6:

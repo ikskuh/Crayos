@@ -103,7 +103,7 @@ class GameView(Enum):
 
 @api_enum
 class Effect(Enum):
-    none = "none"
+    # none = ""
     flashlight = "flashlight"
     drunk = "drunk"
     flip = "flip"
@@ -219,6 +219,9 @@ class PlayerReadyChangedEvent:
 class PopUpEvent:
     message: str
 
+@api_event
+class DebugMessageEvent:
+    message: str # Show this text as a debug overlay somewhere
 
 ###############################################################################
 

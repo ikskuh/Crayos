@@ -102,6 +102,7 @@ const EventId = {
     PlayersChanged : 'players-changed-event',
     PlayerReadyChanged : 'player-ready-changed-event',
     PopUp : 'pop-up-event',
+    DebugMessage : 'debug-message-event',
 };
 
 // Enum:
@@ -118,7 +119,6 @@ const GameView = {
 
 // Enum:
 const Effect = {
-    none : 'none',
     flashlight : 'flashlight',
     drunk : 'drunk',
     flip : 'flip',
@@ -493,6 +493,14 @@ function deserialize(msg)
             return;
         }
         log('event: PopUpEvent');
+        log('  message: ', JSON.stringify(obj.message))
+          log();
+        break;
+    case 'debug-message-event':
+        if(handleDebugMessage(obj)) {
+            return;
+        }
+        log('event: DebugMessageEvent');
         log('  message: ', JSON.stringify(obj.message))
           log();
         break;
